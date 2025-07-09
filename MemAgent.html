@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MemAgent: AI Memory Explainer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #111827;
+            --card-bg: #F9FAFB;
+            --card-border: #E5E7EB;
+            --hero-text: #F3F4F6;
+            --highlight-color: #4F46E5;
+            --progress-bar-bg: #E5E7EB;
+        }
+
+        html.dark {
+            --bg-color: #111827;
+            --text-color: #F3F4F6;
+            --card-bg: #1F2937;
+            --card-border: #374151;
+            --hero-text: #E0E7FF;
+            --highlight-color: #818CF8;
+            --progress-bar-bg: #374151;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .hero-gradient {
+            background: linear-gradient(145deg, #1E3A8A 0%, #4F46E5 50%, #EC4899 100%);
+        }
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .btn {
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+        }
+        .progress-bar-container {
+            background-color: var(--progress-bar-bg);
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            transition: width 1s ease-in-out;
+        }
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 50;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            margin: auto;
+            padding: 2rem;
+            border: 1px solid var(--card-border);
+            width: 90%;
+            max-width: 800px;
+            border-radius: 1rem;
+            position: relative;
+        }
+        .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-color);
+            opacity: 0.7;
+        }
+        .close-btn:hover {
+            opacity: 1;
+        }
+        .interactive-sim-btn {
+            background-color: #4F46E5;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+        }
+        .interactive-sim-btn:hover {
+             background-color: #4338CA;
+        }
+        .highlight-text {
+            color: var(--highlight-color);
+            font-weight: 700;
+        }
+        .case-study-content {
+            background-color: var(--bg-color);
+            border-left: 4px solid #4F46E5;
+        }
+        /* Toggle Switch Styles */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 28px;
+        }
+        html.dark .slider {
+            background-color: #374151;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #4F46E5;
+        }
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header with Toggle -->
+    <header class="flex justify-end items-center p-4 md:p-6">
+        <div class="toggle-container text-sm">
+            <i class="fas fa-sun text-yellow-500"></i>
+            <label class="toggle-switch">
+                <input type="checkbox" id="theme-toggle">
+                <span class="slider"></span>
+            </label>
+            <i class="fas fa-moon text-blue-300"></i>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container mx-auto p-4 md:p-8 pt-0">
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-6xl font-black tracking-tighter mb-2">MemAgent 🧠✨</h1>
+            <p class="text-lg md:text-xl opacity-70">The AI Memory Upgrade You Didn't Know You Needed</p>
+        </header>
+        <section class="mb-16">
+            <div class="card rounded-2xl p-6 md:p-8 text-center">
+                <i class="fas fa-brain text-4xl text-pink-500 mb-4"></i>
+                <h2 class="text-2xl md:text-3xl font-bold mb-3">Ever feel like your AI has bad memory?</h2>
+                <p class="opacity-80 max-w-2xl mx-auto">You're chatting with an AI, feeding it a huge doc, and ask a question about the beginning... and it totally forgets. 💀 That's because most AIs have a <span class="highlight-text">limited "context window"</span> - like short-term memory.</p>
+            </div>
+        </section>
+        <section class="mb-16">
+            <div class="hero-gradient rounded-2xl p-6 md:p-10 text-center">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4 text-white">Meet MemAgent: The Game Changer 🚀</h2>
+                <p class="text-indigo-200 max-w-3xl mx-auto mb-6">What if an AI could read a whole library and remember every single detail? That's the magic of <span class="font-bold text-white">MemAgent</span>. It's not a new AI model, but a super-smart <span class="font-bold text-white">"agent"</span> that works with existing AIs, giving them an infinite memory backpack.</p>
+                <div class="flex justify-center gap-4 flex-wrap">
+                    <div class="interactive-sim-btn btn" onclick="openModal('simModal')"><i class="fas fa-play-circle mr-2"></i>Run Basic Sim</div>
+                    <div class="interactive-sim-btn btn bg-pink-600 hover:bg-pink-500" onclick="openModal('caseStudyModal')"><i class="fas fa-flask mr-2"></i>See Case Study</div>
+                </div>
+            </div>
+        </section>
+        <section class="mb-16">
+            <h2 class="text-3xl font-bold text-center mb-8">How's it work tho? 🤔</h2>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="card rounded-2xl p-6"><div class="flex items-center mb-3"><i class="fas fa-book-reader text-3xl text-blue-400 mr-4"></i><h3 class="text-xl font-bold">1. Reads in Chunks 📚</h3></div><p class="opacity-80">Instead of reading everything at once, MemAgent reads a long doc piece by piece, like chapters in a book.</p></div>
+                <div class="card rounded-2xl p-6"><div class="flex items-center mb-3"><i class="fas fa-gamepad text-3xl text-green-400 mr-4"></i><h3 class="text-xl font-bold">2. Learns Like a Gamer 🎮</h3></div><p class="opacity-80">It uses <span class="highlight-text">Reinforcement Learning (RL)</span>. The agent gets "rewards" for storing useful info in its memory, leveling up its summarization skills.</p></div>
+                <div class="card rounded-2xl p-6"><div class="flex items-center mb-3"><i class="fas fa-bolt text-3xl text-yellow-400 mr-4"></i><h3 class="text-xl font-bold">3. Stays Super Fast ⚡</h3></div><p class="opacity-80">Because it reads in fixed-size chunks, the work doesn't pile up. Doubling the doc length only doubles the time (<span class="highlight-text">linear time</span>), instead of squaring it. No lag!</p></div>
+            </div>
+        </section>
+        <section class="mb-16">
+            <h2 class="text-3xl font-bold text-center mb-8">But does it actually work? (Spoiler: Yes)</h2>
+            <div class="card rounded-2xl p-6 md:p-8">
+                <p class="text-center opacity-70 mb-6">Let's see how MemAgent stacks up against a regular AI when trying to answer questions from a massive 3.5 million token document (that's like 7 novels!).</p>
+                <div class="mb-6"><h4 class="font-semibold text-lg mb-2">Standard AI</h4><div class="progress-bar-container"><div id="standard-ai-bar" class="progress-bar bg-pink-600 h-6 rounded-full text-center text-white font-bold" style="width: 15%;">15%</div></div><p class="text-sm opacity-60 mt-1">Accuracy drops off a cliff with long texts.</p></div>
+                <div class="mb-6"><h4 class="font-semibold text-lg mb-2">MemAgent-Powered AI ✨</h4><div class="progress-bar-container"><div id="memagent-ai-bar" class="progress-bar bg-green-500 h-6 rounded-full text-center text-white font-bold" style="width: 15%;">15%</div></div><p class="text-sm opacity-60 mt-1">Stays sharp and accurate, even with huge amounts of info.</p></div>
+                <div class="text-center mt-8"><button id="run-test-btn" class="btn bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-6 rounded-lg"><i class="fas fa-vial mr-2"></i>Run Performance Test</button></div>
+            </div>
+        </section>
+        <section class="mb-16">
+            <h2 class="text-3xl font-bold text-center mb-8">Diving Deeper: The Nitty-Gritty 🔬</h2>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="card rounded-2xl p-6 flex flex-col">
+                    <h3 class="text-xl font-bold text-center mb-4">Why RL is the MVP 🏆</h3>
+                    <p class="opacity-80 text-center mb-4 text-sm">The memory idea is cool, but training it with Reinforcement Learning is what makes it a genius. See how performance drops without it.</p>
+                    <div class="relative h-64 mt-auto">
+                        <canvas id="rlChart"></canvas>
+                    </div>
+                </div>
+                <div class="card rounded-2xl p-6 flex flex-col">
+                    <h3 class="text-xl font-bold text-center mb-4">The Need for Speed 🏎️</h3>
+                    <p class="opacity-80 text-center mb-4 text-sm">Standard AIs get crazy slow with long docs. MemAgent's time cost grows predictably, which is a huge deal.</p>
+                    <div class="relative h-64 mt-auto">
+                        <canvas id="speedChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="card rounded-2xl p-6 mt-8">
+                <div class="text-center">
+                    <i class="fas fa-universal-access text-3xl text-teal-400 mb-3"></i>
+                    <h3 class="text-xl font-bold">Not a One-Trick Pony 🦄</h3>
+                    <p class="opacity-80 max-w-2xl mx-auto">The paper shows MemAgent crushes it on all sorts of tasks, not just Q&A. It can track variables, find frequent words, and more. It learns a general *skill* of remembering, making it super versatile.</p>
+                </div>
+            </div>
+        </section>
+        <section>
+            <h2 class="text-3xl font-bold text-center mb-8">Okay, but why is this a BFD? 🤯</h2>
+            <div class="grid md:grid-cols-3 gap-6 text-center">
+                <div class="card rounded-2xl p-6"><i class="fas fa-robot text-3xl text-teal-400 mb-3"></i><h3 class="font-bold text-lg">Smarter AI Assistants</h3><p class="text-sm opacity-80">Imagine an AI that remembers every conversation you've ever had with it. #Goals</p></div>
+                <div class="card rounded-2xl p-6"><i class="fas fa-user-md text-3xl text-red-400 mb-3"></i><h3 class="font-bold text-lg">Medical Breakthroughs</h3><p class="text-sm opacity-80">AIs could analyze massive medical research papers to find cures faster.</p></div>
+                <div class="card rounded-2xl p-6"><i class="fas fa-gavel text-3xl text-yellow-400 mb-3"></i><h3 class="font-bold text-lg">Legal Eagles</h3><p class="text-sm opacity-80">Lawyers could use it to find that one tiny detail in thousands of pages of case files instantly.</p></div>
+            </div>
+        </section>
+        <footer class="text-center mt-16 opacity-60"><p>Based on "MemAgent: Reshaping Long-Context LLM with Multi-Conv RL based Memory Agent"</p></footer>
+    </div>
+
+
+    <!-- Modals -->
+    <div id="simModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('simModal')">&times;</span>
+            <h3 class="text-2xl font-bold mb-4 text-center">MemAgent Memory Sim 🧠</h3>
+            <p class="opacity-80 mb-6 text-center">You're Batman. Analyze the case file to find the culprit.</p>
+            <div class="bg-gray-800 p-4 rounded-lg mb-4 text-sm">
+                <p><strong>GCPD Case File #789:</strong> A series of high-profile thefts have occurred. The first target was the Gotham Museum of Art, where several priceless paintings were stolen. The security guard on duty, a Mr. Henderson, reported seeing a large flock of birds causing a distraction moments before the theft. This points towards <span class="text-yellow-400">The Penguin</span>. The second incident was at Gotham National Bank, where exactly half the money in the vault was taken. The manager stated the thief left a scarred coin. This is a clear M.O. for <span class="text-purple-400">Two-Face</span>. The investigation has been complex, with conflicting evidence. Forensics have analyzed dust particles from both scenes with inconclusive results. Appended to the very end of this long report is a small note from a street informant: "Heard a rumor... the only thing connecting these crimes is a single playing card left at each scene... a <span class="text-green-400 font-bold">Joker</span> card."</p>
+            </div>
+            <div class="mb-4">
+                <label for="sim-question" class="block font-semibold mb-2">Your Question:</label>
+                <input type="text" id="sim-question" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-2" value="Who is the prime suspect behind the thefts?">
+            </div>
+            <div class="text-center mb-6">
+                 <button onclick="runSimulation()" class="btn bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-5 rounded-lg"><i class="fas fa-search mr-2"></i>Find Answer</button>
+            </div>
+            <div id="sim-results" class="grid grid-cols-1 md:grid-cols-2 gap-4" style="display: none;">
+                <div>
+                    <h4 class="font-bold text-center mb-2">Standard AI's Attempt</h4>
+                    <div id="standard-ai-result" class="card p-4 h-24 text-center flex items-center justify-center"><p class="opacity-70">Thinking...</p></div>
+                </div>
+                 <div>
+                    <h4 class="font-bold text-center mb-2">MemAgent's Answer</h4>
+                    <div id="memagent-result" class="card p-4 h-24 text-center flex items-center justify-center"><p class="opacity-70">Thinking...</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="caseStudyModal" class="modal">
+        <div class="modal-content max-w-3xl">
+            <span class="close-btn" onclick="closeModal('caseStudyModal')">&times;</span>
+            <h3 class="text-2xl font-bold mb-4 text-center">Batcomputer Case File Analysis 🦇</h3>
+            <p class="opacity-80 mb-2 text-center">Analyzing field reports to locate the Penguin's safehouse.</p>
+            <div class="mb-4">
+                <p class="font-semibold">Query:</p>
+                <p class="text-indigo-300">Where is the Penguin's current safehouse according to informant reports?</p>
+            </div>
+            <div id="case-study-step-container"></div>
+            <div class="flex justify-center items-center mt-6 gap-4">
+                <button id="prev-step-btn" onclick="changeStep(-1)" class="btn bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg" disabled><i class="fas fa-arrow-left"></i> Prev</button>
+                <p class="font-semibold">Intel Step <span id="current-step">1</span> / <span id="total-steps">4</span></p>
+                <button id="next-step-btn" onclick="changeStep(1)" class="btn bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded-lg">Next <i class="fas fa-arrow-right"></i></button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // --- Theme Toggle Logic ---
+        const themeToggle = document.getElementById('theme-toggle');
+        const docElement = document.documentElement;
+
+        // Set initial theme based on localStorage or system preference
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            docElement.classList.add('dark');
+            themeToggle.checked = true;
+        } else {
+            docElement.classList.remove('dark');
+            themeToggle.checked = false;
+        }
+
+        themeToggle.addEventListener('change', () => {
+            if (themeToggle.checked) {
+                docElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                docElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            }
+        });
+
+
+        // --- Performance Test Logic ---
+        const runTestBtn = document.getElementById('run-test-btn');
+        const standardAiBar = document.getElementById('standard-ai-bar');
+        const memagentAiBar = document.getElementById('memagent-ai-bar');
+        runTestBtn.addEventListener('click', () => {
+            standardAiBar.style.width = '15%'; standardAiBar.textContent = '15%';
+            memagentAiBar.style.width = '15%'; memagentAiBar.textContent = '15%';
+            runTestBtn.disabled = true; runTestBtn.textContent = 'Running...';
+            setTimeout(() => {
+                standardAiBar.style.width = '11%'; standardAiBar.textContent = '11%';
+                memagentAiBar.style.width = '95%'; memagentAiBar.textContent = '95%';
+                runTestBtn.disabled = false; runTestBtn.innerHTML = '<i class="fas fa-vial mr-2"></i>Rerun Performance Test';
+            }, 500);
+        });
+
+        // --- Modal Logic ---
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+            if (modalId === 'caseStudyModal') renderStep(currentStep);
+        }
+        function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
+        window.onclick = function(event) {
+            document.querySelectorAll('.modal').forEach(m => { if (event.target == m) m.style.display = "none"; });
+        }
+        
+        // --- Basic Simulation Logic ---
+        function runSimulation() {
+            const resultsDiv = document.getElementById('sim-results');
+            const standardResultDiv = document.getElementById('standard-ai-result');
+            const memagentResultDiv = document.getElementById('memagent-result');
+            resultsDiv.style.display = 'grid';
+            standardResultDiv.innerHTML = '<p class="opacity-70 animate-pulse">Scanning...</p>';
+            memagentResultDiv.innerHTML = '<p class="opacity-70 animate-pulse">Scanning...</p>';
+            setTimeout(() => {
+                standardResultDiv.innerHTML = '<p class="text-red-400">INSUFFICIENT DATA. Suspects could be The Penguin or Two-Face. 💀</p>';
+            }, 2000);
+            setTimeout(() => {
+                memagentResultDiv.innerHTML = '<p class="text-green-400">I found the connection. The informant\'s note mentions a Joker card. The prime suspect is <span class="text-green-400 font-bold">The Joker</span>.</p>';
+            }, 1500);
+        }
+
+        // --- Case Study Logic ---
+        const caseStudySteps = [
+            { title: "Intel Chunk 1: Distractor Info", chunk: "<strong>GCPD Report #451:</strong><br>Report on recent Joker activity in the Diamond District. No mention of Penguin.", memory: "System notes 'Joker' activity but flags it as irrelevant to the current query about the Penguin.<br><br><strong>Memory State 1:</strong><br>• Query: Penguin's safehouse location." },
+            { title: "Intel Chunk 2: First Clue", chunk: "<strong>Officer Report #882:</strong><br>...subject matching Oswald Cobblepot's description seen frequently entering and exiting the old fish cannery on the East Docks.", memory: "New, relevant intel. System updates memory to include the Penguin's presence at the fish cannery.<br><br><strong>Memory State 2:</strong><br>• Query: Penguin's safehouse location.<br>• Sighting: Penguin at fish cannery." },
+            { title: "Intel Chunk 3: Corroborating Evidence", chunk: "<strong>Informant 'Silky' Report #1138:</strong><br>...unusual shipment of custom umbrellas and formal wear delivered to 'The Iceberg Lounge' nightclub.", memory: "The system connects 'umbrellas' to the Penguin and notes the specific location. This is high-value information.<br><br><strong>Memory State 3:</strong><br>• Query: Penguin's safehouse.<br>• Sighting: Penguin at fish cannery.<br>• Location of Interest: The Iceberg Lounge (received umbrellas)." },
+            { title: "Final Analysis", chunk: "All intel processed. Synthesizing final conclusion.", memory: "The system cross-references the location 'The Iceberg Lounge' with the general sighting at the 'fish cannery' to form a high-confidence conclusion.<br><br><strong>Final Conclusion:</strong><br><span class='text-green-400 font-bold'>The Penguin's safehouse is The Iceberg Lounge.</span>" }
+        ];
+        let currentStep = 1;
+        const stepContainer = document.getElementById('case-study-step-container');
+        const currentStepEl = document.getElementById('current-step');
+        const totalStepsEl = document.getElementById('total-steps');
+        const prevBtn = document.getElementById('prev-step-btn');
+        const nextBtn = document.getElementById('next-step-btn');
+        totalStepsEl.textContent = caseStudySteps.length;
+        function renderStep(step) {
+            const data = caseStudySteps[step - 1];
+            stepContainer.innerHTML = `<div class="case-study-content p-4 rounded-lg"><h4 class="font-bold text-lg mb-2">${data.title}</h4><p class="text-sm opacity-80 mb-3"><i class="fas fa-file-alt mr-2 opacity-60"></i>${data.chunk}</p><hr class="border-gray-700 my-3"><p class="text-sm opacity-90"><i class="fas fa-brain mr-2 text-pink-500"></i>${data.memory}</p></div>`;
+            currentStepEl.textContent = step;
+            prevBtn.disabled = step === 1;
+            nextBtn.disabled = step === caseStudySteps.length;
+        }
+        function changeStep(direction) {
+            currentStep = Math.max(1, Math.min(caseStudySteps.length, currentStep + direction));
+            renderStep(currentStep);
+        }
+
+        // --- Chart Logic ---
+        function initCharts() {
+            const chartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: '#F3F4F6' } } },
+                scales: {
+                    y: { ticks: { color: '#9CA3AF' }, grid: { color: '#374151' } },
+                    x: { ticks: { color: '#9CA3AF' }, grid: { color: '#374151' } }
+                }
+            };
+            
+            const lightChartOptions = {
+                 responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: '#111827' } } },
+                scales: {
+                    y: { ticks: { color: '#6B7280' }, grid: { color: '#E5E7EB' } },
+                    x: { ticks: { color: '#6B7280' }, grid: { color: '#E5E7EB' } }
+                }
+            }
+            
+            const rlChart = new Chart(document.getElementById('rlChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Accuracy on 224K Tokens'],
+                    datasets: [
+                        { label: 'With RL Training', data: [81.25], backgroundColor: '#22C55E', borderWidth: 1 },
+                        { label: 'Without RL Training', data: [58.59], backgroundColor: '#F43F5E', borderWidth: 1 }
+                    ]
+                },
+                options: document.documentElement.classList.contains('dark') ? chartOptions : lightChartOptions
+            });
+
+            const speedChart = new Chart(document.getElementById('speedChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: ['8K', '128K', '512K', '1M', '4M'],
+                    datasets: [
+                        { label: 'Standard AI (Quadratic)', data: [0.01, 0.2, 3.2, 12.8, 204.8], borderColor: '#F43F5E', tension: 0.1, fill: false },
+                        { label: 'MemAgent (Linear)', data: [0.01, 0.16, 0.64, 1.28, 5.12], borderColor: '#3B82F6', tension: 0.1, fill: false }
+                    ]
+                },
+                options: document.documentElement.classList.contains('dark') ? {...chartOptions, plugins: { ...chartOptions.plugins, title: { display: true, text: 'Compute Cost Growth (Relative FLOPs)', color: '#F3F4F6' } } } : {...lightChartOptions, plugins: { ...lightChartOptions.plugins, title: { display: true, text: 'Compute Cost Growth (Relative FLOPs)', color: '#111827' } } }
+            });
+
+            // Update chart colors on theme change
+            themeToggle.addEventListener('change', () => {
+                const isDark = document.documentElement.classList.contains('dark');
+                rlChart.options = isDark ? chartOptions : lightChartOptions;
+                speedChart.options = isDark ? {...chartOptions, plugins: { ...chartOptions.plugins, title: { display: true, text: 'Compute Cost Growth (Relative FLOPs)', color: '#F3F4F6' } } } : {...lightChartOptions, plugins: { ...lightChartOptions.plugins, title: { display: true, text: 'Compute Cost Growth (Relative FLOPs)', color: '#111827' } } };
+                rlChart.update();
+                speedChart.update();
+            });
+        }
+        
+        window.onload = initCharts;
+    </script>
+
+</body>
+</html>
