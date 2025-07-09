@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Future of Work: What Do We Want from AI?</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #111827;
+            --text-muted-color: #6B7280;
+            --card-bg: #F9FAFB;
+            --card-border: #E5E7EB;
+            --highlight-color: #DB2777;
+            --expert-card-bg: #ffffff;
+            --sub-card-bg: #F9FAFB;
+        }
+
+        html.dark {
+            --bg-color: #111827;
+            --text-color: #F3F4F6;
+            --text-muted-color: #9CA3AF;
+            --card-bg: #1F2937;
+            --card-border: #374151;
+            --highlight-color: #F472B6;
+            --expert-card-bg: #1F2937;
+            --sub-card-bg: #111827;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .hero-gradient {
+            background: linear-gradient(145deg, #0369A1 0%, #4F46E5 50%, #9333EA 100%);
+        }
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .btn {
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+        }
+        .highlight-text {
+            color: var(--highlight-color);
+            font-weight: 700;
+        }
+        .zone-card {
+            border-radius: 1rem;
+            padding: 1.5rem;
+            text-align: center;
+            border: 2px solid;
+        }
+        .zone-green { border-color: #22C55E; background-color: rgba(34, 197, 94, 0.1); }
+        .zone-red { border-color: #EF4444; background-color: rgba(239, 68, 68, 0.1); }
+        .zone-yellow { border-color: #EAB308; background-color: rgba(234, 179, 8, 0.1); }
+        .zone-gray { border-color: #6B7280; background-color: rgba(107, 114, 128, 0.1); }
+        
+        /* Toggle Switch Styles */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 28px;
+        }
+        html.dark .slider {
+            background-color: #374151;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #4F46E5;
+        }
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
+        /* Deep Dive Styles */
+        .expert-card {
+            background-color: var(--expert-card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 1rem;
+            padding: 0;
+            overflow: hidden;
+        }
+        .sub-card {
+            background-color: var(--sub-card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            height: 100%;
+            border-top-width: 4px;
+        }
+        details > summary {
+            cursor: pointer;
+            list-style: none;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.25rem;
+        }
+        details > summary:hover {
+            background-color: rgba(128, 128, 128, 0.05);
+        }
+        details > summary::-webkit-details-marker {
+            display: none;
+        }
+        details .content-wrapper {
+            padding: 1.5rem 2rem;
+            padding-top: 0;
+        }
+        details[open] summary .arrow {
+            transform: rotate(90deg);
+        }
+        .arrow {
+            transition: transform 0.2s ease-in-out;
+        }
+        .border-t-blue-500 { border-top-color: #3B82F6; }
+        .border-t-purple-500 { border-top-color: #9333EA; }
+        .border-t-green-500 { border-top-color: #22C55E; }
+        .border-t-yellow-500 { border-top-color: #EAB308; }
+        .border-t-pink-500 { border-top-color: #EC4899; }
+    </style>
+</head>
+<body>
+    <!-- Header with Toggles -->
+    <header class="flex justify-end items-center p-4 md:p-6 space-x-8">
+        <div class="toggle-container text-sm font-semibold">
+            <span id="toggle-label-summary">Summary</span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="mode-toggle">
+                <span class="slider"></span>
+            </label>
+            <span id="toggle-label-deep-dive" class="text-[var(--text-muted-color)]">Deep Dive</span>
+        </div>
+        <div class="toggle-container text-sm">
+            <i class="fas fa-sun text-yellow-500"></i>
+            <label class="toggle-switch">
+                <input type="checkbox" id="theme-toggle" checked>
+                <span class="slider"></span>
+            </label>
+            <i class="fas fa-moon text-blue-300"></i>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container mx-auto p-4 md:p-8 pt-0">
+        
+        <!-- Summary Content -->
+        <div id="summary-content">
+            <header class="text-center mb-12">
+                <h1 class="text-4xl md:text-6xl font-black tracking-tighter mb-2">The Future of Work with AI Agents</h1>
+                <p class="text-lg md:text-xl text-[var(--text-muted-color)]">What do we *actually* want AI to do for us?</p>
+            </header>
+
+            <section class="mb-16">
+                <div class="card rounded-2xl p-6 md:p-8 text-center">
+                    <i class="fas fa-user-robot text-4xl text-blue-400 mb-4"></i>
+                    <h2 class="text-2xl md:text-3xl font-bold mb-3">AI is coming for our jobs... or is it?</h2>
+                    <p class="text-[var(--text-muted-color)] max-w-2xl mx-auto">
+                        We hear a lot about AI taking over tasks. But has anyone stopped to ask the people actually *doing* those jobs what they want? This research from Stanford does exactly that, creating a groundbreaking framework to audit the future of work.
+                    </p>
+                </div>
+            </section>
+
+            <section class="mb-16">
+                 <div class="hero-gradient rounded-2xl p-6 md:p-10 text-center">
+                     <h2 class="text-3xl md:text-4xl font-bold mb-4 text-white">Introducing WORKBank & The Human Agency Scale</h2>
+                     <p class="text-sky-200 max-w-3xl mx-auto mb-6">
+                        The researchers built <span class="font-bold text-white">WORKBank</span>, a massive database of 844 tasks across 104 occupations. They surveyed 1,500 workers and 52 AI experts to understand two key things: what workers <span class="font-bold text-white">desire</span> from AI, and what AI is actually <span class="font-bold text-white">capable</span> of today.
+                    </p>
+                </div>
+            </section>
+
+            <section class="mb-16">
+                <h2 class="text-3xl font-bold text-center mb-8">It's Not Just "Automate or Not"</h2>
+                 <p class="text-[var(--text-muted-color)] text-center max-w-2xl mx-auto mb-8">The study introduces the <span class="highlight-text">Human Agency Scale (HAS)</span> to move beyond a simple automate/don't automate binary. It measures the ideal level of human involvement.</p>
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 text-center">
+                    <div class="card p-4"><h4 class="font-bold text-lg">H1</h4><p class="text-sm text-[var(--text-muted-color)]">AI handles it all. No human needed.</p></div>
+                    <div class="card p-4"><h4 class="font-bold text-lg">H2</h4><p class="text-sm text-[var(--text-muted-color)]">AI needs minimal human input.</p></div>
+                    <div class="card p-4 bg-pink-500/20 border-pink-500"><h4 class="font-bold text-lg">H3</h4><p class="text-sm">Equal partnership. Humans and AI collaborate.</p></div>
+                    <div class="card p-4"><h4 class="font-bold text-lg">H4</h4><p class="text-sm text-[var(--text-muted-color)]">Human drives the task, with AI assisting.</p></div>
+                    <div class="card p-4"><h4 class="font-bold text-lg">H5</h4><p class="text-sm text-[var(--text-muted-color)]">Human is essential. AI can't function without them.</p></div>
+                </div>
+                 <p class="text-center mt-6 text-[var(--text-muted-color)]">Finding: Most workers (<span class="highlight-text">45.2%</span> of occupations) prefer an <span class="highlight-text">H3 Equal Partnership</span>, showing a strong desire for collaboration, not just replacement.</p>
+            </section>
+
+            <section class="mb-16">
+                <h2 class="text-3xl font-bold text-center mb-8">The Desire vs. Capability Landscape</h2>
+                <p class="text-[var(--text-muted-color)] text-center max-w-2xl mx-auto mb-8">By plotting what workers <span class="highlight-text">want</span> against what AI <span class="highlight-text">can do</span>, the study identifies four critical zones for the future of work.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="zone-card zone-green">
+                        <i class="fas fa-lightbulb text-4xl mb-3 text-green-400"></i>
+                        <h3 class="font-bold text-xl mb-2">Automation "Green Light" Zone</h3>
+                        <p class="text-sm text-[var(--text-muted-color)]">High desire, high capability. These are prime tasks for AI automation that workers would welcome. (e.g., scheduling appointments, checking data for quality control).</p>
+                    </div>
+                    <div class="zone-card zone-red">
+                         <i class="fas fa-hand-paper text-4xl mb-3 text-red-400"></i>
+                        <h3 class="font-bold text-xl mb-2">Automation "Red Light" Zone</h3>
+                        <p class="text-sm text-[var(--text-muted-color)]">High capability, low desire. AI can do these tasks, but workers don't want it to. Deploying AI here could cause friction. (e.g., writing creative stories, contacting vendors).</p>
+                    </div>
+                    <div class="zone-card zone-yellow">
+                        <i class="fas fa-flask text-4xl mb-3 text-yellow-400"></i>
+                        <h3 class="font-bold text-xl mb-2">R&D Opportunity Zone</h3>
+                        <p class="text-sm text-[var(--text-muted-color)]">High desire, low capability. Workers want help here, but the tech isn't ready yet. A huge opportunity for AI research. (e.g., preparing budgets, designing game prototypes).</p>
+                    </div>
+                    <div class="zone-card zone-gray">
+                        <i class="fas fa-bed text-4xl mb-3 text-gray-400"></i>
+                        <h3 class="font-bold text-xl mb-2">Low Priority Zone</h3>
+                        <p class="text-sm text-[var(--text-muted-color)]">Low desire, low capability. Neither workers nor the technology are ready for these tasks. (e.g., observing pictures, tracing lost baggage).</p>
+                    </div>
+                </div>
+            </section>
+            
+            <section>
+                <h2 class="text-3xl font-bold text-center mb-8">What Does This All Mean?</h2>
+                <div class="space-y-6">
+                    <div class="card p-6">
+                        <h3 class="font-bold text-lg mb-2"><i class="fas fa-map-signs text-pink-400 mr-2"></i>There's a Mismatch in Investment</h3>
+                        <p class="text-[var(--text-muted-color)]">A shocking <span class="highlight-text">41%</span> of Y Combinator company-task mappings are in the "Red Light" or "Low Priority" zones. We're building AI for things people don't want automated, while ignoring things they do.</p>
+                    </div>
+                    <div class="card p-6">
+                        <h3 class="font-bold text-lg mb-2"><i class="fas fa-users text-teal-400 mr-2"></i>The Future is Interpersonal</h3>
+                        <p class="text-[var(--text-muted-color)]">As AI handles more data analysis, the most valuable human skills are shifting. <span class="highlight-text">Organizing, planning, training, and communicating</span> are becoming the new high-value competencies where human agency is most desired.</p>
+                    </div>
+                     <div class="card p-6">
+                        <h3 class="font-bold text-lg mb-2"><i class="fas fa-handshake-angle text-blue-400 mr-2"></i>Workers Want Partnership, Not Replacement</h3>
+                        <p class="text-[var(--text-muted-color)]">The dominant desire is for AI to be a collaborator (H3), freeing up humans to focus on high-value work, not replacing them entirely. This is a crucial insight for responsible AI development.</p>
+                    </div>
+                </div>
+            </section>
+
+            <footer class="text-center mt-16 text-[var(--text-muted-color)]">
+                <p>Based on the paper "Future of Work with AI Agents" by Shao, Y., et al., Stanford University.</p>
+            </footer>
+        </div>
+
+        <!-- Deep Dive Content -->
+        <div id="deep-dive-content" style="display: none;" class="space-y-8">
+            <header class="text-center mb-8">
+                <h1 class="text-3xl md:text-4xl font-bold tracking-tight mb-2">Future of Work: A Technical Deep Dive</h1>
+            </header>
+
+            <details class="expert-card" open>
+                <summary>
+                    <span class="flex items-center"><i class="fas fa-database mr-4 text-blue-500"></i>The Auditing Framework & WORKBank</span>
+                    <i class="fas fa-chevron-right arrow"></i>
+                </summary>
+                <div class="content-wrapper border-t border-[var(--card-border)] pt-6">
+                    <p class="text-[var(--text-muted-color)] mb-4">To understand the potential impact of AI agents, the study created a novel auditing framework. This framework moves beyond simple automation metrics to capture nuanced worker desires and align them with current technological capabilities.</p>
+                    <img src="./images/framework_overview.jpg" alt="Framework Overview Diagram" class="w-full my-4 border rounded-lg border-[var(--card-border)]">
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="sub-card border-t-blue-500">
+                            <h3 class="text-xl font-semibold mb-2">Task-Level Auditing</h3>
+                            <p class="text-sm text-[var(--text-muted-color)]">The audit focuses on complex, multi-step tasks from the U.S. Dept. of Labor's O*NET database, reflecting real-world job responsibilities rather than isolated actions.</p>
+                        </div>
+                        <div class="sub-card border-t-blue-500">
+                            <h3 class="text-xl font-semibold mb-2">WORKBank Database</h3>
+                            <p class="text-sm text-[var(--text-muted-color)]">The framework was used to build WORKBank, a database covering <span class="highlight-text">844 tasks</span> across <span class="highlight-text">104 occupations</span>, with input from 1,500 domain workers and 52 AI experts.</p>
+                        </div>
+                    </div>
+                </div>
+            </details>
+
+            <details class="expert-card" open>
+                <summary>
+                    <span class="flex items-center"><i class="fas fa-handshake-angle mr-4 text-pink-500"></i>The Human Agency Scale (HAS)</span>
+                    <i class="fas fa-chevron-right arrow"></i>
+                </summary>
+                <div class="content-wrapper border-t border-[var(--card-border)] pt-6">
+                    <p class="text-[var(--text-muted-color)] mb-6">A key innovation is the Human Agency Scale (HAS), a 5-level scale that quantifies the desired level of human involvement, providing a shared language for discussing automation vs. augmentation.</p>
+                    <img src="./images/human_agency_scale.jpg" alt="Human Agency Scale Diagram" class="w-full my-4 border rounded-lg border-[var(--card-border)]">
+                    <p class="text-[var(--text-muted-color)]">The study found that an <span class="highlight-text">"Equal Partnership" (H3)</span> is the most desired level of collaboration for 45.2% of occupations, indicating a strong preference for augmentation over full automation.</p>
+                </div>
+            </details>
+
+             <details class="expert-card" open>
+                <summary>
+                    <span class="flex items-center"><i class="fas fa-map-marked-alt mr-4 text-yellow-500"></i>The Desire-Capability Landscape</span>
+                    <i class="fas fa-chevron-right arrow"></i>
+                </summary>
+                <div class="content-wrapper border-t border-[var(--card-border)] pt-6">
+                     <p class="text-[var(--text-muted-color)] mb-4">By plotting worker desire against expert-rated AI capability, the framework identifies four distinct zones that can guide R&D and investment.</p>
+                     <img src="./images/desire_capability_landscape.jpg" alt="Desire-Capability Landscape" class="w-full my-4 border rounded-lg border-[var(--card-border)]">
+                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        <div class="sub-card border-t-green-500"><h3 class="font-bold">Green Light Zone</h3><p class="text-sm text-[var(--text-muted-color)]">High desire, high capability. Prime targets for deployment.</p></div>
+                        <div class="sub-card border-t-red-500"><h3 class="font-bold">Red Light Zone</h3><p class="text-sm text-[var(--text-muted-color)]">High capability, low desire. Deploy with caution.</p></div>
+                        <div class="sub-card border-t-yellow-500"><h3 class="font-bold">R&D Opportunity Zone</h3><p class="text-sm text-[var(--text-muted-color)]">High desire, low capability. Key areas for future research.</p></div>
+                        <div class="sub-card border-t-gray-500"><h3 class="font-bold">Low Priority Zone</h3><p class="text-sm text-[var(--text-muted-color)]">Low desire, low capability. Not a current focus.</p></div>
+                     </div>
+                </div>
+            </details>
+            
+            <details class="expert-card" open>
+                 <summary>
+                    <span class="flex items-center"><i class="fas fa-chart-bar mr-4 text-green-500"></i>Key Findings & Implications</span>
+                    <i class="fas fa-chevron-right arrow"></i>
+                </summary>
+                <div class="content-wrapper border-t border-[var(--card-border)] pt-6">
+                    <p class="text-[var(--text-muted-color)] mb-4">The analysis reveals critical insights for the future of work:</p>
+                    <img src="./images/skill_shift_diagram.jpg" alt="Skill Shift Diagram" class="w-full my-4 border rounded-lg border-[var(--card-border)]">
+                    <ul class="space-y-4">
+                        <li class="sub-card border-t-pink-500">
+                            <h3 class="font-semibold">Investment Mismatch</h3>
+                            <p class="text-sm text-[var(--text-muted-color)]">Current AI startup investment (proxied by YC companies) is misaligned with worker desires. <span class="highlight-text">41% of company-task mappings fall into the "Red Light" or "Low Priority" zones</span>, indicating a disconnect between what is being built and what is wanted.</p>
+                        </li>
+                        <li class="sub-card border-t-purple-500">
+                            <h3 class="font-semibold">Shift in Core Skills</h3>
+                            <p class="text-sm text-[var(--text-muted-color)]">As AI takes on more analytical tasks, the value of human skills is shifting. <span class="highlight-text">Interpersonal skills</span> (like training, communicating, organizing) are becoming more critical and are associated with higher levels of desired human agency, even if they aren't the highest-paid skills today.</p>
+                        </li>
+                    </ul>
+                </div>
+            </details>
+
+            <footer class="text-center mt-8 text-[var(--text-muted-color)]">
+                <p>Technical summary based on "Future of Work with AI Agents" by Shao, Y., et al., Stanford University.</p>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Theme Toggle Logic ---
+            const themeToggle = document.getElementById('theme-toggle');
+            if(themeToggle) {
+                const docElement = document.documentElement;
+                if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    docElement.classList.add('dark');
+                    themeToggle.checked = true;
+                } else {
+                    docElement.classList.remove('dark');
+                    themeToggle.checked = false;
+                }
+                themeToggle.addEventListener('change', () => {
+                    if (themeToggle.checked) {
+                        docElement.classList.add('dark');
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        docElement.classList.remove('dark');
+                        localStorage.setItem('theme', 'light');
+                    }
+                });
+            }
+
+            // --- Mode Toggle Logic ---
+            const modeToggle = document.getElementById('mode-toggle');
+            if(modeToggle) {
+                const summaryContent = document.getElementById('summary-content');
+                const deepDiveContent = document.getElementById('deep-dive-content');
+                const labelSummary = document.getElementById('toggle-label-summary');
+                const labelDeepDive = document.getElementById('toggle-label-deep-dive');
+
+                modeToggle.addEventListener('change', () => {
+                    if (modeToggle.checked) {
+                        summaryContent.style.display = 'none';
+                        deepDiveContent.style.display = 'block';
+                        labelSummary.classList.add('text-[var(--text-muted-color)]');
+                        labelSummary.classList.remove('text-[var(--text-color)]');
+                        labelDeepDive.classList.remove('text-[var(--text-muted-color)]');
+                        labelDeepDive.classList.add('text-[var(--text-color)]');
+                    } else {
+                        summaryContent.style.display = 'block';
+                        deepDiveContent.style.display = 'none';
+                        labelSummary.classList.remove('text-[var(--text-muted-color)]');
+                        labelSummary.classList.add('text-[var(--text-color)]');
+                        labelDeepDive.classList.add('text-[var(--text-muted-color)]');
+                        labelDeepDive.classList.remove('text-[var(--text-color)]');
+                    }
+                });
+            }
+        });
+    </script>
+
+</body>
+</html>
