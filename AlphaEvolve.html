@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AlphaEvolve: The AI That Invents</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #111827;
+            --text-muted-color: #6B7280;
+            --card-bg: #F9FAFB;
+            --card-border: #E5E7EB;
+            --highlight-color: #1D4ED8;
+            --expert-card-bg: #ffffff;
+            --expert-code-bg: #F3F4F6;
+            --sub-card-bg: #F9FAFB;
+        }
+
+        html.dark {
+            --bg-color: #111827;
+            --text-color: #F3F4F6;
+            --text-muted-color: #9CA3AF;
+            --card-bg: #1F2937;
+            --card-border: #374151;
+            --highlight-color: #6EE7B7;
+            --expert-card-bg: #1F2937;
+            --expert-code-bg: #111827;
+            --sub-card-bg: #111827;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .hero-gradient {
+            background: linear-gradient(145deg, #065F46 0%, #1D4ED8 50%, #7C3AED 100%);
+        }
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .btn {
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+        }
+        .highlight-text {
+            color: var(--highlight-color);
+            font-weight: 700;
+        }
+        .discovery-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .discovery-card i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: -webkit-linear-gradient(var(--highlight-color), #3B82F6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        /* Interactive Loop Styles */
+        .loop-step {
+            opacity: 0.3;
+            transition: opacity 0.5s ease;
+            position: relative;
+        }
+        .loop-step.active {
+            opacity: 1;
+        }
+        .loop-arrow {
+            position: absolute;
+            font-size: 2rem;
+            color: var(--highlight-color);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .loop-arrow.active {
+            opacity: 1;
+        }
+        /* Toggle Switch Styles */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #9CA3AF;
+            transition: .4s;
+            border-radius: 28px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #4338CA;
+        }
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+        /* Deep Dive Styles */
+        .expert-card {
+            background-color: var(--expert-card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 1rem;
+            padding: 0;
+            overflow: hidden;
+        }
+        .sub-card {
+            background-color: var(--sub-card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            height: 100%;
+            border-top-width: 4px;
+        }
+        .expert-code {
+            background-color: var(--expert-code-bg);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 0.875rem;
+            border: 1px solid var(--card-border);
+        }
+         .expert-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+        .expert-table th, .expert-table td {
+            border: 1px solid var(--card-border);
+            padding: 0.5rem;
+            text-align: center;
+        }
+        .expert-table th {
+            background-color: var(--card-bg);
+        }
+        details > summary {
+            cursor: pointer;
+            list-style: none;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.25rem;
+        }
+        details > summary:hover {
+            background-color: rgba(128, 128, 128, 0.05);
+        }
+        details > summary::-webkit-details-marker {
+            display: none;
+        }
+        details .content-wrapper {
+            padding: 1.5rem 2rem;
+            padding-top: 0;
+        }
+        details[open] summary .arrow {
+            transform: rotate(90deg);
+        }
+        .arrow {
+            transition: transform 0.2s ease-in-out;
+        }
+        .border-t-blue-500 { border-top-color: #3B82F6; }
+        .border-t-purple-500 { border-top-color: #A855F7; }
+        .border-t-green-500 { border-top-color: #22C55E; }
+        .border-t-yellow-500 { border-top-color: #EAB308; }
+        .border-t-red-500 { border-top-color: #EF4444; }
+    </style>
+</head>
+<body>
+    <!-- Header with Toggles -->
+    <header class="flex justify-end items-center p-4 md:p-6 space-x-8">
+        <div class="toggle-container text-sm font-semibold">
+            <span id="toggle-label-summary">Summary</span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="mode-toggle">
+                <span class="slider"></span>
+            </label>
+            <span id="toggle-label-deep-dive" class="text-[var(--text-muted-color)]">Deep Dive</span>
+        </div>
+        <div class="toggle-container text-sm">
+            <i class="fas fa-sun text-yellow-500"></i>
+            <label class="toggle-switch">
+                <input type="checkbox" id="theme-toggle" checked>
+                <span class="slider"></span>
+            </label>
+            <i class="fas fa-moon text-blue-300"></i>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container mx-auto p-4 md:p-8 pt-0">
+        
+        <!-- Summary Content -->
+        <div id="summary-content">
+            <header class="text-center mb-12">
+                <h1 class="text-4xl md:text-6xl font-black tracking-tighter mb-2">AlphaEvolve 🧬🤖</h1>
+                <p class="text-lg md:text-xl text-[var(--text-muted-color)]">The AI That Teaches Itself to Invent</p>
+            </header>
+
+            <section class="mb-16">
+                <div class="card rounded-2xl p-6 md:p-8 text-center">
+                    <i class="fas fa-lightbulb-slash text-4xl text-red-500 mb-4"></i>
+                    <h2 class="text-2xl md:text-3xl font-bold mb-3">Why is inventing new algorithms so hard?</h2>
+                    <p class="text-[var(--text-muted-color)] max-w-2xl mx-auto">
+                        Discovering a better way to do something—whether it's in math, science, or computing—takes a ton of time, genius-level ideas, and a lot of trial and error. It's a slow process that relies on human creativity. What if we could automate it?
+                    </p>
+                </div>
+            </section>
+
+            <section class="mb-16">
+                 <div class="hero-gradient rounded-2xl p-6 md:p-10 text-center">
+                     <h2 class="text-3xl md:text-4xl font-bold mb-4 text-white">Enter AlphaEvolve: Natural Selection for Code</h2>
+                     <p class="text-green-200 max-w-3xl mx-auto mb-6">
+                        AlphaEvolve is a new kind of AI agent that acts like an <span class="font-bold text-white">evolutionary engine</span>. It takes a piece of code and continuously tries to improve it, generation after generation. Think of it as a colony of AI programmers, all competing to write the best possible version of an algorithm.
+                    </p>
+                </div>
+            </section>
+
+            <section class="mb-16">
+                <h2 class="text-3xl font-bold text-center mb-8">The Evolutionary Loop 🔁</h2>
+                <div class="card rounded-2xl p-6 md:p-8">
+                    <div class="relative grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 items-center">
+                        <div id="step-1" class="loop-step text-center"><i class="fas fa-database text-5xl mb-3 text-purple-400"></i><h3 class="text-xl font-bold">1. Sample</h3><p class="text-sm text-[var(--text-muted-color)]">Pick a few of the best-performing programs from the database.</p></div>
+                        <div class="loop-arrow hidden lg:block" style="left: 22%; top: 40%;"><i class="fas fa-arrow-right"></i></div>
+                        <div id="step-2" class="loop-step text-center"><i class="fas fa-wand-magic-sparkles text-5xl mb-3 text-blue-400"></i><h3 class="text-xl font-bold">2. Mutate</h3><p class="text-sm text-[var(--text-muted-color)]">An LLM suggests creative changes to improve the code.</p></div>
+                        <div class="loop-arrow hidden lg:block" style="left: 47%; top: 40%;"><i class="fas fa-arrow-right"></i></div>
+                        <div id="step-3" class="loop-step text-center"><i class="fas fa-clipboard-check text-5xl mb-3 text-green-400"></i><h3 class="text-xl font-bold">3. Evaluate</h3><p class="text-sm text-[var(--text-muted-color)]">The new program is tested and scored on its performance.</p></div>
+                        <div class="loop-arrow hidden lg:block" style="left: 72%; top: 40%;"><i class="fas fa-arrow-right"></i></div>
+                        <div id="step-4" class="loop-step text-center"><i class="fas fa-trophy text-5xl mb-3 text-yellow-400"></i><h3 class="text-xl font-bold">4. Select</h3><p class="text-sm text-[var(--text-muted-color)]">If the new program is a winner, it's added back to the database.</p></div>
+                    </div>
+                     <div class="text-center mt-10">
+                        <button id="run-loop-btn" class="bg-green-600 hover:bg-green-500 text-white font-bold py-3 px-6 rounded-lg btn"><i class="fas fa-play-circle mr-2"></i>Start Evolution</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="mb-16">
+                <h2 class="text-3xl font-bold text-center mb-8">What Has AlphaEvolve Discovered? 🤯</h2>
+                <div class="grid md:grid-cols-3 gap-6 text-center">
+                    <div class="discovery-card"><i class="fas fa-th"></i><h3 class="font-bold text-lg mb-2">Faster Matrix Multiplication</h3><p class="text-sm text-[var(--text-muted-color)]">Discovered a new, faster way to multiply 4x4 matrices, the first improvement on a famous algorithm in <span class="highlight-text">over 50 years</span>.</p></div>
+                    <div class="discovery-card"><i class="fas fa-infinity"></i><h3 class="font-bold text-lg mb-2">New Math Solutions</h3><p class="text-sm text-[var(--text-muted-color)]">Found better solutions to famous mathematical puzzles, like the "Kissing Number Problem," pushing the boundaries of what we thought was possible.</p></div>
+                    <div class="discovery-card"><i class="fas fa-server"></i><h3 class="font-bold text-lg mb-2">Upgraded Google's Tech</h3><p class="text-sm text-[var(--text-muted-color)]">Optimized critical code inside Google's data centers, hardware accelerators (TPUs), and even helped <span class="highlight-text">speed up its own training</span>.</p></div>
+                </div>
+            </section>
+            
+            <section>
+                <h2 class="text-3xl font-bold text-center mb-8">The Big Picture: AI as a Tool for Discovery</h2>
+                <div class="card rounded-2xl p-6 md:p-8 text-center">
+                    <i class="fas fa-rocket text-4xl text-purple-400 mb-4"></i>
+                    <p class="text-[var(--text-muted-color)] max-w-2xl mx-auto">
+                       AlphaEvolve shows that AI can be more than just a tool to answer questions. It can be a creative partner that actively <span class="highlight-text">accelerates scientific discovery</span>. By automating the search for better algorithms, it can help us solve some of the world's most challenging problems faster than ever before.
+                    </p>
+                </div>
+            </section>
+
+            <footer class="text-center mt-16 text-[var(--text-muted-color)]">
+                <p>Based on the paper "AlphaEvolve: A coding agent for scientific and algorithmic discovery"</p>
+            </footer>
+        </div>
+
+        <!-- Deep Dive Content -->
+        <div id="deep-dive-content" style="display: none;" class="space-y-8">
+            <header class="text-center mb-8">
+                <h1 class="text-3xl md:text-4xl font-bold tracking-tight mb-2">AlphaEvolve: A Technical Deep Dive</h1>
+            </header>
+
+            <details class="expert-card" open>
+                <summary>
+                    <span class="flex items-center"><i class="fas fa-cogs mr-4 text-blue-500"></i>System Architecture</span>
+                    <i class="fas fa-chevron-right arrow"></i>
+                </summary>
+                <div class="content-wrapper border-t border-[var(--card-border)] pt-6">
+                    <p class="text-[var(--text-muted-color)] mb-4">AlphaEvolve operates as a distributed, asynchronous pipeline. The user defines the problem by providing an initial program with sections marked for evolution, along with an evaluation function to score the outputs.</p>
+                    <img src="https://placehold.co/800x450/1F2937/6EE7B7?text=AlphaEvolve+System+Diagram" alt="AlphaEvolve System Diagram" class="w-full my-4 border rounded-lg border-[var(--card-border)]">
+                    <p class="text-[var(--text-muted-color)]">The system revolves around a <span class="highlight-text">Distributed Controller Loop</span> that manages four key components: the Program Database, a Prompt Sampler, an LLM Ensemble, and an Evaluator Pool. This design maximizes throughput, allowing a massive number of ideas to be generated and tested in parallel.</p>
+                </div>
+            </details>
+
+            <details class="expert-card" open>
+                <summary>
+                    <span class="flex items-center"><i class="fas fa-dna mr-4 text-purple-500"></i>The Evolutionary Process</span>
+                    <i class="fas fa-chevron-right arrow"></i>
+                </summary>
+                <div class="content-wrapper border-t border-[var(--card-border)] pt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="sub-card border-t-blue-500">
+                        <h3 class="text-xl font-semibold mb-2 flex items-center"><i class="fas fa-file-code mr-3"></i>1. Task Specification</h3>
+                        <p class="text-sm text-[var(--text-muted-color)]">The user annotates a codebase with `# EVOLVE-BLOCK-START` and `END` comments. This tells AlphaEvolve which parts of the code are mutable. The rest of the code acts as a fixed skeleton.</p>
+                    </div>
+                    <div class="sub-card border-t-purple-500">
+                        <h3 class="text-xl font-semibold mb-2 flex items-center"><i class="fas fa-lightbulb mr-3"></i>2. Creative Generation</h3>
+                        <p class="text-sm text-[var(--text-muted-color)]">The <span class="highlight-text">Prompt Sampler</span> selects high-performing "parent" programs. An LLM ensemble (Gemini 2.0 Flash & Pro) then generates a modification, often in a precise `diff` format.</p>
+                    </div>
+                    <div class="sub-card border-t-green-500">
+                        <h3 class="text-xl font-semibold mb-2 flex items-center"><i class="fas fa-tasks mr-3"></i>3. Evaluation & Feedback</h3>
+                        <p class="text-sm text-[var(--text-muted-color)]">New programs are tested in a <span class="highlight-text">cascade</span>, filtering out faulty programs early. The system supports multi-objective optimization (e.g., for speed and correctness).</p>
+                    </div>
+                    <div class="sub-card border-t-yellow-500">
+                        <h3 class="text-xl font-semibold mb-2 flex items-center"><i class="fas fa-sitemap mr-3"></i>4. Selection with MAP-Elites</h3>
+                        <p class="text-sm text-[var(--text-muted-color)]">Successful programs are stored in a database inspired by the <span class="highlight-text">MAP-Elites</span> algorithm. This preserves a diverse set of "champions" to avoid getting stuck in local optima.</p>
+                    </div>
+                </div>
+            </details>
+
+             <details class="expert-card" open>
+                <summary>
+                    <span class="flex items-center"><i class="fas fa-trophy mr-4 text-yellow-500"></i>Landmark Discoveries</span>
+                    <i class="fas fa-chevron-right arrow"></i>
+                </summary>
+                <div class="content-wrapper border-t border-[var(--card-border)] pt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="sub-card border-t-red-500">
+                        <h3 class="text-xl font-semibold mb-2">Faster Matrix Multiplication</h3>
+                        <p class="text-sm text-[var(--text-muted-color)]">For 56 years, Strassen's algorithm for multiplying 4x4 matrices was the benchmark at 49 scalar multiplications. AlphaEvolve discovered a new, provably correct algorithm using only <span class="highlight-text">48 multiplications</span>.</p>
+                    </div>
+                    <div class="sub-card border-t-red-500">
+                        <h3 class="text-xl font-semibold mb-2">Mathematical Conjectures</h3>
+                        <p class="text-sm text-[var(--text-muted-color)]">It improved the lower bound on the <span class="highlight-text">Kissing Number Problem</span> in 11 dimensions (from 592 to 593) and set a new upper bound for the <span class="highlight-text">Minimum Overlap Problem</span> set by Erdős.</p>
+                    </div>
+                    <div class="sub-card border-t-red-500">
+                        <h3 class="text-xl font-semibold mb-2">Google Infrastructure</h3>
+                        <p class="text-sm text-[var(--text-muted-color)]">It discovered a more efficient scheduling heuristic for Google's data centers, optimized critical matrix-multiplication kernels to accelerate Gemini training by 23%, and even simplified arithmetic circuits in TPUs.</p>
+                    </div>
+                </div>
+            </details>
+            
+            <details class="expert-card" open>
+                 <summary>
+                    <span class="flex items-center"><i class="fas fa-chart-line mr-4 text-green-500"></i>Ablation Analysis</span>
+                    <i class="fas fa-chevron-right arrow"></i>
+                </summary>
+                <div class="content-wrapper border-t border-[var(--card-border)] pt-6">
+                    <p class="text-[var(--text-muted-color)] mb-4">To validate the importance of each component, the researchers ran ablation studies. The results show that the full AlphaEvolve method consistently outperforms versions where key features are disabled.</p>
+                    <img src="https://placehold.co/800x300/1F2937/6EE7B7?text=Ablation+Study+Results" alt="Ablation study results" class="w-full my-4 border rounded-lg border-[var(--card-border)]">
+                    <p class="text-[var(--text-muted-color)]">The chart demonstrates that the <span class="highlight-text">full method</span> (green line) achieves the best performance. Removing the evolutionary process ("No evolution", blue line) or the rich context in prompts ("No context", red line) significantly degrades performance, highlighting their critical role in the discovery process.</p>
+                </div>
+            </details>
+
+            <footer class="text-center mt-8 text-[var(--text-muted-color)]">
+                <p>Technical summary based on "AlphaEvolve: A coding agent for scientific and algorithmic discovery"</p>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        // --- Theme Toggle Logic ---
+        const themeToggle = document.getElementById('theme-toggle');
+        const docElement = document.documentElement;
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            docElement.classList.add('dark');
+            themeToggle.checked = true;
+        } else {
+            docElement.classList.remove('dark');
+            themeToggle.checked = false;
+        }
+        themeToggle.addEventListener('change', () => {
+            if (themeToggle.checked) {
+                docElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                docElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            }
+        });
+
+        // --- Mode Toggle Logic ---
+        const modeToggle = document.getElementById('mode-toggle');
+        const summaryContent = document.getElementById('summary-content');
+        const deepDiveContent = document.getElementById('deep-dive-content');
+        const labelSummary = document.getElementById('toggle-label-summary');
+        const labelDeepDive = document.getElementById('toggle-label-deep-dive');
+
+        modeToggle.addEventListener('change', () => {
+            if (modeToggle.checked) {
+                summaryContent.style.display = 'none';
+                deepDiveContent.style.display = 'block';
+                labelSummary.classList.add('text-[var(--text-muted-color)]');
+                labelSummary.classList.remove('text-[var(--text-color)]');
+                labelDeepDive.classList.remove('text-[var(--text-muted-color)]');
+                labelDeepDive.classList.add('text-[var(--text-color)]');
+            } else {
+                summaryContent.style.display = 'block';
+                deepDiveContent.style.display = 'none';
+                labelSummary.classList.remove('text-[var(--text-muted-color)]');
+                labelSummary.classList.add('text-[var(--text-color)]');
+                labelDeepDive.classList.add('text-[var(--text-muted-color)]');
+                labelDeepDive.classList.remove('text-[var(--text-color)]');
+            }
+        });
+
+        // --- Interactive Loop Logic ---
+        const runLoopBtn = document.getElementById('run-loop-btn');
+        const steps = [
+            document.getElementById('step-1'),
+            document.getElementById('step-2'),
+            document.getElementById('step-3'),
+            document.getElementById('step-4'),
+        ];
+        const arrows = document.querySelectorAll('.loop-arrow');
+        let currentStep = -1;
+        let loopInterval;
+
+        function runLoop() {
+            clearInterval(loopInterval);
+            
+            steps.forEach(step => {
+                step.classList.remove('active');
+                step.style.opacity = '0.3';
+            });
+            arrows.forEach(arrow => arrow.classList.remove('active'));
+            currentStep = -1;
+
+            loopInterval = setInterval(() => {
+                currentStep = (currentStep + 1) % steps.length;
+                
+                const prevArrowIndex = (currentStep + steps.length - 1) % steps.length;
+                if (arrows[prevArrowIndex]) {
+                    arrows[prevArrowIndex].classList.remove('active');
+                }
+
+                steps[currentStep].classList.add('active');
+                steps[currentStep].style.opacity = '1';
+
+                if (arrows[currentStep]) {
+                    arrows[currentStep].classList.add('active');
+                }
+
+                if (currentStep === steps.length - 1) {
+                    runLoopBtn.textContent = 'Evolve Again';
+                    clearInterval(loopInterval);
+                }
+
+            }, 1500);
+
+            runLoopBtn.textContent = 'Evolving...';
+        }
+
+        runLoopBtn.addEventListener('click', runLoop);
+        steps.forEach(step => step.style.opacity = '0.3');
+
+    </script>
+
+</body>
+</html>
