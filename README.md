@@ -31,5 +31,5 @@ Link: https://amrindersingh1.github.io/Blogs/LLaMA.html
 
 ---
 
-### How to view any blog
-Open: https://amrindersingh1.github.io/Blogs/{fileName}.html
+# All blogs
+Open: https://amrindersingh1.github.io/Blogs/index.html
