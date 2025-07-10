@@ -27,7 +27,7 @@ Link: https://amrindersingh1.github.io/Blogs/FutureOfWork.html
 ---
 
 ## 4. LLama
-Link: https://amrindersingh1.github.io/Blogs/LLama.html
+Link: https://amrindersingh1.github.io/Blogs/LLaMA.html
 
 ---
 
