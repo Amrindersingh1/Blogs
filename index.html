@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amrinder Singh - Blog</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* CSS Variables for Theming */
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: rgba(30, 41, 59, 0.5);
+            --bg-header: rgba(15, 23, 42, 0.6);
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --text-heading: #ffffff;
+            --border-color: #334155;
+            --accent-color: #38bdf8;
+            --shadow-color: rgba(56, 189, 248, 0.2);
+            --particle-color: rgba(56, 189, 248, 0.7);
+
+            /* Gradients */
+            --grad-1: linear-gradient(135deg, #0ea5e9, #6366f1);
+            --grad-2: linear-gradient(135deg, #d946ef, #ec4899);
+            --grad-3: linear-gradient(135deg, #22c55e, #84cc16);
+            --grad-4: linear-gradient(135deg, #f97316, #facc15);
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #f1f5f9;
+            --bg-secondary: rgba(255, 255, 255, 0.7);
+            --bg-header: rgba(241, 245, 249, 0.8);
+            --text-primary: #1e293b;
+            --text-secondary: #475569;
+            --text-heading: #0f172a;
+            --border-color: #e2e8f0;
+            --accent-color: #0ea5e9;
+            --shadow-color: rgba(14, 165, 233, 0.2);
+            --particle-color: rgba(14, 165, 233, 0.7);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.5;
+        }
+
+        .blog-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-top-width: 4px;
+            border-image-slice: 1;
+            border-image-source: none;
+            transition: all 0.3s ease-in-out;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .blog-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 25px var(--shadow-color);
+            border-color: transparent;
+        }
+
+        /* Applying gradients on hover */
+        .blog-card[data-gradient="1"]:hover { border-image-source: var(--grad-1); }
+        .blog-card[data-gradient="2"]:hover { border-image-source: var(--grad-2); }
+        .blog-card[data-gradient="3"]:hover { border-image-source: var(--grad-3); }
+        .blog-card[data-gradient="4"]:hover { border-image-source: var(--grad-4); }
+
+        .header {
+             background-color: var(--bg-header);
+             border-bottom: 1px solid var(--border-color);
+        }
+        
+        .text-heading { color: var(--text-heading); }
+        .text-secondary { color: var(--text-secondary); }
+        .accent-text { color: var(--accent-color); }
+        .footer {
+            background-color: var(--bg-primary);
+            border-top: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- Header -->
+    <header class="header backdrop-blur-lg sticky top-0 z-40">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#" class="text-2xl font-bold text-heading tracking-wider">Amrinder's Blog</a>
+            <button id="theme-toggle" class="p-2 rounded-full hover:bg-slate-500/20 transition-colors duration-300">
+                <i id="theme-icon" data-lucide="sun" class="text-heading"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-16 md:py-24">
+        <div class="text-center mb-16">
+            <h1 class="text-4xl md:text-5xl font-bold text-heading">Writings & Explorations</h1>
+            <p class="mt-4 text-lg text-secondary max-w-3xl mx-auto">A collection of articles on AI, Machine Learning, and Software Engineering. The content is automatically updated from my GitHub repository.</p>
+        </div>
+
+        <!-- Blog posts will be injected here -->
+        <div id="blog-posts-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Loading Skeletons -->
+            <div class="blog-card rounded-lg p-6 animate-pulse">
+                <div class="h-6 bg-slate-700/40 rounded w-3/4 mb-4"></div>
+                <div class="h-4 bg-slate-700/40 rounded w-full mb-2"></div>
+                <div class="h-4 bg-slate-700/40 rounded w-5/6"></div>
+                <div class="h-5 bg-slate-600/40 rounded w-1/3 mt-6"></div>
+            </div>
+            <div class="blog-card rounded-lg p-6 animate-pulse hidden md:block">
+                <div class="h-6 bg-slate-700/40 rounded w-3/4 mb-4"></div>
+                <div class="h-4 bg-slate-700/40 rounded w-full mb-2"></div>
+                <div class="h-4 bg-slate-700/40 rounded w-5/6"></div>
+                <div class="h-5 bg-slate-600/40 rounded w-1/3 mt-6"></div>
+            </div>
+            <div class="blog-card rounded-lg p-6 animate-pulse hidden lg:block">
+                <div class="h-6 bg-slate-700/40 rounded w-3/4 mb-4"></div>
+                <div class="h-4 bg-slate-700/40 rounded w-full mb-2"></div>
+                <div class="h-4 bg-slate-700/40 rounded w-5/6"></div>
+                <div class="h-5 bg-slate-600/40 rounded w-1/3 mt-6"></div>
+            </div>
+        </div>
+
+        <div id="error-message" class="hidden text-center text-red-400 mt-10">
+            <h2 class="text-2xl font-bold">Could not load posts</h2>
+            <p>There was an issue fetching the blog posts. Please try again later.</p>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer mt-16">
+        <div class="container mx-auto px-6 py-8 text-center text-secondary">
+            <p>&copy; <span id="year"></span> Amrinder Singh. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+        
+        // --- Dynamic Year in Footer ---
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // --- Theme Toggling Logic ---
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        const htmlEl = document.documentElement;
+
+        // Function to set theme
+        function setTheme(theme) {
+            htmlEl.setAttribute('data-theme', theme);
+            if (theme === 'light') {
+                themeIcon.setAttribute('data-lucide', 'moon');
+            } else {
+                themeIcon.setAttribute('data-lucide', 'sun');
+            }
+            lucide.createIcons(); // Re-render icon
+            localStorage.setItem('theme', theme);
+        }
+
+        // Check for saved theme in localStorage or use system preference
+        const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+        setTheme(savedTheme);
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = htmlEl.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            setTheme(newTheme);
+        });
+
+
+        // --- Blog Post Fetching Logic ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('blog-posts-container');
+            const errorMessage = document.getElementById('error-message');
+            
+            const githubApiUrl = 'https://api.github.com/repos/Amrindersingh1/Blogs/contents/';
+            const blogBaseUrl = 'https://amrindersingh1.github.io/Blogs/';
+            const proxyUrl = 'https://api.allorigins.win/raw?url=';
+
+            async function fetchBlogPosts() {
+                try {
+                    const response = await fetch(githubApiUrl);
+                    if (!response.ok) throw new Error(`GitHub API error! status: ${response.status}`);
+                    
+                    const files = await response.json();
+                    
+                    const postFiles = files.filter(file => file.type === 'file' && file.name.endsWith('.html') && file.name !== 'index.html');
+
+                    if (postFiles.length === 0) {
+                       throw new Error("No blog post HTML files found in the GitHub repo.");
+                    }
+
+                    container.innerHTML = '';
+
+                    let postIndex = 0;
+                    for (const file of postFiles) {
+                        const postUrl = `${blogBaseUrl}${file.name}`;
+                        
+                        try {
+                            const postResponse = await fetch(`${proxyUrl}${encodeURIComponent(postUrl)}`);
+                            if (!postResponse.ok) continue;
+                            
+                            const postHtmlText = await postResponse.text();
+                            const parser = new DOMParser();
+                            const postDoc = parser.parseFromString(postHtmlText, 'text/html');
+
+                            const title = postDoc.querySelector('h1')?.innerText.trim() || file.name.replace('.html', '');
+                            const snippet = postDoc.querySelector('p')?.innerText.trim().substring(0, 120) + '...' || 'Click to read more.';
+
+                            createBlogPostCard(title, snippet, postUrl, postIndex);
+                            postIndex++;
+                        } catch (error) {
+                            console.error(`Could not fetch content for post: ${postUrl}`, error);
+                            createBlogPostCard(file.name.replace('.html', ''), 'Could not load preview.', postUrl, postIndex);
+                            postIndex++;
+                        }
+                    }
+
+                } catch (error) {
+                    console.error('Failed to fetch blog posts list:', error);
+                    container.innerHTML = '';
+                    errorMessage.classList.remove('hidden');
+                }
+            }
+
+            function createBlogPostCard(title, snippet, url, index) {
+                const card = document.createElement('a');
+                card.href = url;
+                card.target = '_blank';
+                card.className = 'blog-card rounded-lg p-6 flex flex-col group';
+                // Cycle through 4 gradients
+                card.setAttribute('data-gradient', (index % 4) + 1);
+
+                card.innerHTML = `
+                    <h3 class="text-xl font-bold text-heading group-hover:accent-text transition-colors duration-300">${title}</h3>
+                    <p class="text-secondary mt-3 flex-grow">${snippet}</p>
+                    <div class="mt-6">
+                        <span class="font-medium accent-text flex items-center">
+                            Read More <i data-lucide="arrow-right" class="w-4 h-4 ml-2 transform group-hover:translate-x-1 transition-transform duration-300"></i>
+                        </span>
+                    </div>
+                `;
+                container.appendChild(card);
+                lucide.createIcons();
+            }
+
+            fetchBlogPosts();
+        });
+
+
+        // --- Particle Animation ---
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+
+        const particleConfig = {
+            count: 60,
+            speed: 0.5,
+            minRadius: 1,
+            maxRadius: 3,
+            lineDistance: 150,
+        };
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * particleConfig.speed;
+                this.vy = (Math.random() - 0.5) * particleConfig.speed;
+                this.radius = particleConfig.minRadius + Math.random() * (particleConfig.maxRadius - particleConfig.minRadius);
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--particle-color').trim();
+                ctx.fill();
+            }
+        }
+
+        function createParticles() {
+            particles = [];
+            for (let i = 0; i < particleConfig.count; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function connectParticles() {
+            const particleColor = getComputedStyle(document.documentElement).getPropertyValue('--particle-color').trim();
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < particleConfig.lineDistance) {
+                        ctx.beginPath();
+                        const opacity = 1 - distance / particleConfig.lineDistance;
+                        // a bit of regex to set opacity on the rgba color
+                        ctx.strokeStyle = particleColor.replace(/,\s*\d*\.?\d*\)/, `, ${opacity})`);
+                        ctx.lineWidth = 0.5;
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                        ctx.closePath();
+                    }
+                }
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            connectParticles();
+            requestAnimationFrame(animate);
+        }
+
+        createParticles();
+        animate();
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+        });
+    </script>
+</body>
+</html>
