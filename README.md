@@ -20,8 +20,16 @@ Link: https://amrindersingh1.github.io/Blogs/AlphaEvolve.html
 Source: TBA
 
 ---
+
+## 3. FutureOfWork
 Link: https://amrindersingh1.github.io/Blogs/FutureOfWork.html
 
 ---
+
+## 4. LLama
+Link: https://amrindersingh1.github.io/Blogs/LLama.html
+
+---
+
 ### How to view any blog
 Open: https://amrindersingh1.github.io/Blogs/{fileName}.html
