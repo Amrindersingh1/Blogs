@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent-as-a-Judge: AI Judging AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0a0a0a;
+            --text-color: #e2e8f0;
+            --text-color-muted: #94a3b8;
+            --text-color-subtle: #64748b;
+            --card-bg: rgba(30, 41, 59, 0.5);
+            --card-border: rgba(51, 65, 85, 0.5);
+            --header-bg: rgba(10, 10, 10, 0.7);
+            --header-border: rgba(255, 255, 255, 0.1);
+            --tag-bg: rgba(52, 211, 153, 0.2);
+            --tag-color: #6ee7b7;
+            --btn-bg: #475569;
+            --btn-hover-bg: #64748b;
+            --btn-active-bg: #10b981;
+        }
+
+        .light-mode {
+            --bg-color: #f8fafc;
+            --text-color: #1e293b;
+            --text-color-muted: #475569;
+            --text-color-subtle: #94a3b8;
+            --card-bg: #ffffff;
+            --card-border: #e2e8f0;
+            --header-bg: rgba(248, 250, 252, 0.8);
+            --header-border: #e2e8f0;
+            --tag-bg: #d1fae5;
+            --tag-color: #059669;
+            --btn-bg: #e2e8f0;
+            --btn-hover-bg: #cbd5e1;
+            --btn-active-bg: #10b981;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .gradient-text-green {
+            background: linear-gradient(90deg, #4ade80, #34d399, #2dd4bf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--card-border);
+            border-radius: 1rem;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        .light-mode .glass-card {
+             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+        }
+        header.glass-card {
+            background: var(--header-bg);
+            border-color: var(--header-border);
+        }
+        .tag {
+            background-color: var(--tag-bg);
+            color: var(--tag-color);
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .chart-bar {
+            transition: width 0.5s ease-in-out;
+        }
+        .judge-btn {
+            background-color: var(--btn-bg);
+            color: var(--text-color-muted);
+            transition: all 0.2s ease-in-out;
+        }
+        .judge-btn:hover {
+            background-color: var(--btn-hover-bg);
+        }
+        .judge-btn.active {
+            background-color: var(--btn-active-bg);
+            color: #ffffff;
+            font-weight: 700;
+        }
+        .detailed-text {
+            transition: opacity 0.3s ease-in-out;
+        }
+        p, .text-slate-400 {
+            color: var(--text-color-muted);
+        }
+        .text-slate-500 {
+             color: var(--text-color-subtle);
+        }
+        .bg-slate-800\/50 {
+            background-color: var(--card-bg);
+        }
+        .border-slate-800 {
+            border-color: var(--card-border);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header -->
+    <header class="p-4 md:p-6 flex justify-between items-center sticky top-0 z-50 glass-card mx-2 md:mx-4 mt-2 md:mt-4">
+        <h1 class="text-xl md:text-2xl font-bold">Agent-as-a-<span class="gradient-text-green">Judge</span></h1>
+        <div class="flex items-center gap-4">
+             <div class="flex items-center gap-2 text-sm">
+                <span id="toggle-label-simple">Simple</span>
+                <label for="detail-toggle" class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" value="" id="detail-toggle" class="sr-only peer">
+                    <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                </label>
+                <span id="toggle-label-detailed" class="font-bold">Detailed</span>
+            </div>
+            <button id="theme-toggle" class="p-2 rounded-full hover:bg-slate-700 light-mode:hover:bg-slate-200 transition-colors">
+                <svg id="theme-icon-light" class="h-5 w-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                <svg id="theme-icon-dark" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+            </button>
+            <a href="https://github.com/metauto-ai/agent-as-a-judge" target="_blank" class="text-sm font-semibold hover:text-white transition-colors border border-slate-600 px-4 py-2 rounded-full">
+                Project Page
+            </a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-12 md:py-20">
+
+        <!-- Hero Section -->
+        <section class="text-center my-16 fade-in">
+            <div class="inline-block tag mb-4">A New Era of AI Evaluation</div>
+            <h2 class="text-4xl md:text-6xl lg:text-7xl font-black tracking-tighter mb-6">
+                If AI can write code, <br> can it also be the <span class="gradient-text-green">code review?</span>
+            </h2>
+            <div class="simple-text">
+                <p class="max-w-2xl mx-auto text-lg md:text-xl">
+                    Evaluating today's complex AI agents is slow, expensive, and biased. We taught an AI agent to be a fair, fast, and affordable judge.
+                </p>
+            </div>
+            <div class="detailed-text hidden">
+                 <p class="max-w-3xl mx-auto text-lg md:text-xl">
+                    Contemporary evaluation techniques are inadequate for agentic systems, as they either focus on final outcomes, ignoring the step-by-step process, or require excessive manual labor. We introduce the Agent-as-a-Judge framework to provide rich, intermediate feedback for the entire task-solving trajectory.
+                </p>
+            </div>
+        </section>
+
+        <!-- The Problem -->
+        <section class="my-24 fade-in">
+            <h3 class="text-3xl md:text-4xl font-bold text-center mb-12">Why Judging AI Agents is a Mess</h3>
+            <div class="grid md:grid-cols-3 gap-8 text-center">
+                <div class="glass-card p-6">
+                    <div class="text-4xl mb-4">🏁</div>
+                    <h4 class="font-bold text-lg mb-2">Focus on the Finish Line</h4>
+                    <div class="simple-text">
+                        <p class="text-sm">Most tests only check the final answer. They miss all the important steps, thoughts, and actions the agent took to get there.</p>
+                    </div>
+                    <div class="detailed-text hidden">
+                        <p class="text-sm text-left">Benchmarks like SWE-Bench rely on the final "resolve rate," which fails to pinpoint intermediate failures. As the paper notes, metrics like `pass@1` offer limited feedback and don't reveal *why* an agent failed during its process.</p>
+                    </div>
+                </div>
+                <div class="glass-card p-6">
+                    <div class="text-4xl mb-4">💸</div>
+                    <h4 class="font-bold text-lg mb-2">Prohibitively Expensive</h4>
+                     <div class="simple-text">
+                        <p class="text-sm">Hiring human experts to review every step is incredibly time-consuming and costly, slowing down the pace of innovation.</p>
+                    </div>
+                    <div class="detailed-text hidden">
+                        <p class="text-sm text-left">The paper quantifies this: a full evaluation by three human experts took a total of **86.5 hours**, costing an estimated **$1,297.50**. This makes frequent, large-scale evaluation impractical for most teams.</p>
+                    </div>
+                </div>
+                <div class="glass-card p-6">
+                    <div class="text-4xl mb-4">🤔</div>
+                    <h4 class="font-bold text-lg mb-2">Human Bias is Real</h4>
+                    <div class="simple-text">
+                        <p class="text-sm">Even experts disagree! The paper showed that individual human evaluators often have different opinions, making single-person reviews unreliable.</p>
+                    </div>
+                    <div class="detailed-text hidden">
+                        <p class="text-sm text-left">The disagreement rate between pairs of human judges ranged from **10% to 30%**. One evaluator had an error rate of over 23% compared to the final consensus. This highlights the unreliability of using a single human judge.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How Agent-as-a-Judge Works -->
+        <section class="my-24 fade-in">
+            <h3 class="text-3xl md:text-4xl font-bold text-center mb-4">The Solution: An AI Judge</h3>
+            <div class="simple-text">
+                <p class="text-center max-w-2xl mx-auto mb-12">We created an agent with special tools to act as a judge. It can read code, check files, and analyze the entire process to see if the developer agent met every requirement.</p>
+            </div>
+            <div class="detailed-text hidden">
+                 <p class="text-center max-w-3xl mx-auto mb-12">The framework uses a modular agent with components for specific actions. Ablation studies found the optimal combination includes: **Graph** (to map the project structure), **Locate** (to find files), **Read** (to parse content), **Retrieve** (to get info from logs), and **Ask** (to make the final judgment on a requirement).</p>
+            </div>
+            
+            <div class="glass-card p-6 md:p-8">
+                <div class="flex flex-col md:flex-row gap-8 items-center justify-center">
+                    <!-- Developer Agent -->
+                    <div class="text-center">
+                        <div class="text-5xl">🤖</div>
+                        <h4 class="font-bold mt-2">Developer Agent</h4>
+                        <p class="text-xs">Tries to solve a coding task.</p>
+                        <div class="mt-4 bg-slate-800/50 p-4 rounded-lg">
+                            <p class="font-mono text-xs text-left">
+                                &gt; Wrote `model.py`<br>
+                                &gt; Ran tests... 1 failed<br>
+                                &gt; Attempting to fix bug...<br>
+                                &gt; Saved `results.png`
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Arrow -->
+                    <div class="text-green-400 text-4xl transform rotate-90 md:rotate-0 mx-8">→</div>
+
+                    <!-- Judge Agent -->
+                     <div class="text-center">
+                        <div class="text-5xl">🧑‍⚖️</div>
+                        <h4 class="font-bold mt-2">Agent-as-a-Judge</h4>
+                        <p class="text-xs">Evaluates the entire process.</p>
+                        <div class="mt-4 bg-slate-800/50 p-4 rounded-lg">
+                             <p class="font-mono text-xs text-left">
+                                <span class="text-green-400">[✓] R1: `model.py` created.</span><br>
+                                <span class="text-red-400">[✗] R2: Tests must pass.</span><br>
+                                <span class="text-green-400">[✓] R3: `results.png` saved.</span><br>
+                                &gt; Final Score: 2/3 requirements met.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                 <div class="simple-text">
+                    <p class="text-center text-slate-500 max-w-2xl mx-auto mt-6 text-sm">To test this, we built <span class="font-bold">DevAI</span>, a new benchmark with 55 realistic AI development tasks.</p>
+                 </div>
+                 <div class="detailed-text hidden">
+                    <p class="text-center text-slate-500 max-w-3xl mx-auto mt-6 text-sm">This process was tested on the **DevAI benchmark**: 55 real-world tasks with 365 hierarchical requirements (structured as a Directed Acyclic Graph) and 125 preferences, designed to challenge modern code agents.</p>
+                 </div>
+            </div>
+        </section>
+
+        <!-- The Results -->
+        <section class="my-24 fade-in">
+            <h3 class="text-3xl md:text-4xl font-bold text-center mb-4">The Verdict is In</h3>
+            <div class="simple-text">
+                <p class="text-center max-w-2xl mx-auto mb-12">How well does our AI Judge agree with human experts? We compared it to a standard "LLM-as-a-Judge" and the average of individual human judges. The goal is to match the <span class="font-bold text-green-400">Human Consensus</span> (the most reliable ground truth).</p>
+            </div>
+            <div class="detailed-text hidden">
+                <p class="text-center max-w-3xl mx-auto mb-12">We measure performance using the **Alignment Rate**: the percentage of evaluations that match the human expert consensus. Agent-as-a-Judge consistently achieves a higher alignment rate than LLM-as-a-Judge, proving its superior reliability.</p>
+            </div>
+            
+            <div class="glass-card p-6 md:p-8">
+                <div class="mb-6">
+                    <h4 class="font-bold text-lg mb-3">Alignment Rate with Human Consensus when Judging...</h4>
+                    <div id="judge-selector" class="flex flex-wrap gap-2">
+                        <!-- Buttons will be generated by JS -->
+                    </div>
+                </div>
+                <div id="results-chart" class="space-y-4">
+                    <!-- Chart will be generated by JS -->
+                </div>
+                 <div class="mt-8 text-center">
+                    <h4 class="font-bold text-lg">The Bottom Line</h4>
+                    <div class="mt-2 flex flex-col md:flex-row justify-center gap-6">
+                        <div class="flex-1">
+                            <p class="text-4xl font-black gradient-text-green">97.7%</p>
+                            <p class="text-sm">Less Time Spent</p>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-4xl font-black gradient-text-green">97.6%</p>
+                            <p class="text-sm">Cheaper to Run</p>
+                        </div>
+                    </div>
+                     <p class="text-xs text-slate-500 mt-4">Agent-as-a-Judge took **~2 hours** and cost **~$30**, versus **86.5 hours** and **~$1300** for three human experts.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Why It Matters -->
+        <section class="my-24 fade-in">
+            <h3 class="text-3xl md:text-4xl font-bold text-center mb-12">The Flywheel Effect: AI Improving AI</h3>
+            <div class="simple-text">
+                <p class="text-center max-w-2xl mx-auto mb-12">This isn't just about grading. It's about creating a feedback loop for self-improvement.</p>
+            </div>
+            <div class="detailed-text hidden">
+                <p class="text-center max-w-3xl mx-auto mb-12">The rich, intermediate feedback from Agent-as-a-Judge is crucial for agentic self-improvement. It can be used to create a **Process-Supervised Reward Model (PRM)**, enabling agents to learn from step-by-step guidance rather than a single, delayed outcome.</p>
+            </div>
+            <div class="flex justify-center items-center text-center font-bold text-lg">
+                <div>
+                    <p class="text-5xl">🤖</p>
+                    <p>Agent Develops</p>
+                </div>
+                <div class="text-green-400 text-4xl mx-8 animate-pulse">→</div>
+                 <div>
+                    <p class="text-5xl">🧑‍⚖️</p>
+                    <p>Agent Judges</p>
+                </div>
+                <div class="text-green-400 text-4xl mx-8 animate-pulse">→</div>
+                 <div>
+                    <p class="text-5xl">💡</p>
+                    <p>Agent Learns</p>
+                </div>
+            </div>
+            <div class="simple-text">
+                <p class="text-center max-w-2xl mx-auto mt-8">With instant, detailed feedback from an AI judge, developer agents can learn from their mistakes and get better, faster, creating a cycle of continuous improvement.</p>
+            </div>
+             <div class="detailed-text hidden">
+                <p class="text-center max-w-3xl mx-auto mt-8">This iterative cycle, where the judge and the developer agent can improve each other, creates a **flywheel effect**. This could lead to an agentic "self-play" system, where agents rapidly scale their capabilities through automated, mutual refinement.</p>
+            </div>
+        </section>
+
+    </main>
+    
+    <footer class="text-center p-8 border-t border-slate-800">
+        <p>Based on the research paper "Agent-as-a-Judge: Evaluate Agents with Agents" by Zhuge et al.</p>
+        <p class="text-xs mt-2">Interactive portal created by Gemini.</p>
+    </footer>
+
+    <script>
+        // --- Interactive Fade-in on Scroll ---
+        const faders = document.querySelectorAll('.fade-in');
+        const appearOptions = {
+            threshold: 0.1,
+            rootMargin: "0px 0px -50px 0px"
+        };
+        const appearOnScroll = new IntersectionObserver(function(entries, appearOnScroll) {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) return;
+                entry.target.classList.add('visible');
+                appearOnScroll.unobserve(entry.target);
+            });
+        }, appearOptions);
+        faders.forEach(fader => appearOnScroll.observe(fader));
+
+        // --- Detail Toggle Logic ---
+        const detailToggle = document.getElementById('detail-toggle');
+        const simpleTexts = document.querySelectorAll('.simple-text');
+        const detailedTexts = document.querySelectorAll('.detailed-text');
+        const toggleLabelSimple = document.getElementById('toggle-label-simple');
+        const toggleLabelDetailed = document.getElementById('toggle-label-detailed');
+
+        function setMode(isDetailed) {
+             simpleTexts.forEach(el => el.classList.toggle('hidden', isDetailed));
+             detailedTexts.forEach(el => el.classList.toggle('hidden', !isDetailed));
+             toggleLabelSimple.classList.toggle('font-bold', !isDetailed);
+             toggleLabelSimple.classList.toggle('text-slate-500', isDetailed);
+             toggleLabelDetailed.classList.toggle('font-bold', isDetailed);
+             toggleLabelDetailed.classList.toggle('text-slate-500', !isDetailed);
+        }
+
+        detailToggle.addEventListener('change', (event) => {
+            setMode(event.target.checked);
+        });
+        
+        // Initialize in simple mode
+        setMode(false);
+
+        // --- Theme Toggle Logic ---
+        const themeToggle = document.getElementById('theme-toggle');
+        const lightIcon = document.getElementById('theme-icon-light');
+        const darkIcon = document.getElementById('theme-icon-dark');
+
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('light-mode');
+            lightIcon.classList.toggle('hidden');
+            darkIcon.classList.toggle('hidden');
+        });
+
+
+        // --- Interactive Chart Generation ---
+        const judgeSelector = document.getElementById('judge-selector');
+        const chartContainer = document.getElementById('results-chart');
+        const maxScore = 100;
+
+        const fullChartData = {
+            'MetaGPT': [
+                { name: 'LLM-as-a-Judge', score: 65.30, color: 'bg-slate-600' },
+                { name: 'Human-as-a-Judge (Avg Individual)', score: 85.43, color: 'bg-sky-600' },
+                { name: 'Agent-as-a-Judge', score: 83.88, color: 'bg-emerald-500' },
+            ],
+            'GPT-Pilot': [
+                { name: 'LLM-as-a-Judge', score: 71.85, color: 'bg-slate-600' },
+                { name: 'Human-as-a-Judge (Avg Individual)', score: 88.79, color: 'bg-sky-600' },
+                { name: 'Agent-as-a-Judge', score: 86.61, color: 'bg-emerald-500' },
+            ],
+            'OpenHands': [
+                { name: 'LLM-as-a-Judge', score: 60.38, color: 'bg-slate-600' },
+                { name: 'Human-as-a-Judge (Avg Individual)', score: 85.70, color: 'bg-sky-600' },
+                { name: 'Agent-as-a-Judge', score: 90.44, color: 'bg-emerald-500' },
+            ],
+        };
+
+        function updateChart(developerAgent) {
+            const data = fullChartData[developerAgent];
+            chartContainer.innerHTML = ''; // Clear previous chart
+
+            const groundTruth = { name: 'Human Consensus (Ground Truth)', score: 100, color: 'bg-green-500/50 border-2 border-green-400' };
+            const allData = [...data, groundTruth].sort((a, b) => b.score - a.score);
+
+            allData.forEach(item => {
+                const widthPercentage = item.score;
+                const row = document.createElement('div');
+                row.className = 'flex items-center gap-4 text-sm';
+                
+                row.innerHTML = `
+                    <div class="w-48 md:w-64 font-semibold truncate">${item.name}</div>
+                    <div class="flex-1 bg-slate-700/50 rounded-full h-8">
+                        <div class="chart-bar ${item.color} h-full rounded-full flex items-center justify-end pr-3 text-white font-bold" style="width: 0%;" data-width="${widthPercentage}">
+                            ${item.score.toFixed(2)}%
+                        </div>
+                    </div>
+                `;
+                chartContainer.appendChild(row);
+            });
+
+            // Animate new bars
+            setTimeout(() => {
+                const bars = chartContainer.querySelectorAll('.chart-bar');
+                bars.forEach(bar => {
+                    bar.style.width = `${bar.getAttribute('data-width')}%`;
+                });
+            }, 50);
+            
+            // Update active button
+            document.querySelectorAll('.judge-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.agent === developerAgent);
+            });
+        }
+        
+        function createButtons() {
+            Object.keys(fullChartData).forEach(agentName => {
+                const button = document.createElement('button');
+                button.className = 'judge-btn text-xs font-semibold py-2 px-3 rounded-md';
+                button.textContent = agentName;
+                button.dataset.agent = agentName;
+                button.addEventListener('click', () => updateChart(agentName));
+                judgeSelector.appendChild(button);
+            });
+        }
+
+        createButtons();
+        // Initialize chart with the first agent
+        updateChart(Object.keys(fullChartData)[0]);
+
+    </script>
+</body>
+</html>
