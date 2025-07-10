@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLaMA Unlocked: A Guide to AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* General Styles */
+        :root {
+            --bg-color: #0c0a19;
+            --text-color: #F3F4F6;
+            --text-muted-color: #9ca3af;
+            --card-bg: rgba(20, 16, 38, 0.6);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --sub-card-bg: rgba(0,0,0,0.2);
+            --card-shadow-hover: 0 0 20px rgba(192, 132, 252, 0.3), 0 0 30px rgba(192, 132, 252, 0.2);
+            --card-border-hover: rgba(192, 132, 252, 0.5);
+            --tab-container-bg: rgba(20, 16, 38, 0.5);
+            --tab-button-bg: transparent;
+            --tab-button-border: rgba(255, 255, 255, 0.1);
+            --tab-active-bg: #8B5CF6;
+            --tab-active-shadow: 0 0 15px rgba(139, 92, 246, 0.6);
+            --quiz-option-bg: #2c2a46;
+            --quiz-option-hover-bg: #4c4a66;
+            --slider-info-bg: rgba(31, 41, 55, 0.7);
+            --heading-color: #c4b5fd;
+            --gradient-start: #be93fd;
+            --gradient-mid: #f68dff;
+            --gradient-end: #89d8fd;
+            --scrollbar-thumb: #8B5CF6;
+            --scrollbar-thumb-hover: #a78bfa;
+            --icon-color: #a78bfa;
+        }
+
+        html.light {
+            --bg-color: #f3f4f6;
+            --text-color: #111827;
+            --text-muted-color: #4b5563;
+            --card-bg: #ffffff;
+            --card-border: #e5e7eb;
+            --sub-card-bg: #f9fafb;
+            --card-shadow-hover: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            --card-border-hover: #d1d5db;
+            --tab-container-bg: rgba(255, 255, 255, 0.7);
+            --tab-button-bg: #e5e7eb;
+            --tab-button-border: #d1d5db;
+            --tab-active-bg: #8B5CF6;
+            --tab-active-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+            --quiz-option-bg: #e5e7eb;
+            --quiz-option-hover-bg: #d1d5db;
+            --slider-info-bg: #ffffff;
+            --heading-color: #6d28d9;
+            --gradient-start: #6d28d9;
+            --gradient-mid: #9333ea;
+            --gradient-end: #4f46e5;
+            --scrollbar-thumb: #a78bfa;
+            --scrollbar-thumb-hover: #8B5CF6;
+            --icon-color: #8B5CF6;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+
+        .gradient-text {
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-mid), var(--gradient-end));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            transition: all 0.3s ease;
+        }
+        
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--card-shadow-hover);
+            border-color: var(--card-border-hover);
+        }
+        
+        .sub-card {
+            background-color: var(--sub-card-bg);
+            border: 1px solid var(--card-border);
+        }
+
+        .tab-container {
+            background-color: var(--tab-container-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--card-border);
+        }
+
+        .tab-button {
+             background: var(--tab-button-bg);
+             border: 1px solid var(--tab-button-border);
+             color: var(--text-muted-color);
+        }
+
+        .tab-button.active {
+            background-color: var(--tab-active-bg);
+            color: #FFF;
+            box-shadow: var(--tab-active-shadow);
+        }
+
+        .quiz-option {
+             background-color: var(--quiz-option-bg);
+             color: var(--text-color);
+        }
+        
+        .quiz-option:hover:not(:disabled) {
+            transform: scale(1.03);
+            background-color: var(--quiz-option-hover-bg);
+        }
+        
+        .text-muted {
+            color: var(--text-muted-color);
+        }
+        
+        .heading-text {
+            color: var(--heading-color);
+        }
+
+        .slider-info-box {
+            background-color: var(--slider-info-bg);
+            border: 1px solid var(--card-border);
+        }
+
+        .icon {
+            color: var(--icon-color);
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-color); }
+        ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div id="particles-js"></div>
+
+    <div class="relative z-10 container mx-auto p-4 md:p-8">
+        <header class="text-center mb-12 relative">
+            <h1 class="text-4xl md:text-6xl font-bold gradient-text mb-2">LLaMA Unlocked 🔓</h1>
+            <p class="text-lg md:text-xl text-muted">An accessible guide to the future of AI.</p>
+            
+            <div class="absolute top-0 right-0 p-2">
+                <button id="theme-toggle" class="p-2 rounded-full text-muted focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white" aria-label="Toggle theme">
+                    <svg id="theme-toggle-dark-icon" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                    <svg id="theme-toggle-light-icon" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zM3 11a1 1 0 100-2H2a1 1 0 100 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+                </button>
+            </div>
+        </header>
+
+        <div class="tab-container flex justify-center mb-8 space-x-2 md:space-x-4 p-2 rounded-full">
+            <button class="tab-button flex-1 md:flex-none text-sm md:text-base font-semibold py-2 px-4 rounded-full transition-all duration-300 active" onclick="showTab('beginner')">🌱 Beginner</button>
+            <button class="tab-button flex-1 md:flex-none text-sm md:text-base font-semibold py-2 px-4 rounded-full transition-all duration-300" onclick="showTab('intermediate')">🧠 Intermediate</button>
+            <button class="tab-button flex-1 md:flex-none text-sm md:text-base font-semibold py-2 px-4 rounded-full transition-all duration-300" onclick="showTab('advanced')">🚀 Advanced</button>
+            <button class="tab-button flex-1 md:flex-none text-sm md:text-base font-semibold py-2 px-4 rounded-full transition-all duration-300" onclick="showTab('expert')">🧑‍🔬 Expert</button>
+        </div>
+
+        <main>
+            <!-- Beginner Section -->
+            <div id="beginner" class="tab-content space-y-8">
+                <div class="glass-card p-6 rounded-2xl">
+                    <h2 class="text-2xl font-bold mb-4 heading-text">What is a Large Language Model? 🤔</h2>
+                    <p class="text-muted mb-4">A Large Language Model (LLM) is an AI trained on vast amounts of text to understand and generate human-like language. LLaMA is a family of LLMs from Meta AI, designed to be efficient and powerful.</p>
+                    <p class="text-muted"><strong class="text-inherit font-semibold">Core Function:</strong> At its heart, an LLM predicts the next word in a sequence. By doing this on a massive scale, it can write essays, summarize articles, answer questions, and generate code.</p>
+                </div>
+                <div class="glass-card p-6 rounded-2xl">
+                    <h2 class="text-2xl font-bold mb-4 heading-text">The Philosophy of Scaling Laws ⚖️</h2>
+                    <p class="text-muted mb-4">LLaMA's design was heavily influenced by the "Chinchilla" paper, which redefined how to build the most effective AI models.</p>
+                    <ul class="list-none text-muted space-y-3">
+                        <li><strong class="text-inherit font-semibold block">The Old Way:</strong> The prevailing wisdom was that more parameters (a bigger model) automatically meant better performance.</li>
+                        <li><strong class="text-inherit font-semibold block">The Chinchilla Insight:</strong> Researchers discovered that many large models were "undertrained." For a fixed compute budget, the best performance comes from an optimal balance of model size and the amount of training data.</li>
+                        <li><strong class="text-inherit font-semibold block">The LLaMA Strategy:</strong> LLaMA models were intentionally designed to be smaller but trained on far more data (1.4 trillion tokens). This makes them highly performant and much more efficient to run.</li>
+                    </ul>
+                </div>
+                <div class="glass-card p-6 rounded-2xl">
+                    <h2 class="text-2xl font-bold mb-4 heading-text">Quiz: Check Your Knowledge! ✨</h2>
+                    <div id="quiz-beginner">
+                        <p class="text-lg font-semibold mb-4">What was a primary finding of the LLaMA paper?</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <button class="quiz-option p-4 rounded-lg transition-all duration-200" onclick="checkAnswer(this, false, 'quiz-feedback-beginner')">A. Bigger models are always superior.</button>
+                            <button class="quiz-option p-4 rounded-lg transition-all duration-200" onclick="checkAnswer(this, true, 'quiz-feedback-beginner')">B. Smaller models can outperform larger ones if trained on more data.</button>
+                            <button class="quiz-option p-4 rounded-lg transition-all duration-200" onclick="checkAnswer(this, false, 'quiz-feedback-beginner')">C. AI models require secret, proprietary data to be effective.</button>
+                            <button class="quiz-option p-4 rounded-lg transition-all duration-200" onclick="checkAnswer(this, false, 'quiz-feedback-beginner')">D. Language models can only predict one word at a time.</button>
+                        </div>
+                        <p id="quiz-feedback-beginner" class="mt-4 font-bold"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Intermediate Section -->
+            <div id="intermediate" class="tab-content hidden space-y-8">
+                <div class="glass-card p-6 rounded-2xl">
+                    <h2 class="text-2xl font-bold mb-4 heading-text">Core Architecture 🏗️</h2>
+                    <p class="text-muted mb-4">LLaMA is built on the standard Transformer architecture but incorporates several key improvements for stability and performance.</p>
+                    <div class="grid md:grid-cols-3 gap-4 text-center">
+                        <div class="sub-card p-4 rounded-lg">
+                            <svg class="icon w-8 h-8 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            <h3 class="font-semibold">Pre-Normalization (RMSNorm)</h3>
+                            <p class="text-sm text-muted">Normalizes the input of each transformer sub-layer, rather than the output. This improves training stability compared to traditional Post-LN.</p>
+                        </div>
+                        <div class="sub-card p-4 rounded-lg">
+                            <svg class="icon w-8 h-8 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                            <h3 class="font-semibold">SwiGLU Activation</h3>
+                            <p class="text-sm text-muted">Replaces the standard ReLU non-linearity. This function improves performance and LLaMA uses a dimension of 2/3 * 4d instead of 4d as in PaLM.</p>
+                        </div>
+                        <div class="sub-card p-4 rounded-lg">
+                            <svg class="icon w-8 h-8 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            <h3 class="font-semibold">Rotary Embeddings (RoPE)</h3>
+                            <p class="text-sm text-muted">Removes absolute positional embeddings and instead adds rotary embeddings at each layer to better encode word order and relative positions.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="glass-card p-6 rounded-2xl">
+                    <h2 class="text-2xl font-bold mb-4 heading-text">How LLaMA Reads: Tokenization 🧩</h2>
+                     <p class="text-muted mb-4">An LLM doesn't see words; it sees "tokens." LLaMA uses a method called Byte-Pair Encoding (BPE) to break text down into these pieces.</p>
+                    <ul class="list-none text-muted space-y-3">
+                        <li><strong class="text-inherit font-semibold block">What are Tokens?</strong> A token can be a full word (`hello`), a common part of a word (`-ing`), or a single character. This allows the model to handle any word, even ones it has never seen before.</li>
+                        <li><strong class="text-inherit font-semibold block">A Clever Trick with Numbers:</strong> LLaMA splits all numbers into individual digits (e.g., "2024" becomes "2", "0", "2", "4"). This greatly improves its mathematical and numerical reasoning abilities.</li>
+                    </ul>
+                </div>
+
+                <div class="glass-card p-6 rounded-2xl">
+                    <h2 class="text-2xl font-bold mb-4 heading-text">Parameter Slider 🎛️</h2>
+                    <p class="text-muted mb-4">Model size is measured in "parameters." More parameters can increase capability but also cost. Explore the LLaMA model sizes below.</p>
+                    <input type="range" min="0" max="3" value="0" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer" id="param-slider">
+                    <div class="flex justify-between text-xs px-2 mt-2 text-muted">
+                        <span>7B</span>
+                        <span>13B</span>
+                        <span>33B</span>
+                        <span>65B</span>
+                    </div>
+                    <div id="slider-info" class="slider-info-box mt-4 p-4 rounded-lg">
+                        <h3 class="font-bold text-lg">LLaMA-7B</h3>
+                        <p class="text-muted">The smallest, most efficient model. Excellent for research and capable of running on a single GPU.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Section -->
+            <div id="advanced" class="tab-content hidden space-y-8">
+                 <div class="glass-card p-6 rounded-2xl">
+                    <h2 class="text-2xl font-bold mb-4 heading-text">Performance Evaluation 🏆</h2>
+                    <p class="text-muted mb-4">LLaMA's performance was rigorously tested against other leading models on a wide range of standard benchmarks.</p>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="sub-card p-4 rounded-lg"><strong class="font-semibold block">Common Sense Reasoning:</strong> LLaMA-65B outperforms Chinchilla-70B on all reported benchmarks except one (BoolQ), and is competitive with PaLM-540B.</div>
+                        <div class="sub-card p-4 rounded-lg"><strong class="font-semibold block">Closed-Book QA:</strong> LLaMA-65B achieves state-of-the-art performance in zero-shot and few-shot settings on TriviaQA and Natural Questions.</div>
+                        <div class="sub-card p-4 rounded-lg"><strong class="font-semibold block">Code Generation:</strong> LLaMA-65B (23.7% on HumanEval) outperforms other general models like PaLM-540B (26.2%) that were not specifically finetuned on code.</div>
+                        <div class="sub-card p-4 rounded-lg"><strong class="font-semibold block">MMLU:</strong> LLaMA-65B (63.4%) is competitive with Chinchilla-70B (67.5%) and PaLM-540B (69.3%), though slightly behind, potentially due to less academic data in its training mix.</div>
+                    </div>
+                </div>
+                <div class="glass-card p-6 rounded-2xl">
+                    <h2 class="text-2xl font-bold mb-4 heading-text">The LLaMA Legacy: Open Source Boom 💥</h2>
+                    <p class="text-muted mb-4">The impact of this paper extends far beyond its initial results. The subsequent leak and widespread adoption of the LLaMA models catalyzed the open-source AI movement.</p>
+                    <ul class="list-none text-muted space-y-3">
+                        <li><strong class="text-inherit font-semibold block">A Foundation for Thousands:</strong> Because LLaMA was so powerful and efficient, developers worldwide began fine-tuning it. This led to an explosion of new models like Alpaca, Vicuna, and countless others built directly on LLaMA's foundation.</li>
+                        <li><strong class="text-inherit font-semibold block">Paving the Way for Llama 2 & 3:</strong> The massive success and community engagement around the first LLaMA models directly influenced Meta's decision to officially open-source Llama 2 and Llama 3 for both research and commercial use.</li>
+                    </ul>
+                </div>
+                <div class="glass-card p-6 rounded-2xl">
+                    <h2 class="text-2xl font-bold mb-4 heading-text">Ethical Considerations: Bias & Toxicity 💀</h2>
+                    <p class="text-muted mb-4">Since LLMs learn from the internet, they can absorb and amplify human biases. The LLaMA paper transparently addresses these critical challenges.</p>
+                     <div class="grid md:grid-cols-3 gap-4 text-center">
+                        <div class="sub-card p-4 rounded-lg">
+                            <h3 class="font-semibold">Toxicity</h3>
+                            <p class="text-sm text-muted">Models can generate harmful language. Tests show this often increases with model size.</p>
+                        </div>
+                        <div class="sub-card p-4 rounded-lg">
+                            <h3 class="font-semibold">Bias</h3>
+                            <p class="text-sm text-muted">Benchmarks revealed social biases related to gender, religion, and other areas present in the training data.</p>
+                        </div>
+                        <div class="sub-card p-4 rounded-lg">
+                            <h3 class="font-semibold">Truthfulness</h3>
+                            <p class="text-sm text-muted">Models can "hallucinate" or state falsehoods confidently. Improving factual accuracy is an ongoing challenge.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Expert Section -->
+            <div id="expert" class="tab-content hidden space-y-8">
+                 <div class="glass-card p-6 rounded-2xl">
+                    <h2 class="text-2xl font-bold mb-4 heading-text">Model Internals: Hyperparameters ⚙️</h2>
+                    <p class="text-muted mb-4">Each LLaMA model has a specific architecture defined by its dimensions, attention heads, and layers. These are the core building blocks determining the model's size and capacity.</p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-muted">
+                            <thead class="text-xs uppercase bg-black/20">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3">Model</th>
+                                    <th scope="col" class="px-6 py-3">Dim</th>
+                                    <th scope="col" class="px-6 py-3">Heads</th>
+                                    <th scope="col" class="px-6 py-3">Layers</th>
+                                    <th scope="col" class="px-6 py-3">LR</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b border-gray-700">
+                                    <th scope="row" class="px-6 py-4 font-medium whitespace-nowrap">7B</th>
+                                    <td class="px-6 py-4">4096</td>
+                                    <td class="px-6 py-4">32</td>
+                                    <td class="px-6 py-4">32</td>
+                                    <td class="px-6 py-4">3.0e-4</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <th scope="row" class="px-6 py-4 font-medium whitespace-nowrap">13B</th>
+                                    <td class="px-6 py-4">5120</td>
+                                    <td class="px-6 py-4">40</td>
+                                    <td class="px-6 py-4">40</td>
+                                    <td class="px-6 py-4">3.0e-4</td>
+                                </tr>
+                                <tr class="border-b border-gray-700">
+                                    <th scope="row" class="px-6 py-4 font-medium whitespace-nowrap">33B</th>
+                                    <td class="px-6 py-4">6656</td>
+                                    <td class="px-6 py-4">52</td>
+                                    <td class="px-6 py-4">60</td>
+                                    <td class="px-6 py-4">1.5e-4</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row" class="px-6 py-4 font-medium whitespace-nowrap">65B</th>
+                                    <td class="px-6 py-4">8192</td>
+                                    <td class="px-6 py-4">64</td>
+                                    <td class="px-6 py-4">80</td>
+                                    <td class="px-6 py-4">1.5e-4</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="glass-card p-6 rounded-2xl">
+                    <h2 class="text-2xl font-bold mb-4 heading-text">Under the Hood: Training Efficiency ⚡</h2>
+                    <p class="text-muted mb-4">Training a 65B-parameter model in ~21 days on 2048 A100 GPUs required significant optimization to improve speed and reduce memory usage.</p>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="sub-card p-4 rounded-lg">
+                            <h3 class="font-semibold">Efficient Attention Mechanism</h3>
+                            <p class="text-sm text-muted">Using an implementation from the xformers library, the model avoids storing attention weights and computing masked key/query scores. This drastically reduces memory usage and runtime.</p>
+                        </div>
+                        <div class="sub-card p-4 rounded-lg">
+                            <h3 class="font-semibold">Checkpointing</h3>
+                            <p class="text-sm text-muted">To further save memory, certain activations that are expensive to compute (like outputs of linear layers) are saved. This avoids recomputation during the backward pass, a process implemented manually instead of relying on PyTorch's autograd.</p>
+                        </div>
+                    </div>
+                </div>
+                 <div class="glass-card p-6 rounded-2xl">
+                    <h2 class="text-2xl font-bold mb-4 heading-text">Quiz: Expert Level 🧑‍🔬</h2>
+                    <div id="quiz-expert">
+                        <p class="text-lg font-semibold mb-4">What was a key technique LLaMA used to reduce memory usage during training?</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <button class="quiz-option p-4 rounded-lg transition-all duration-200" onclick="checkAnswer(this, false, 'quiz-feedback-expert')">A. Using a smaller vocabulary size.</button>
+                            <button class="quiz-option p-4 rounded-lg transition-all duration-200" onclick="checkAnswer(this, false, 'quiz-feedback-expert')">B. Training on fewer tokens.</button>
+                            <button class="quiz-option p-4 rounded-lg transition-all duration-200" onclick="checkAnswer(this, true, 'quiz-feedback-expert')">C. An efficient attention mechanism that doesn't store masked keys.</button>
+                            <button class="quiz-option p-4 rounded-lg transition-all duration-200" onclick="checkAnswer(this, false, 'quiz-feedback-expert')">D. Increasing the batch size significantly.</button>
+                        </div>
+                        <p id="quiz-feedback-expert" class="mt-4 font-bold"></p>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        // --- Particle.js Configurations ---
+        const particlesDarkConfig = { particles: { number: { value: 80, density: { enable: true, value_area: 800 } }, color: { value: "#ffffff" }, shape: { type: "circle" }, opacity: { value: 0.5, random: true, anim: { enable: true, speed: 1, opacity_min: 0.1, sync: false } }, size: { value: 3, random: true }, line_linked: { enable: true, distance: 150, color: "#ffffff", opacity: 0.4, width: 1 }, move: { enable: true, speed: 2, direction: "none", random: false, straight: false, out_mode: "out", bounce: false } }, interactivity: { detect_on: "canvas", events: { onhover: { enable: true, mode: "repulse" }, onclick: { enable: true, mode: "push" }, resize: true }, modes: { repulse: { distance: 100, duration: 0.4 }, push: { particles_nb: 4 } } }, retina_detect: true };
+        const particlesLightConfig = { particles: { number: { value: 80, density: { enable: true, value_area: 800 } }, color: { value: "#374151" }, shape: { type: "circle" }, opacity: { value: 0.5, random: true, anim: { enable: true, speed: 1, opacity_min: 0.1, sync: false } }, size: { value: 3, random: true }, line_linked: { enable: true, distance: 150, color: "#374151", opacity: 0.4, width: 1 }, move: { enable: true, speed: 2, direction: "none", random: false, straight: false, out_mode: "out", bounce: false } }, interactivity: { detect_on: "canvas", events: { onhover: { enable: true, mode: "repulse" }, onclick: { enable: true, mode: "push" }, resize: true }, modes: { repulse: { distance: 100, duration: 0.4 }, push: { particles_nb: 4 } } }, retina_detect: true };
+
+        // --- Theme Switcher ---
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const darkIcon = document.getElementById('theme-toggle-dark-icon');
+        const lightIcon = document.getElementById('theme-toggle-light-icon');
+
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                document.documentElement.classList.remove('light');
+                darkIcon.classList.remove('hidden');
+                lightIcon.classList.add('hidden');
+                if (window.pJSDom && window.pJSDom[0]) {
+                    window.pJSDom[0].pJS.fn.vendors.destroypJS();
+                    window.pJSDom = [];
+                }
+                particlesJS('particles-js', particlesDarkConfig);
+            } else {
+                document.documentElement.classList.add('light');
+                darkIcon.classList.add('hidden');
+                lightIcon.classList.remove('hidden');
+                 if (window.pJSDom && window.pJSDom[0]) {
+                    window.pJSDom[0].pJS.fn.vendors.destroypJS();
+                    window.pJSDom = [];
+                }
+                particlesJS('particles-js', particlesLightConfig);
+            }
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+            const currentTheme = document.documentElement.classList.contains('light') ? 'dark' : 'light';
+            localStorage.setItem('theme', currentTheme);
+            applyTheme(currentTheme);
+        });
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            applyTheme(savedTheme);
+        });
+
+        // --- Tab Navigation ---
+        const tabs = document.querySelectorAll('.tab-button');
+        const contents = document.querySelectorAll('.tab-content');
+        function showTab(tabName) {
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.getAttribute('onclick').includes(tabName)) {
+                    tab.classList.add('active');
+                }
+            });
+            contents.forEach(content => {
+                content.classList.add('hidden');
+                if (content.id === tabName) {
+                    content.classList.remove('hidden');
+                }
+            });
+        }
+
+        // --- Quiz Logic ---
+        function checkAnswer(button, isCorrect, feedbackId) {
+            const feedbackEl = document.getElementById(feedbackId);
+            const allOptions = button.closest('.grid').querySelectorAll('.quiz-option');
+            
+            allOptions.forEach(opt => { opt.disabled = true; });
+
+            if (isCorrect) {
+                button.style.backgroundColor = '#10B981';
+                button.style.color = '#fff';
+                let correctText = "Correct! The paper demonstrated that training on more data can be more important than model size.";
+                if (feedbackId === 'quiz-feedback-expert') {
+                    correctText = "Correct! The efficient attention mechanism from xformers was crucial for reducing memory usage.";
+                }
+                feedbackEl.textContent = correctText;
+                feedbackEl.style.color = '#34D399';
+            } else {
+                button.style.backgroundColor = '#EF4444';
+                button.style.color = '#fff';
+                let incorrectText = "Not quite. The key finding was that smaller models can outperform larger ones with more training data.";
+                 if (feedbackId === 'quiz-feedback-expert') {
+                    incorrectText = "Incorrect. The key was the efficient attention mechanism that avoids storing certain values.";
+                }
+                feedbackEl.textContent = incorrectText;
+                feedbackEl.style.color = '#F87171';
+            }
+        }
+
+        // --- Intermediate Slider ---
+        const slider = document.getElementById('param-slider');
+        const sliderInfo = document.getElementById('slider-info');
+        const modelData = [
+            { name: 'LLaMA-7B', desc: 'The smallest, most efficient model. Excellent for research and capable of running on a single GPU.' },
+            { name: 'LLaMA-13B', desc: 'Outperformed GPT-3 (175B) on most benchmarks despite being 10x smaller.' },
+            { name: 'LLaMA-33B', desc: 'A powerful mid-size model, balancing performance and computational cost.' },
+            { name: 'LLaMA-65B', desc: 'A large-scale model competitive with other top models like Chinchilla-70B and PaLM-540B.' }
+        ];
+
+        slider.addEventListener('input', (event) => {
+            const model = modelData[event.target.value];
+            sliderInfo.innerHTML = `
+                <h3 class="font-bold text-lg">${model.name}</h3>
+                <p class="text-muted">${model.desc}</p>
+            `;
+        });
+    </script>
+
+</body>
+</html>
