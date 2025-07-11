@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DynamoDB Explained: The Gen Z Portal (V3)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827;
+            color: #F3F4F6;
+        }
+        .card {
+            background-color: #1F2937;
+            border: 1px solid #374151;
+            border-radius: 1rem;
+            padding: 2rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .btn {
+            background-color: #3B82F6;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #2563EB;
+        }
+        .btn:disabled {
+            background-color: #4B5563;
+            cursor: not-allowed;
+        }
+        .interactive-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #3B82F6, #8B5CF6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        #consistent-hashing-ring {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            border: 4px dashed #4B5563;
+            border-radius: 50%;
+            margin: 2rem auto;
+            transition: transform 0.5s ease;
+        }
+        .node { background-color: #EC4899; width: 40px; height: 40px; position: absolute; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.8rem; }
+        .data-point { background-color: #10B981; width: 30px; height: 30px; position: absolute; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.8rem; }
+        .cart-version {
+            background-color: #374151;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #8B5CF6;
+        }
+        .quorum-server {
+            width: 60px; height: 60px; background-color: #4B5563;
+            border-radius: 0.5rem; display: flex; align-items: center;
+            justify-content: center; font-weight: bold; transition: all 0.3s ease;
+        }
+        /* Toggle Switch */
+        .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #4B5563; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #3B82F6; }
+        input:checked + .slider:before { transform: translateX(26px); }
+        
+        .tech-details {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background-color: #111827;
+            border-radius: 0.5rem;
+            border: 1px solid #374151;
+        }
+
+        /* Failure Handling Visuals */
+        .server-viz {
+            width: 50px; height: 50px; border-radius: 0.5rem;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; background-color: #3B82F6;
+            transition: background-color 0.3s;
+        }
+        .server-viz.offline {
+            background-color: #4B5563;
+            text-decoration: line-through;
+        }
+        .tree-node-viz {
+            padding: 0.5rem 1rem;
+            background-color: #374151;
+            border: 1px solid #4B5563;
+            border-radius: 0.25rem;
+            font-size: 0.8rem;
+            position: relative;
+        }
+        .tree-node-viz.leaf {
+            background-color: #1F2937;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="text-center mb-12">
+            <h1 class="interactive-title mb-2">Dynamo Explained</h1>
+            <p class="text-lg text-gray-400">How Amazon's "always-on" database actually works. ✨</p>
+            <div class="mt-4 flex justify-center items-center space-x-3">
+                <span class="font-semibold">Normal Mode</span>
+                <label class="switch">
+                    <input type="checkbox" id="tech-toggle">
+                    <span class="slider"></span>
+                </label>
+                <span class="font-semibold">Software Engineer Mode</span>
+            </div>
+        </header>
+
+        <main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Consistent Hashing Card -->
+            <div class="card">
+                <h2 class="text-2xl font-bold mb-4">Where does the data go? 🤔</h2>
+                <p class="text-gray-300 mb-4">To spread data across many servers, Dynamo uses a clever trick called <strong class="text-blue-400">Consistent Hashing</strong>.</p>
+                <div class="bg-gray-800 p-6 rounded-lg flex-grow">
+                    <h3 class="text-xl font-semibold mb-2">Interactive Demo: The Hashing Ring</h3>
+                    <div id="consistent-hashing-ring"></div>
+                    <div class="text-center mt-4">
+                        <button id="add-data-btn" class="btn">Add Data</button>
+                        <button id="add-node-btn" class="btn ml-2 bg-pink-500 hover:bg-pink-600">Add Server</button>
+                    </div>
+                </div>
+                <div class="tech-details hidden">
+                    <h4 class="font-bold text-lg text-blue-300">Deep Dive</h4>
+                    <p class="text-sm text-gray-400 mt-2">Dynamo uses a variant of consistent hashing where each node is assigned multiple "tokens" to create "virtual nodes". This strategy improves load distribution and handles node heterogeneity. When a node joins or leaves, only its immediate neighbors are affected, enabling incremental scalability. The partitioning scheme evolved from random token assignment to a strategy with Q equally sized partitions, which decouples partitioning from placement and simplifies bootstrapping and archival.</p>
+                </div>
+            </div>
+
+            <!-- Vector Clocks Card -->
+            <div class="card lg:row-span-2">
+                <h2 class="text-2xl font-bold mb-4">Handling Concurrent Edits ✍️</h2>
+                <p class="text-gray-300 mb-4">Dynamo's goal is to be "always writable." But what if two people edit a shopping cart at the same time? This is where <strong class="text-purple-400">Vector Clocks</strong> come in.</p>
+                <div class="bg-gray-800 p-6 rounded-lg flex-grow">
+                    <h3 class="text-xl font-semibold mb-2">Demo: Shopping Cart Conflicts</h3>
+                    <div id="cart-versions-display" class="space-y-4"></div>
+                    <div class="text-center mt-4 space-x-2">
+                        <button id="reconcile-btn" class="btn bg-green-600 hover:bg-green-700 hidden">Reconcile Carts</button>
+                    </div>
+                </div>
+                 <div class="tech-details hidden">
+                    <h4 class="font-bold text-lg text-purple-300">Deep Dive</h4>
+                    <p class="text-sm text-gray-400 mt-2">To manage causality, Dynamo uses vector clocks, which are lists of `(node, counter)` pairs. If a new version's clock is a direct descendant of others, the system performs *syntactic reconciliation*. If the clocks diverge (no clear ancestor/descendant relationship), it requires *semantic reconciliation* by the client application. To prevent unbounded growth, Dynamo can truncate the vector clock by removing the oldest pair, though this can lead to reconciliation inefficiencies.</p>
+                </div>
+            </div>
+
+            <!-- Quorum System Card -->
+            <div class="card">
+                <h2 class="text-2xl font-bold mb-4">Majority Rules for Data Safety 🗳️</h2>
+                <p class="text-gray-300 mb-4">To prevent data loss, your data is replicated on <strong class="text-green-400">N</strong> servers. The Quorum system ensures reads and writes are consistent.</p>
+                <div class="bg-gray-800 p-6 rounded-lg flex-grow">
+                    <h3 class="text-xl font-semibold mb-2">The (N, R, W) Game</h3>
+                    <div class="flex justify-around items-center mb-4">
+                        <div class="text-center">
+                            <label for="slider-n" class="font-bold">N</label>
+                            <input id="slider-n" type="range" min="3" max="5" value="3" class="w-full"><span id="n-val">3</span>
+                        </div>
+                        <div class="text-center">
+                            <label for="slider-w" class="font-bold">W</label>
+                            <input id="slider-w" type="range" min="1" max="3" value="2" class="w-full"><span id="w-val">2</span>
+                        </div>
+                        <div class="text-center">
+                            <label for="slider-r" class="font-bold">R</label>
+                            <input id="slider-r" type="range" min="1" max="3" value="2" class="w-full"><span id="r-val">2</span>
+                        </div>
+                    </div>
+                    <div id="quorum-servers" class="flex justify-center space-x-4 my-4"></div>
+                    <div id="quorum-feedback" class="text-center font-semibold p-2 rounded-lg"></div>
+                </div>
+                 <div class="tech-details hidden">
+                    <h4 class="font-bold text-lg text-green-300">Deep Dive</h4>
+                    <p class="text-sm text-gray-400 mt-2">The `R + W > N` formula guarantees a quorum, ensuring any read (R) sees at least one replica from the most recent write (W). A low `W` (e.g., W=1) provides an "always writeable" system but increases the risk of data loss on a single node failure before replication completes. The choice of N, R, and W is a critical trade-off between latency, availability, durability, and consistency.</p>
+                </div>
+            </div>
+            
+            <!-- Failure Handling Card -->
+            <div class="card md:col-span-2 lg:col-span-3">
+                <h2 class="text-2xl font-bold mb-4">What if a Server Ghosts? 👻</h2>
+                <p class="text-gray-300 mb-4">Servers fail. It happens. Dynamo is designed for resilience.</p>
+                <div class="tech-details hidden">
+                    <h4 class="font-bold text-lg text-pink-300">Deep Dive: Failure & Replication</h4>
+                    
+                    <!-- Hinted Handoff Visual -->
+                    <div class="mt-4">
+                        <h5 class="font-semibold text-pink-200">Hinted Handoff</h5>
+                        <p class="text-sm text-gray-400 mb-2">If the target node is down, a "sloppy quorum" sends the write to a healthy node, which later "hands it off".</p>
+                        <div class="p-4 bg-gray-900 rounded-lg overflow-x-auto">
+                            <p class="text-center text-xs mb-2">Scenario: Write for Node B, but B is offline</p>
+                            <div class="flex items-center justify-center space-x-2 md:space-x-4">
+                                <div class="text-center text-sm">Client</div>
+                                <svg class="w-6 h-6 md:w-8 md:h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                                <div class="server-viz">A</div>
+                                <div class="server-viz offline">B</div>
+                                <div class="server-viz">C</div>
+                                <div class="flex flex-col items-center">
+                                    <svg class="w-6 h-6 md:w-8 md:h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    <div class="text-center text-xs mt-1">Write OK<br>(on C, hinted for B)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Merkle Tree Visual -->
+                    <div class="mt-6">
+                        <h5 class="font-semibold text-pink-200">Anti-Entropy (Merkle Trees)</h5>
+                        <p class="text-sm text-gray-400 mb-2">To sync replicas efficiently, nodes compare Merkle tree hashes, only transferring data that differs.</p>
+                        <div class="p-4 bg-gray-900 rounded-lg flex flex-col items-center">
+                            <div class="tree-node-viz">Root Hash</div>
+                            <div class="flex mt-4 gap-8">
+                                <div class="flex flex-col items-center gap-4">
+                                    <div class="tree-node-viz">Hash A</div>
+                                    <div class="flex gap-2">
+                                        <div class="tree-node-viz leaf">Key 1</div>
+                                        <div class="tree-node-viz leaf">Key 2</div>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col items-center gap-4">
+                                    <div class="tree-node-viz">Hash B</div>
+                                    <div class="flex gap-2">
+                                        <div class="tree-node-viz leaf">Key 3</div>
+                                        <div class="tree-node-viz leaf">Key 4</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Toggle Switch Logic
+        const techToggle = document.getElementById('tech-toggle');
+        const techDetails = document.querySelectorAll('.tech-details');
+
+        techToggle.addEventListener('change', () => {
+            if (techToggle.checked) {
+                techDetails.forEach(detail => detail.classList.remove('hidden'));
+            } else {
+                techDetails.forEach(detail => detail.classList.add('hidden'));
+            }
+        });
+
+        // Consistent Hashing Demo
+        const ring = document.getElementById('consistent-hashing-ring');
+        const addDataBtn = document.getElementById('add-data-btn');
+        const addNodeBtn = document.getElementById('add-node-btn');
+        let nodeCount = 3;
+        let dataCount = 0;
+
+        function positionElement(element, angle) {
+            const radius = ring.offsetWidth / 2;
+            const x = radius + radius * Math.cos(angle) - (element.offsetWidth / 2);
+            const y = radius + radius * Math.sin(angle) - (element.offsetHeight / 2);
+            element.style.left = `${x}px`;
+            element.style.top = `${y}px`;
+        }
+
+        function renderRing() {
+            ring.innerHTML = '';
+            for (let i = 0; i < nodeCount; i++) {
+                const node = document.createElement('div');
+                node.className = 'node';
+                node.textContent = `N${i + 1}`;
+                ring.appendChild(node);
+                positionElement(node, (i * 2 * Math.PI) / nodeCount);
+            }
+        }
+        
+        addDataBtn.addEventListener('click', () => {
+            dataCount++;
+            const dataPoint = document.createElement('div');
+            dataPoint.className = 'data-point';
+            dataPoint.textContent = `D${dataCount}`;
+            ring.appendChild(dataPoint);
+            const angle = Math.random() * 2 * Math.PI;
+            positionElement(dataPoint, angle);
+            ring.style.transform = `rotate(${Math.random() * 360}deg)`;
+        });
+
+        addNodeBtn.addEventListener('click', () => {
+            nodeCount++;
+            renderRing();
+        });
+
+        // Vector Clock Demo
+        const cartDisplay = document.getElementById('cart-versions-display');
+        const reconcileBtn = document.getElementById('reconcile-btn');
+        const fruits = ['🍎', '🍌', '🍇', '🍓', '🥝', '🍍'];
+        let carts = [];
+
+        function getRandomFruit() {
+            return fruits[Math.floor(Math.random() * fruits.length)];
+        }
+
+        function renderCarts() {
+            cartDisplay.innerHTML = '';
+            carts.forEach((cart, index) => {
+                const clockString = Object.entries(cart.clock).map(([s, c]) => `(${s}, ${c})`).join(', ');
+                const cartDiv = document.createElement('div');
+                cartDiv.className = 'cart-version';
+                cartDiv.innerHTML = `
+                    <p class="font-bold">Cart Version ${index + 1}</p>
+                    <p class="text-sm text-gray-400">Clock: <code>[${clockString}]</code></p>
+                    <p class="text-2xl mt-2">${cart.items.join(' ')}</p>
+                    <button class="btn text-sm py-1 px-2 mt-2" onclick="updateCart(${index})">Update this cart</button>
+                `;
+                cartDisplay.appendChild(cartDiv);
+            });
+            
+            if (carts.length > 1) {
+                reconcileBtn.classList.remove('hidden');
+            } else {
+                reconcileBtn.classList.add('hidden');
+            }
+        }
+        
+        function initCarts() {
+            carts = [{ id: 1, clock: { A: 1 }, items: ['🍎'] }];
+            renderCarts();
+        }
+
+        function updateCart(index) {
+            const cartToUpdate = carts[index];
+            const server = String.fromCharCode(65 + Math.floor(Math.random() * 3)); // A, B, or C
+
+            // If we are in a reconciled state (only 1 cart exists), an update creates a conflict.
+            if (carts.length === 1) {
+                // Version 1: The cart we just updated.
+                const updatedCart = {
+                    id: cartToUpdate.id,
+                    clock: { ...cartToUpdate.clock },
+                    items: [...cartToUpdate.items, getRandomFruit()]
+                };
+                if (!updatedCart.clock[server]) updatedCart.clock[server] = 0;
+                updatedCart.clock[server]++;
+
+                // Version 2: A new, concurrent update from another server.
+                const concurrentServer = server === 'A' ? 'B' : 'A';
+                const concurrentCart = {
+                    id: Date.now(),
+                    clock: { ...cartToUpdate.clock },
+                    items: [...cartToUpdate.items, getRandomFruit()]
+                };
+                if (!concurrentCart.clock[concurrentServer]) concurrentCart.clock[concurrentServer] = 0;
+                concurrentCart.clock[concurrentServer]++;
+                
+                carts = [updatedCart, concurrentCart];
+            } else {
+                // If already in a conflict state, just update the selected cart's version.
+                if (!cartToUpdate.clock[server]) cartToUpdate.clock[server] = 0;
+                cartToUpdate.clock[server]++;
+                cartToUpdate.items.push(getRandomFruit());
+            }
+            
+            renderCarts();
+        }
+        
+        reconcileBtn.addEventListener('click', () => {
+            let mergedClock = {};
+            let mergedItems = new Set();
+            carts.forEach(cart => {
+                for (const [server, count] of Object.entries(cart.clock)) {
+                    if (!mergedClock[server] || count > mergedClock[server]) {
+                        mergedClock[server] = count;
+                    }
+                }
+                cart.items.forEach(item => mergedItems.add(item));
+            });
+            
+            // Final increment on a coordinating server (e.g., 'A') to finalize the merge
+            mergedClock['A'] = (mergedClock['A'] || 0) + 1;
+
+            carts = [{
+                id: Date.now(),
+                clock: mergedClock,
+                items: Array.from(mergedItems)
+            }];
+            renderCarts();
+        });
+
+
+        // Quorum Demo
+        const nSlider = document.getElementById('slider-n');
+        const wSlider = document.getElementById('slider-w');
+        const rSlider = document.getElementById('slider-r');
+        const nVal = document.getElementById('n-val');
+        const wVal = document.getElementById('w-val');
+        const rVal = document.getElementById('r-val');
+        const quorumServersDiv = document.getElementById('quorum-servers');
+        const quorumFeedback = document.getElementById('quorum-feedback');
+
+        function updateQuorum() {
+            const n = parseInt(nSlider.value);
+            let w = parseInt(wSlider.value);
+            let r = parseInt(rSlider.value);
+
+            wSlider.max = n;
+            rSlider.max = n;
+            if (w > n) { w = n; wSlider.value = n; }
+            if (r > n) { r = n; rSlider.value = n; }
+
+            nVal.textContent = n;
+            wVal.textContent = w;
+            rVal.textContent = r;
+
+            quorumServersDiv.innerHTML = '';
+            for (let i = 0; i < n; i++) {
+                const serverDiv = document.createElement('div');
+                serverDiv.className = 'quorum-server';
+                serverDiv.textContent = `S${i+1}`;
+                quorumServersDiv.appendChild(serverDiv);
+            }
+
+            if (r + w > n) {
+                quorumFeedback.textContent = "✅ Strong Consistency: Reads will see the latest writes.";
+                quorumFeedback.className = "text-center font-semibold p-2 rounded-lg bg-green-800 text-green-300";
+            } else {
+                quorumFeedback.textContent = "⚠️ Eventual Consistency: Reads might be stale.";
+                quorumFeedback.className = "text-center font-semibold p-2 rounded-lg bg-yellow-800 text-yellow-300";
+            }
+        }
+
+        [nSlider, wSlider, rSlider].forEach(slider => {
+            slider.addEventListener('input', updateQuorum);
+        });
+
+        // Initial Renders
+        window.onload = () => {
+            renderRing();
+            initCarts();
+            updateQuorum();
+        }
+    </script>
+</body>
+</html>
