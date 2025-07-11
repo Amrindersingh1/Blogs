@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artiflow - From Noise to Masterpiece</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0A0A0A;
+            color: #EAEAEA;
+        }
+        .view-panel {
+            transition: opacity 0.4s ease-in-out;
+        }
+        .view-panel.hidden {
+            display: none;
+        }
+        .neon-text {
+            text-shadow: 0 0 5px rgba(59, 130, 246, 0.5), 0 0 10px rgba(59, 130, 246, 0.5);
+        }
+        .neon-accent {
+            color: #38BDF8;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        .progress-bar-item {
+            cursor: pointer;
+            color: #9CA3AF; /* gray-400 */
+            background-color: transparent;
+            transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+        }
+        .progress-bar-item:hover {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: #EAEAEA;
+        }
+        .progress-bar-item.active {
+            color: #FFFFFF;
+            background-color: #3B82F6; /* blue-500 */
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+        }
+        .content-section {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .content-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .accordion-header {
+            transition: background-color 0.3s ease;
+        }
+        .accordion-header.open {
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out;
+        }
+        .accordion-content.open {
+            max-height: 1000px; /* Adjust as needed */
+        }
+        .interactive-hotspot {
+            cursor: pointer;
+            transition: fill 0.2s ease;
+        }
+        .interactive-hotspot:hover {
+            fill: rgba(56, 189, 248, 0.5);
+        }
+        #noise-canvas {
+            border-radius: 0.5rem;
+            border: 2px solid #374151;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header / Level Switcher -->
+    <header id="progress-header" class="w-full bg-gray-900/70 backdrop-blur-sm border-b border-gray-700">
+        <nav class="max-w-4xl mx-auto p-2">
+            <ul class="flex justify-center items-center space-x-2 sm:space-x-4">
+                <li><a data-view="vibe-check" class="progress-bar-item active text-center text-sm sm:text-base font-semibold py-3 px-4 sm:px-6 rounded-lg">Level 1</a></li>
+                <li><a data-view="the-tea" class="progress-bar-item text-center text-sm sm:text-base font-semibold py-3 px-4 sm:px-6 rounded-lg">Level 2</a></li>
+                <li><a data-view="the-alpha" class="progress-bar-item text-center text-sm sm:text-base font-semibold py-3 px-4 sm:px-6 rounded-lg">Level 3</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="max-w-4xl mx-auto p-4 sm:p-8">
+        <!-- View 1: Vibe Check -->
+        <div id="view-vibe-check" class="view-panel space-y-20 md:space-y-28">
+            <section class="text-center pt-8">
+                <h1 class="text-5xl md:text-8xl font-black uppercase tracking-tighter neon-text">From Noise to<br>Masterpiece ✨</h1>
+                <p class="mt-4 text-lg md:text-xl text-gray-300">The secret behind mind-blowing AI art, revealed.</p>
+            </section>
+
+            <section class="space-y-16">
+                <div class="content-section glass-card rounded-2xl p-6 md:p-8">
+                    <h2 class="text-4xl font-bold text-center mb-4">So, how does AI even do this?</h2>
+                    <p class="text-gray-400 text-center max-w-xl mb-6 mx-auto">It's not magic, it's a <b class="neon-accent">flow</b>. The AI learns to walk backward from pure static to your amazing idea. The better the flow, the sicker the pic.</p>
+                    <div class="w-full max-w-lg mx-auto">
+                        <div class="relative w-full aspect-[3/2]">
+                            <canvas id="noise-canvas" class="absolute inset-0 w-full h-full"></canvas>
+                            <img id="diffusion-image" src="" class="hidden absolute inset-0 w-full h-full object-cover rounded-lg border-2 border-gray-700" alt="An image transforming from noise to a bioluminescent cat.">
+                        </div>
+                        <div class="flex items-center space-x-4 mt-4">
+                            <i data-lucide="sparkles" class="text-gray-500" aria-label="Noise level"></i>
+                            <input id="diffusion-slider" type="range" min="0" max="100" value="0" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer" aria-label="Image refinement slider">
+                            <i data-lucide="cat" class="text-blue-400" aria-label="Final image"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-section glass-card rounded-2xl p-6 md:p-8">
+                    <h2 class="text-4xl font-bold text-center mb-4">Okay, but we made the flow <i class="neon-accent">better</i>.</h2>
+                    <div class="flex flex-col md:flex-row gap-8 items-center max-w-3xl mx-auto">
+                        <div class="w-full text-center glass-card p-6 rounded-2xl">
+                            <p class="mb-2 font-semibold">Old Way (Meh 😒)</p>
+                            <svg viewBox="0 0 100 50" class="w-full h-24" role="img" aria-label="A long, curvy, dashed line representing an inefficient process."><path d="M10,40 Q30,10 50,25 T90,20" stroke="#F87171" stroke-width="3" fill="none" stroke-dasharray="5,5"/></svg>
+                            <p class="text-sm text-gray-400">A long, curvy path takes more steps.</p>
+                        </div>
+                        <div class="w-full text-center glass-card p-6 rounded-2xl border-2 border-blue-500">
+                            <p class="mb-2 font-semibold">The <b class="neon-accent">Rectified Flow</b> Way (Fire 🔥)</p>
+                            <svg viewBox="0 0 100 50" class="w-full h-24" role="img" aria-label="A short, straight, solid line representing an efficient process."><path d="M10,25 L90,25" stroke="#38BDF8" stroke-width="3" fill="none"/></svg>
+                            <p class="text-sm text-gray-400">A straight shortcut. This is why our AI can be both <b class="neon-accent">fast and high-quality</b>.</p>
+                        </div>
+                    </div>
+                    <p class="mt-6 text-gray-400 text-center">It's a total glow-up.</p>
+                    <div class="text-center">
+                        <button id="dive-deeper-btn" class="mt-8 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-full transition-transform transform hover:scale-105 text-lg">
+                            Let's Dive Deeper
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- View 2: The Tea -->
+        <div id="view-the-tea" class="view-panel hidden">
+            <section id="level-2" class="pt-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-sm font-bold uppercase tracking-widest text-blue-400">Level 2</h2>
+                    <p class="text-4xl md:text-5xl font-black tracking-tighter">The Tea</p>
+                </div>
+                <div class="space-y-16">
+                    <div class="content-section glass-card rounded-2xl p-6 md:p-8">
+                        <h3 class="text-3xl font-bold mb-3 pb-2 border-b border-blue-500/20">The Art of the Prompt 🎨</h3>
+                        <p class="text-gray-400 mb-4">Getting the vibe right is key. Our model, <b class="neon-accent">MM-DiT</b>, has two brains—one for your words 📝 and one for the picture 🎨. They constantly chat to make sure the final image is exactly what you asked for. It's a full-on collab. This is why our model is so good at <b class="neon-accent">spelling words</b> in images—the text brain and the picture brain work together to get the letters just right.</p>
+                        <div class="bg-black/20 rounded-lg p-4 mt-4">
+                            <p class="font-mono text-gray-300"><span class="text-green-400">prompt></span> A photorealistic, cinematic shot of a <span class="bg-blue-900/50 p-1 rounded">monkey</span> holding a sign that says <span class="bg-blue-900/50 p-1 rounded">"Artiflow"</span>, in a <span class="bg-blue-900/50 p-1 rounded">library</span>.</p>
+                        </div>
+                    </div>
+                    <div class="content-section glass-card rounded-2xl p-6 md:p-8">
+                        <h3 class="text-3xl font-bold mb-3 pb-2 border-b border-blue-500/20">Training Smarter, Not Harder 🧠</h3>
+                        <p class="text-gray-400 mb-4">Which of these steps is the hardest for an AI to learn?</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                            <div class="border border-gray-700 rounded-lg p-3"><img src="https://placehold.co/800x600/1a1a1a/333333?text=Start+(Noise)" class="rounded-md w-full aspect-video object-cover" alt="Abstract static noise"><p class="mt-2 text-sm">The Start</p></div>
+                            <div class="border-2 border-blue-500 rounded-lg p-3"><img src="https://placehold.co/800x600/4a4a4a/999999?text=Messy+Middle" class="rounded-md w-full aspect-video object-cover" alt="A messy, partially formed abstract image"><p class="mt-2 text-sm font-bold neon-accent">The Messy Middle</p></div>
+                            <div class="border border-gray-700 rounded-lg p-3"><img src="https://placehold.co/800x600/8a8a8a/eeeeee?text=End+(Clear)" class="rounded-md w-full aspect-video object-cover" alt="An almost finished, clear abstract image"><p class="mt-2 text-sm">The End</p></div>
+                        </div>
+                        <p class="text-gray-400 mt-4">It's the messy middle! We used <b class="neon-accent">Logit-Normal Sampling</b> to make our AI focus its training there. Like mastering the hardest level in a video game.</p>
+                    </div>
+                    <div class="content-section glass-card rounded-2xl p-6 md:p-8">
+                        <h3 class="text-3xl font-bold mb-3 pb-2 border-b border-blue-500/20">The Caption Upgrade 🚀</h3>
+                        <p class="text-gray-400 mb-4">We gave our training data a major upgrade. Better captions = better pictures. The more details the AI learns from, the more detailed your images can be.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div><p class="font-semibold mb-2 text-red-400">Before</p><img src="https://placehold.co/800x600/6b7280/ffffff?text=Image+of+a+Dog" class="rounded-lg w-full aspect-[4/3] object-cover" alt="Image of a dog"><p class="mt-2 p-2 bg-black/20 rounded font-mono text-sm text-gray-400">"dog"</p></div>
+                            <div><p class="font-semibold mb-2 text-green-400">After</p><img src="https://placehold.co/800x600/6b7280/ffffff?text=Image+of+a+Dog" class="rounded-lg w-full aspect-[4/3] object-cover" alt="Image of a dog"><p class="mt-2 p-2 bg-black/20 rounded font-mono text-sm text-gray-400">"A golden retriever happily sits in a lush green park on a sunny day."</p></div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-12">
+                         <button id="go-to-alpha-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-full transition-transform transform hover:scale-105 text-lg">
+                            Go to Level 3 🚀
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- View 3: The Alpha -->
+        <div id="view-the-alpha" class="view-panel hidden">
+            <section id="level-3" class="pt-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-sm font-bold uppercase tracking-widest text-blue-400">Level 3</h2>
+                    <p class="text-4xl md:text-5xl font-black tracking-tighter">The Alpha</p>
+                </div>
+                <div class="space-y-16">
+                    <div class="content-section glass-card rounded-2xl p-6 md:p-8">
+                        <h3 class="text-3xl font-bold mb-3 pb-2 border-b border-blue-500/20">Architecture Deep Dive: MM-DiT</h3>
+                        <p class="text-gray-400 mb-4">Here's a simplified look at the model's brain. Tap the blocks to learn more. <a href="https://arxiv.org/pdf/2403.03206" target="_blank" class="text-blue-400 hover:underline">[See Paper, Fig 2]</a></p>
+                        <div class="relative">
+                            <svg id="mm-dit-diagram" viewBox="0 0 400 250" class="w-full bg-black/20 rounded-lg p-2" role="img" aria-label="Simplified diagram of the MM-DiT architecture.">
+                                <rect x="20" y="20" width="150" height="40" rx="5" fill="#1E3A8A"/><text x="95" y="45" font-size="12" fill="white" text-anchor="middle">Text Tokens</text>
+                                <rect x="20" y="80" width="150" height="120" rx="5" fill="#1E40AF"/><text x="95" y="145" font-size="12" fill="white" text-anchor="middle">Text Transformer</text>
+                                <rect x="230" y="20" width="150" height="40" rx="5" fill="#042f2e"/><text x="305" y="45" font-size="12" fill="white" text-anchor="middle">Image Tokens</text>
+                                <rect x="230" y="80" width="150" height="120" rx="5" fill="#065F46"/><text x="305" y="145" font-size="12" fill="white" text-anchor="middle">Image Transformer</text>
+                                <g id="hotspot-attention" class="interactive-hotspot" aria-label="Tap to learn about Bidirectional Attention"><rect x="175" y="110" width="50" height="50" rx="5" fill="#4A044E"/><text x="200" y="138" font-size="10" fill="white" text-anchor="middle">QKV</text><text x="200" y="150" font-size="10" fill="white" text-anchor="middle">Attention</text></g>
+                                <path d="M 170 135 L 175 135" stroke="white" stroke-width="2"/><path d="M 225 135 L 230 135" stroke="white" stroke-width="2"/>
+                                <rect x="150" y="220" width="100" height="20" rx="5" fill="#4B5563"/><text x="200" y="234" font-size="12" fill="white" text-anchor="middle">Output</text>
+                                <path d="M 95 200 L 95 220 L 150 220" stroke="white" stroke-width="2" fill="none"/><path d="M 305 200 L 305 220 L 250 220" stroke="white" stroke-width="2" fill="none"/>
+                            </svg>
+                            <div id="tooltip" class="absolute hidden bg-gray-900 text-white text-sm rounded-lg p-2 shadow-lg border border-gray-700 max-w-xs">Tooltip</div>
+                        </div>
+                        <div class="mt-6 space-y-2">
+                            <div class="accordion-item"><button class="accordion-header w-full flex justify-between items-center text-left font-semibold p-3 bg-gray-800/50 rounded-lg hover:bg-gray-700/50"><span>Why use separate weights?</span><i data-lucide="chevron-down" class="accordion-icon transition-transform" aria-label="Expand section"></i></button><div class="accordion-content"><p class="p-4 text-gray-400 bg-black/20 rounded-b-lg">By using separate weights for text and image tokens, each modality can be processed in its own specialized way before the information is mixed in the attention layer. This prevents the text and image signals from getting jumbled.</p></div></div>
+                            <div class="accordion-item"><button class="accordion-header w-full flex justify-between items-center text-left font-semibold p-3 bg-gray-800/50 rounded-lg hover:bg-gray-700/50"><span>What is the Bidirectional Flow?</span><i data-lucide="chevron-down" class="accordion-icon transition-transform" aria-label="Expand section"></i></button><div class="accordion-content"><p class="p-4 text-gray-400 bg-black/20 rounded-b-lg">This is the key. In the attention step, the image tokens can 'see' the text tokens, and vice-versa. This allows the model to, for example, place an object 'on the left' correctly because the spatial (image) and descriptive (text) information are deeply intertwined.</p></div></div>
+                        </div>
+                    </div>
+                    <div class="content-section glass-card rounded-2xl p-6 md:p-8">
+                        <h3 class="text-3xl font-bold mb-3 pb-2 border-b border-blue-500/20">The Math Behind the Flow</h3>
+                        <p class="text-gray-400 mb-4">Don't be scared, it's just math. These simple formulas are the core ideas.</p>
+                        <div class="space-y-4">
+                            <div class="bg-black/20 rounded-lg p-4"><p class="font-mono text-lg text-center text-cyan-300">z_t = (1-t)x_0 + tε</p><p class="text-center text-gray-400 mt-2">This is the <b class="neon-accent">Rectified Flow</b>. It's a straight line from your data (<span class="font-mono">x_0</span>) to noise (<span class="font-mono">ε</span>) as <span class="font-mono">t</span> goes from 0 to 1.</p></div>
+                            <div class="bg-black/20 rounded-lg p-4"><p class="font-mono text-lg text-center text-cyan-300">t_m = (√(m/n) * t_n) / (1 + (√(m/n) - 1) * t_n)</p><p class="text-center text-gray-400 mt-2">This is <b class="neon-accent">Timestep Shifting</b>. It helps us adjust the 'difficulty' of the noise for different image sizes. Bigger images need a different noise level to look good, and this formula handles that. <a href="https://arxiv.org/pdf/2403.03206" target="_blank" class="text-blue-400 hover:underline">[See Paper, Eq. 23]</a></p></div>
+                        </div>
+                    </div>
+                    <div class="content-section glass-card rounded-2xl p-6 md:p-8">
+                        <h3 class="text-3xl font-bold mb-3 pb-2 border-b border-blue-500/20">Data & Scaling Insights 📈</h3>
+                        <p class="text-gray-400 mb-4">The data doesn't lie. The research shows a clear power law: more data + bigger models = better results. Critically, the paper proves that <b class="neon-accent">validation loss is a strong predictor of overall model performance</b>, which validates their entire research method. There's no sign of this slowing down, meaning even more epic models are on the horizon. <a href="https://arxiv.org/pdf/2403.03206" target="_blank" class="text-blue-400 hover:underline">[See Paper, Fig 8]</a></p>
+                        <div class="relative h-64 md:h-80 mt-4">
+                            <canvas id="scalingChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <footer class="text-center text-gray-500 border-t border-gray-800 pt-8 mt-16">
+            <p>An interactive summary of "Scaling Rectified Flow Transformers for High-Resolution Image Synthesis".</p>
+            <a href="https://arxiv.org/pdf/2403.03206" target="_blank" class="text-blue-400 hover:underline">Read the full research paper</a>
+            <p class="text-xs mt-2">App concept by a 4-person team.</p>
+        </footer>
+    </main>
+
+    <script>
+        lucide.createIcons();
+
+        // --- Element Selectors ---
+        const navLinks = document.querySelectorAll('.progress-bar-item');
+        const viewPanels = document.querySelectorAll('.view-panel');
+        const diveDeeperBtn = document.getElementById('dive-deeper-btn');
+        const goToAlphaBtn = document.getElementById('go-to-alpha-btn');
+        let isChartInitialized = false;
+
+        // --- Tab Switching Logic ---
+        function switchView(viewId) {
+            navLinks.forEach(link => {
+                link.classList.toggle('active', link.dataset.view === viewId);
+            });
+            viewPanels.forEach(panel => {
+                panel.classList.toggle('hidden', panel.id !== `view-${viewId}`);
+            });
+            
+            const targetPanel = document.getElementById(`view-${viewId}`);
+            if (targetPanel) {
+                targetPanel.querySelectorAll('.content-section').forEach(el => {
+                    animationObserver.observe(el);
+                });
+            }
+
+            if (viewId === 'the-alpha' && !isChartInitialized) {
+                initializeScalingChart();
+                isChartInitialized = true;
+            }
+
+            window.scrollTo(0, 0);
+        }
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const viewId = e.target.dataset.view;
+                switchView(viewId);
+            });
+        });
+
+        diveDeeperBtn.addEventListener('click', () => {
+            switchView('the-tea');
+        });
+        
+        goToAlphaBtn.addEventListener('click', () => {
+            switchView('the-alpha');
+        });
+        
+        // --- Diffusion Slider & Noise Canvas Logic ---
+        const slider = document.getElementById('diffusion-slider');
+        const diffusionImage = document.getElementById('diffusion-image');
+        const noiseCanvas = document.getElementById('noise-canvas');
+        const ctx = noiseCanvas.getContext('2d');
+        let noiseAnimation;
+
+        const imageSteps = [
+            'https://placehold.co/600x400/1a1a1a/2a2a2a?text=+',
+            'https://placehold.co/600x400/2c2c2c/3d3d3d?text=+',
+            'https://placehold.co/600x400/3e3e3e/5f5f5f?text=Cat%3F',
+            'https://placehold.co/600x400/505050/818181?text=Cat',
+            'https://placehold.co/600x400/626262/a3a3a3?text=Glowing+Cat',
+            'https://placehold.co/600x400/747474/C5C5C5?text=Glowing+Cat',
+            'https://placehold.co/600x400/8B5CF6/E0E0E0?text=Bioluminescent+Cat',
+            'https://placehold.co/600x400/8B5CF6/F0F0F0?text=Bioluminescent+Cat',
+            'https://placehold.co/600x400/8B5CF6/FAFAFA?text=Bioluminescent+Cat',
+            'https://placehold.co/600x400/8B5CF6/FFFFFF?text=Bioluminescent+Cat',
+            'https://placehold.co/600x400/8B5CF6/FFFFFF?text=Bioluminescent+Cat+in+Forest'
+        ];
+
+        function drawNoise() {
+            const w = noiseCanvas.width;
+            const h = noiseCanvas.height;
+            const imageData = ctx.createImageData(w, h);
+            const data = imageData.data;
+            for (let i = 0; i < data.length; i += 4) {
+                const shade = Math.random() * 255;
+                data[i] = shade;     // red
+                data[i + 1] = shade; // green
+                data[i + 2] = shade; // blue
+                data[i + 3] = 255;   // alpha
+            }
+            ctx.putImageData(imageData, 0, 0);
+            noiseAnimation = requestAnimationFrame(drawNoise);
+        }
+
+        function startNoise() {
+            noiseCanvas.width = 300;
+            noiseCanvas.height = 200;
+            noiseCanvas.classList.remove('hidden');
+            diffusionImage.classList.add('hidden');
+            drawNoise();
+        }
+
+        slider.addEventListener('input', (e) => {
+            const value = parseInt(e.target.value);
+            
+            if (noiseAnimation) {
+                cancelAnimationFrame(noiseAnimation);
+                noiseAnimation = null;
+                noiseCanvas.classList.add('hidden');
+                diffusionImage.classList.remove('hidden');
+            }
+            
+            if (value === 0) {
+                startNoise();
+            } else {
+                const step = Math.floor((value - 1) / 10);
+                diffusionImage.src = imageSteps[step];
+            }
+        });
+
+        // --- Intersection Observer for scroll animations ---
+        const animationObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.content-section').forEach(el => {
+            animationObserver.observe(el);
+        });
+
+        // --- Accordion Logic ---
+        document.querySelectorAll('.accordion-header').forEach(header => {
+            header.addEventListener('click', () => {
+                const content = header.nextElementSibling;
+                const icon = header.querySelector('.accordion-icon');
+                const isOpen = content.classList.contains('open');
+
+                content.classList.toggle('open');
+                header.classList.toggle('open');
+                
+                if (icon) {
+                    icon.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+                    icon.setAttribute('aria-label', isOpen ? 'Expand section' : 'Collapse section');
+                }
+            });
+        });
+
+        // --- Interactive Diagram Tooltip for Touch and Mouse ---
+        const diagram = document.getElementById('mm-dit-diagram');
+        const tooltip = document.getElementById('tooltip');
+        const hotspot = document.getElementById('hotspot-attention');
+        
+        const tooltipContent = {
+            'hotspot-attention': "<b>Bidirectional Attention:</b> This is where the magic happens. Text and Image information are mixed, allowing them to influence each other directly."
+        };
+
+        hotspot.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const id = e.currentTarget.id;
+            if (tooltipContent[id]) {
+                const isHidden = tooltip.classList.contains('hidden');
+                tooltip.innerHTML = tooltipContent[id];
+                tooltip.classList.toggle('hidden', !isHidden);
+                
+                if (isHidden) {
+                    const rect = diagram.getBoundingClientRect();
+                    const hotspotRect = hotspot.getBoundingClientRect();
+                    const x = (hotspotRect.left - rect.left) + (hotspotRect.width / 2) - (tooltip.offsetWidth / 2);
+                    const y = hotspotRect.top - rect.top - tooltip.offsetHeight - 10;
+                    
+                    tooltip.style.left = `${x}px`;
+                    tooltip.style.top = `${y}px`;
+                }
+            }
+        });
+
+        document.addEventListener('click', () => {
+            tooltip.classList.add('hidden');
+        });
+
+
+        // --- Chart.js Initialization ---
+        function initializeScalingChart() {
+            const chartCtx = document.getElementById('scalingChart').getContext('2d');
+            
+            Chart.defaults.color = '#9CA3AF';
+            Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+
+            new Chart(chartCtx, {
+                type: 'line',
+                data: {
+                    labels: ['100k Steps', '200k Steps', '300k Steps', '400k Steps', '500k Steps'],
+                    datasets: [
+                        {
+                            label: 'Model (d=15)',
+                            data: [0.425, 0.410, 0.402, 0.398, 0.395],
+                            borderColor: '#F87171',
+                            backgroundColor: 'rgba(248, 113, 113, 0.1)',
+                            tension: 0.3,
+                            fill: true,
+                        },
+                        {
+                            label: 'Model (d=30)',
+                            data: [0.415, 0.400, 0.391, 0.385, 0.382],
+                            borderColor: '#60A5FA',
+                            backgroundColor: 'rgba(96, 165, 250, 0.1)',
+                            tension: 0.3,
+                            fill: true,
+                        },
+                        {
+                            label: 'Model (d=38)',
+                            data: [0.410, 0.395, 0.387, 0.382, 0.380],
+                            borderColor: '#34D399',
+                            backgroundColor: 'rgba(52, 211, 153, 0.1)',
+                            tension: 0.3,
+                            fill: true,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Validation Loss vs. Training Steps',
+                            color: '#EAEAEA',
+                            font: {
+                                size: 16
+                            }
+                        },
+                    },
+                    scales: {
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Validation Loss'
+                            },
+                            min: 0.375,
+                            max: 0.430
+                        },
+                        x: {
+                             title: {
+                                display: true,
+                                text: 'Training Progress'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Initial setup
+        startNoise();
+
+    </script>
+</body>
+</html>
