@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt Lord: The Ultimate Guide</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&family=Inter:wght@400;700&display=swap');
+        @import url('https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css');
+
+        :root {
+            --background-color: #1a1a2e;
+            --primary-color: #53d9d1;
+            --secondary-color: #0f3460;
+            --accent-color: #53d9d1;
+            --text-color: #ffffff;
+            --font-pixel: 'VT323', monospace;
+            --font-main: 'Inter', sans-serif;
+            --user-prompt-color: #a9c7ff;
+            --ai-output-color: #99ff99;
+        }
+
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: var(--font-main); background-color: var(--background-color); color: var(--text-color); overflow: hidden; }
+        .app-container { width: 100vw; height: 100vh; position: relative; }
+        .screen { width: 100%; height: 100%; padding: 2vw 5vw; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; box-sizing: border-box; position: absolute; top: 0; left: 0; opacity: 0; transition: opacity 0.4s ease-in-out; }
+        .screen.active { display: flex; opacity: 1; }
+        h1, h2, h3 { font-family: var(--font-pixel); color: var(--accent-color); margin: 0 0 20px 0; }
+        h1 { font-size: clamp(3rem, 10vw, 6rem); letter-spacing: 5px; }
+        h2 { font-size: clamp(2rem, 8vw, 4rem); }
+        h3 { font-size: clamp(1.5rem, 5vw, 2.5rem); color: var(--primary-color); }
+        p { font-size: clamp(1.1rem, 2.5vw, 1.5rem); line-height: 1.7; max-width: 800px; margin: 0 auto 30px auto; }
+        .button { font-family: var(--font-pixel); font-size: clamp(1.2rem, 3vw, 1.8rem); background-color: var(--primary-color); color: var(--background-color); font-weight: bold; border: none; padding: 15px 40px; border-radius: 10px; cursor: pointer; border: 3px solid #000; box-shadow: 7px 7px 0px #000; transition: all 0.1s ease-in-out; }
+        .button:hover { transform: translate(3px, 3px); box-shadow: 4px 4px 0px #000; }
+        .button:active { transform: translate(7px, 7px); box-shadow: 0px 0px 0px #000; }
+
+        /* Library Screen */
+        #library-screen { flex-direction: row; align-items: flex-start; gap: 30px; padding: 30px; }
+        #technique-nav { background: rgba(0,0,0,0.2); padding: 20px; border-radius: 15px; height: 90vh; overflow-y: auto; flex-shrink: 0; display: flex; flex-direction: column; }
+        #technique-nav ul { list-style: none; padding: 0; margin: 0; text-align: left; flex-grow: 1; }
+        #technique-nav li { padding: 12px 20px; margin-bottom: 10px; border-radius: 8px; cursor: pointer; font-family: var(--font-pixel); font-size: 1.2rem; transition: background-color 0.2s; display: flex; align-items: center; gap: 10px; }
+        #technique-nav li .mastery-icon { font-size: 1.5rem; color: rgba(255,255,255,0.3); }
+        #technique-nav li.mastered .mastery-icon { color: var(--accent-color); }
+        #technique-nav li:hover { background-color: var(--secondary-color); }
+        #technique-nav li.active { background-color: var(--primary-color); color: var(--background-color); font-weight: bold; }
+        
+        #technique-content { flex-grow: 1; text-align: left; background: rgba(0,0,0,0.2); padding: 30px; border-radius: 15px; height: 90vh; overflow-y: auto; }
+        #technique-content p { font-size: 1.2rem; max-width: 100%; }
+        #technique-content .best-practice { margin-top: 20px; padding: 15px; background: var(--secondary-color); border-left: 4px solid var(--accent-color); border-radius: 5px; font-size: 1.1rem; }
+        pre[class*="language-"] { padding: 1.5em; margin: 20px 0; border-radius: 10px; font-size: 1.1rem; }
+
+        /* XP Bar */
+        #xp-bar-container { width: 100%; background: var(--secondary-color); padding: 5px; border-radius: 10px; margin-top: auto; }
+        #xp-bar { width: 0%; height: 20px; background: var(--primary-color); border-radius: 5px; transition: width 0.5s ease-out; }
+        #xp-text { font-family: var(--font-pixel); font-size: 1rem; margin-top: 5px; }
+
+        /* Color-coding & Scrollbar */
+        .prompt-user-part { color: var(--user-prompt-color); }
+        .prompt-ai-part { color: var(--ai-output-color); font-weight: bold; }
+        ::-webkit-scrollbar { width: 12px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background-color: var(--primary-color); border-radius: 10px; border: 3px solid rgba(0,0,0,0.2); }
+        ::-webkit-scrollbar-thumb:hover { background-color: #83fff7; }
+
+        /* Interactive Widgets */
+        .interactive-widget { background: var(--secondary-color); padding: 20px; border-radius: 10px; margin-top: 20px; border: 1px solid var(--accent-color); }
+        .interactive-widget textarea, .interactive-widget select { width: 100%; background: #1a1a2e; border: 1px solid var(--accent-color); color: white; padding: 10px; border-radius: 5px; font-family: var(--font-main); font-size: 1.1rem; margin-bottom: 10px; box-sizing: border-box; }
+        .interactive-widget button { font-family: var(--font-pixel); font-size: 1.1rem; background-color: var(--accent-color); color: var(--background-color); border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+        .interactive-widget .output { margin-top: 15px; padding: 15px; background: #1a1a2e; border-radius: 5px; white-space: pre-wrap; word-break: break-word; min-height: 40px; font-size: 1.1rem; transition: background-color 0.3s; }
+        .interactive-widget .explanation { margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.2); border-left: 2px solid var(--primary-color); border-radius: 4px; font-size: 1rem; color: rgba(255,255,255,0.8); }
+
+        /* Boss Battle */
+        .game-screen { justify-content: flex-start; padding-top: 5vh; }
+        .game-container { width: 100%; max-width: 900px; position: relative;}
+        .back-link { position: absolute; top: -20px; left: 0; color: var(--accent-color); text-decoration: none; font-family: var(--font-pixel); font-size: 1.2rem; }
+        .back-link:hover { text-decoration: underline; }
+        #boss-health-bar-container { width: 100%; height: 30px; background: rgba(0,0,0,0.3); border-radius: 15px; margin: 20px 0; border: 2px solid var(--accent-color); }
+        #boss-health-bar { width: 100%; height: 100%; background: var(--primary-color); border-radius: 12px; transition: width 0.5s ease-in-out; }
+        .prompt-editor { width: 100%; background: #1e1e3f; padding: 20px; border-radius: 10px; margin-top: 20px; text-align: left; }
+        #prompt-textarea { width: 100%; height: 150px; background: rgba(0,0,0,0.4); border: 1px solid var(--accent-color); border-radius: 5px; color: var(--text-color); font-family: var(--font-main); font-size: 1rem; padding: 10px; box-sizing: border-box; resize: none; }
+        .upgrade-buttons { margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .upgrade-btn { background: var(--accent-color); color: var(--background-color); font-family: var(--font-pixel); font-size: 1rem; padding: 10px 15px; border-radius: 5px; cursor: pointer; border: none; }
+        .upgrade-btn.used { background: #555; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container" id="app-container">
+        <div id="intro-screen" class="screen active">
+            <div>
+                <h1>Prompt Lord</h1>
+                <p>The Ultimate Interactive Guide to Prompt Engineering.</p>
+                <button id="start-btn" class="button">Enter the Library</button>
+            </div>
+        </div>
+
+        <div id="library-screen" class="screen">
+            <nav id="technique-nav">
+                <h2 style="font-size: 1.8rem; text-align: center;">Techniques</h2>
+                <ul id="technique-list"></ul>
+                <div id="xp-container">
+                    <div id="level-text" style="font-family: var(--font-pixel); font-size: 1.2rem; margin-bottom: 5px;"></div>
+                    <div id="xp-bar-container">
+                        <div id="xp-bar"></div>
+                    </div>
+                    <div id="xp-text"></div>
+                </div>
+                <button id="goto-boss-btn" class="button" style="width: 100%; margin-top: 20px;">Test Your Skills</button>
+            </nav>
+            <main id="technique-content"></main>
+        </div>
+
+        <div id="boss-battle-screen" class="screen game-screen">
+            <div class="game-container">
+                <a href="#" id="back-to-library-boss" class="back-link">&lt; Back to Library</a>
+                <h2>Boss Battle: The Vague AI</h2>
+                <p>The AI's response is trash! Fix the prompt using the techniques you've learned to defeat it.</p>
+                <div id="boss-health-bar-container"><div id="boss-health-bar"></div></div>
+                <div class="prompt-editor">
+                    <textarea id="prompt-textarea">Generate a story.</textarea>
+                    <div class="upgrade-buttons">
+                        <button class="upgrade-btn" data-upgrade="role">Add Role</button>
+                        <button class="upgrade-btn" data-upgrade="few-shot">Add Example</button>
+                        <button class="upgrade-btn" data-upgrade="cot">Add CoT</button>
+                    </div>
+                </div>
+                <button id="run-prompt-btn" class="button" style="margin-top: 20px;">Run Prompt</button>
+            </div>
+        </div>
+        
+        <div id="win-screen" class="screen">
+            <div class="game-container">
+                 <a href="#" id="back-to-library-win" class="back-link">&lt; Back to Library</a>
+                <h1>You Win!</h1>
+                <p>You've defeated the Vague AI and become a Prompt Lord. You earned +100 XP!</p>
+                <button id="restart-btn" class="button">Play Again</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+
+    <script>
+        const techniquesData = {
+            "zero-shot": {
+                title: "Zero-Shot Prompting",
+                definition: "Prompting the LLM to perform a task using only a clear, direct instruction—no examples.",
+                why: "Use this for quick, generalizable results for new or simple tasks, especially when you lack labeled data or want to test model understanding.",
+                how: `User message:\nClassify the sentiment of the following customer support ticket as Positive, Negative, or Neutral.\nTicket: "The new update fixed my issue, but now the app loads slowly."|||LLM response:\nNeutral`,
+                interactive: true,
+                explanation: "Notice the AI correctly identified the mixed sentiment but leaned towards 'Neutral' because the prompt was simple and direct."
+            },
+            "role-prompting": {
+                title: "Role or Persona Prompting",
+                definition: "Assigning the LLM a specific role or persona to guide its response style and expertise.",
+                why: "So you can control the AI's tone, personality, and expertise, making its answers more relevant to your specific needs.",
+                how: `User message:\nYou are a senior customer support analyst. For the following ticket, provide a sentiment classification and a brief explanation for your decision.\n\nTicket: "The new update fixed my issue, but now the app loads slowly."|||LLM response:\nSentiment: Neutral\nExplanation: While the customer appreciates the fix, they have encountered a new performance issue, balancing out the sentiment.`,
+                interactive: true,
+                explanation: "See how the AI's tone and focus change completely based on the role? This is a powerful way to guide personality."
+            },
+            "function-calling": {
+                title: "Function Calling & Strict Output",
+                definition: "Directing the model to output in a strict format (e.g., JSON) or to call a function.",
+                why: "So your output is machine-readable and ready for automation, which reduces errors and makes it perfect for APIs.",
+                how: `User message:\nExtract structured data from this ticket and return as JSON with fields: "issue_fixed", "new_issue", "overall_sentiment".\n\nTicket: "The new update fixed my issue, but now the app loads slowly."|||LLM response:\n\`\`\`json\n{\n  "issue_fixed": "Previous issue resolved by update",\n  "new_issue": "App loads slowly after update",\n  "overall_sentiment": "Neutral"\n}\n\`\`\``,
+                interactive: true,
+                explanation: "The output is clean, predictable JSON, perfect for sending to another program or API. This avoids messy, unstructured text."
+            },
+            "few-shot": { title: "Few-Shot Prompting", definition: "Providing a few labeled examples to show the LLM the desired input-output pattern.", why: "To improve accuracy by demonstrating the format and logic you want, especially for nuanced or domain-specific tasks.", how: `User message:\nClassify the sentiment of each customer support ticket as Positive, Negative, or Neutral.\n\nTicket: "The app crashes every time I open it."\nSentiment: Negative\n\nTicket: "Thank you for adding dark mode!"\nSentiment: Positive\n\nTicket: "The new update fixed my issue, but now the app loads slowly."\nSentiment:|||LLM response:\nNeutral` },
+            "chain-of-thought": { title: "Chain-of-Thought (CoT)", definition: "Instructing the LLM to reason step-by-step before producing a final answer.", why: "To make the model’s reasoning explicit, which enhances transparency and reliability for complex or analytical tasks.", how: `User message:\nRead the customer support ticket and explain your reasoning step-by-step before classifying the sentiment as Positive, Negative, or Neutral.\n\nTicket: "The new update fixed my issue, but now the app loads slowly."|||LLM response:\nFirst, the customer says the update fixed their issue, which is positive. However, they also mention a new problem: the app loads slowly, which is negative. Since both positive and negative aspects are mentioned, the overall sentiment is Neutral.\n\nSentiment: Neutral` },
+            "meta-prompting": { title: "Meta Prompting", definition: "Prompting for a specific output structure, such as JSON or XML.", why: "To ensure outputs are machine-readable and consistent, which is critical for downstream automation or integration with business systems.", how: `User message:\nAnalyze the following customer support ticket. Return your answer as JSON with the fields "ticket", "sentiment", and "reasoning".\n\nTicket: "The new update fixed my issue, but now the app loads slowly."|||LLM response:\n\`\`\`json\n{\n  "ticket": "The new update fixed my issue, but now the app loads slowly.",\n  "sentiment": "Neutral",\n  "reasoning": "The customer reports a resolved issue (positive) but also a new problem (negative), resulting in a neutral overall sentiment."\n}\n\`\`\`` },
+            "self-consistency": { title: "Self-Consistency", definition: "Sampling multiple reasoning paths and selects the most frequent or consistent answer.", why: "To improve reliability for critical or ambiguous tasks by reducing randomness and surfacing consensus.", how: `User message:\nAnalyze the ticket three times, each time explaining your reasoning, then state the most consistent sentiment.\n\nTicket: "The new update fixed my issue, but now the app loads slowly."|||LLM response:\nAnalysis 1: Fixed issue (positive), but app slow (negative) → Neutral\nAnalysis 2: Positive for fix, negative for new issue → Neutral\nAnalysis 3: Mixed feedback, overall neutral → Neutral\nMost consistent sentiment: Neutral` },
+            "recursive-self-improvement": { title: "Recursive Self-Improvement (RSIP)", definition: "Having the LLM critique and refine its own output through multiple iterations.", why: "To boost clarity and accuracy, especially for summaries or explanations that need to meet specific quality standards.", how: `User message:\nDraft a summary of this customer ticket, then critique your summary for clarity and completeness, and finally revise it.\n\nTicket: "The new update fixed my issue, but now the app loads slowly."|||LLM response:\nDraft: The update fixed the customer's issue, but now the app is slow.\nCritique: The summary is clear but could specify the nature of the original issue.\nRevision: The update fixed the customer's previous issue, but now they report the app loads slowly.` },
+            "context-aware-decomposition": { title: "Context-Aware Decomposition", definition: "Breaking complex tasks into smaller, context-aware steps.", why: "To improve accuracy and transparency for multi-part or ambiguous tasks by isolating each component.", how: `User message:\nStep 1: List all positive aspects of the ticket.\nStep 2: List all negative aspects.\nStep 3: Based on both, classify the overall sentiment as Positive, Negative, or Neutral.\n\nTicket: "The new update fixed my issue, but now the app loads slowly."|||LLM response:\nStep 1: Positive aspect: The update fixed the customer's issue.\nStep 2: Negative aspect: The app loads slowly after the update.\nStep 3: Overall sentiment: Neutral` },
+            "prompt-chaining": { title: "Prompt Chaining", definition: "Linking multiple prompts in sequence, where the output of one becomes the input for the next.", why: "To enable multi-stage workflows and complex automation by breaking a process into manageable steps.", how: `User message:\nStep 1: Extract all issues mentioned in the ticket.\nStep 2: For each issue, classify its sentiment as Positive, Negative, or Neutral.\n\nTicket: "The new update fixed my issue, but now the app loads slowly."|||LLM response:\nStep 1: Issues:\n- Previous issue (fixed)\n- App loads slowly\n\nStep 2:\n- Previous issue: Positive\n- App loads slowly: Negative` },
+            "rag": { title: "Retrieval Augmented Generation (RAG)", definition: "Incorporating information from external sources or documents before generating an answer.", why: "To improve factual accuracy and context-awareness, especially for dynamic or knowledge-intensive tasks.", how: `User message:\nRefer to the latest product documentation, then answer: Does the update typically affect app load times?\nTicket: "The new update fixed my issue, but now the app loads slowly."|||LLM response:\nAccording to the latest product documentation, the update should not impact app load times. The customer's experience may be an isolated case.` },
+        };
+
+        const userState = {
+            level: 1,
+            xp: 0,
+            xpForNextLevel: 100,
+            masteredTechniques: new Set(),
+            get levelName() {
+                if (this.level < 3) return 'Apprentice';
+                if (this.level < 6) return 'Adept';
+                if (this.level < 10) return 'Master';
+                return 'Lord';
+            }
+        };
+
+        const screens = { intro: document.getElementById('intro-screen'), library: document.getElementById('library-screen'), boss: document.getElementById('boss-battle-screen'), win: document.getElementById('win-screen') };
+        const techniqueList = document.getElementById('technique-list');
+        const techniqueContent = document.getElementById('technique-content');
+        
+        function switchScreen(nextScreenKey) {
+            const currentScreen = document.querySelector('.screen.active');
+            if (currentScreen) currentScreen.classList.remove('active');
+            if(screens[nextScreenKey]) screens[nextScreenKey].classList.add('active');
+        }
+
+        function addXp(amount) {
+            userState.xp += amount;
+            if (userState.xp >= userState.xpForNextLevel) {
+                userState.level++;
+                userState.xp -= userState.xpForNextLevel;
+                userState.xpForNextLevel = Math.floor(userState.xpForNextLevel * 1.5);
+            }
+            updateUi();
+        }
+
+        function updateUi() {
+            document.getElementById('level-text').textContent = `Lvl ${userState.level} ${userState.levelName}`;
+            document.getElementById('xp-text').textContent = `${userState.xp} / ${userState.xpForNextLevel} XP`;
+            const xpPercentage = (userState.xp / userState.xpForNextLevel) * 100;
+            document.getElementById('xp-bar').style.width = `${xpPercentage}%`;
+
+            document.querySelectorAll('#technique-list li').forEach(li => {
+                if (userState.masteredTechniques.has(li.dataset.key)) {
+                    li.classList.add('mastered');
+                }
+            });
+        }
+
+        function displayTechnique(key) {
+            const data = techniquesData[key];
+            if (!data) return;
+
+            if (!userState.masteredTechniques.has(key)) {
+                addXp(10);
+                userState.masteredTechniques.add(key);
+                updateUi();
+            }
+
+            const parts = data.how.split('|||');
+            const formattedExample = parts.map((part, index) => {
+                const safePart = part.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                return `<span class="${index % 2 === 1 ? 'prompt-ai-part' : 'prompt-user-part'}">${safePart}</span>`;
+            }).join('');
+
+            let exampleContent = `<h4>How:</h4><pre><code class="language-text">${formattedExample}</code></pre>`;
+            if (data.interactive) exampleContent += createInteractiveWidget(key);
+
+            techniqueContent.innerHTML = `
+                <h3>${data.title}</h3>
+                <p><strong>What:</strong> ${data.definition}</p>
+                ${exampleContent}
+                <div class="best-practice"><strong>Why:</strong> ${data.why}</div>`;
+            Prism.highlightAll();
+            attachInteractiveListeners(key);
+
+            document.querySelectorAll('#technique-list li').forEach(li => li.classList.toggle('active', li.dataset.key === key));
+        }
+
+        function createInteractiveWidget(key) {
+            let widgetHTML = `<div class="interactive-widget" id="widget-${key}"><h4>Try It Live!</h4>`;
+            const defaultReview = `The new update fixed my issue, but now the app loads slowly.`;
+            if (key === 'zero-shot') {
+                widgetHTML += `<textarea id="input-${key}" rows="3">${defaultReview}</textarea><button id="run-${key}">Classify Sentiment</button>`;
+            } else if (key === 'role-prompting') {
+                widgetHTML += `<select id="role-select-${key}"><option value="Senior Support Analyst">Senior Support Analyst</option><option value="Frustrated User">Frustrated User</option></select><textarea id="input-${key}" rows="3">${defaultReview}</textarea><button id="run-${key}">Analyze with Role</button>`;
+            } else if (key === 'function-calling') {
+                 widgetHTML += `<textarea id="input-${key}" rows="3">${defaultReview}</textarea><button id="run-${key}">Get Structured JSON</button>`;
+            }
+            widgetHTML += `<div class="output" id="output-${key}">Mock AI output will appear here...</div><div class="explanation" id="explanation-${key}"></div>`;
+            return widgetHTML;
+        }
+
+        function attachInteractiveListeners(key) {
+            const runButton = document.getElementById(`run-${key}`);
+            if (!runButton) return;
+            runButton.addEventListener('click', () => {
+                if(runButton.disabled) return;
+                runButton.disabled = true;
+
+                const inputEl = document.getElementById(`input-${key}`);
+                const input = inputEl ? inputEl.value : "";
+                const outputEl = document.getElementById(`output-${key}`);
+                const explanationEl = document.getElementById(`explanation-${key}`);
+                outputEl.innerHTML = '...thinking...';
+                explanationEl.innerHTML = '';
+                
+                setTimeout(() => {
+                    let mockOutput = "";
+                    if (key === 'zero-shot') {
+                        if (input.toLowerCase().includes('fixed') && input.toLowerCase().includes('slowly')) { mockOutput = "Sentiment: Neutral"; } 
+                        else if (input.toLowerCase().includes('thank you') || input.toLowerCase().includes('great')) { mockOutput = "Sentiment: Positive"; } 
+                        else { mockOutput = "Sentiment: Negative"; }
+                    } else if (key === 'role-prompting') {
+                        const role = document.getElementById(`role-select-${key}`).value;
+                        if (role === 'Senior Support Analyst') { mockOutput = `<strong>As a Senior Support Analyst:</strong> Neutral. While the customer appreciates the fix, they have encountered a new performance issue, balancing out the sentiment.`; } 
+                        else { mockOutput = `<strong>As a Frustrated User:</strong> You fixed one thing and broke another! This is so slow now, I can barely use it. Negative!`; }
+                    } else if (key === 'function-calling') {
+                        mockOutput = `<pre><code class="language-json">{\n  "issue_fixed": "Previous issue resolved by update",\n  "new_issue": "App loads slowly after update",\n  "overall_sentiment": "Neutral"\n}</code></pre>`;
+                    }
+                    outputEl.innerHTML = mockOutput;
+                    if(key === 'function-calling') Prism.highlightAll();
+
+                    const explanationText = techniquesData[key].explanation;
+                    if (explanationText) {
+                        explanationEl.innerHTML = `<strong>Why this works:</strong> ${explanationText}`;
+                        addXp(25);
+                    }
+                    runButton.disabled = false;
+                }, 1200);
+            });
+        }
+
+        function populateNav() {
+            techniqueList.innerHTML = '';
+            for (const key in techniquesData) {
+                const li = document.createElement('li');
+                li.innerHTML = `<span class="mastery-icon">★</span><span>${techniquesData[key].title}</span>`;
+                li.dataset.key = key;
+                li.addEventListener('click', () => displayTechnique(key));
+                techniqueList.appendChild(li);
+            }
+        }
+        
+        let bossHealth = 100;
+        function resetGame() {
+            bossHealth = 100;
+            const healthBar = document.getElementById('boss-health-bar');
+            if(healthBar) healthBar.style.width = '100%';
+            const promptText = document.getElementById('prompt-textarea');
+            if(promptText) promptText.value = 'Generate a story.';
+            document.querySelectorAll('#boss-battle-screen .upgrade-btn').forEach(btn => btn.classList.remove('used'));
+        }
+
+        document.getElementById('start-btn').addEventListener('click', () => switchScreen('library'));
+        document.getElementById('goto-boss-btn').addEventListener('click', () => { resetGame(); switchScreen('boss'); });
+        document.getElementById('restart-btn').addEventListener('click', () => {
+             addXp(100); // Add XP for winning before restarting
+             switchScreen('library');
+        });
+        document.getElementById('back-to-library-boss').addEventListener('click', (e) => { e.preventDefault(); switchScreen('library'); });
+        document.getElementById('back-to-library-win').addEventListener('click', (e) => { e.preventDefault(); switchScreen('library'); });
+        
+        const runPromptBtn = document.getElementById('run-prompt-btn');
+        if (runPromptBtn) {
+            runPromptBtn.addEventListener('click', () => {
+                const promptValue = document.getElementById('prompt-textarea').value;
+                let damage = 10;
+                if (promptValue.toLowerCase().includes('act as')) damage += 25;
+                if (promptValue.toLowerCase().includes('example:')) damage += 30;
+                if (promptValue.toLowerCase().includes('step by step')) damage += 35;
+                
+                bossHealth = Math.max(0, bossHealth - damage);
+                const healthBarEl = document.getElementById('boss-health-bar');
+                healthBarEl.style.width = `${bossHealth}%`;
+                
+                anime({ targets: healthBarEl, backgroundColor: ['#ff6b81', '#53d9d1'], duration: 500, easing: 'easeInOutQuad' });
+                if (bossHealth <= 0) { switchScreen('win'); } 
+                else { anime({ targets: '#boss-battle-screen .game-container', translateX: [-10, 10, -10, 10, 0], duration: 300, easing: 'easeInOutSine' }); }
+            });
+        }
+        
+        document.querySelectorAll('#boss-battle-screen .upgrade-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (btn.classList.contains('used')) return;
+                const upgradeType = btn.dataset.upgrade;
+                const textarea = document.getElementById('prompt-textarea');
+                if (upgradeType === 'role') textarea.value = "Act as a master storyteller. " + textarea.value;
+                else if (upgradeType === 'few-shot') textarea.value += '\n\nExample: "The old clock tower chimed midnight..."';
+                else if (upgradeType === 'cot') textarea.value += "\n\nLet's think step by step to create a compelling narrative.";
+                btn.classList.add('used');
+            });
+        });
+
+        window.onload = () => {
+            switchScreen('intro');
+            populateNav();
+            displayTechnique('zero-shot');
+            updateUi();
+        };
+    </script>
+</body>
+</html>
