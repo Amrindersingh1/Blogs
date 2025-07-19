@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Context Engineering Bootcamp - Comic Style</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Comic Neue', cursive;
+            background: radial-gradient(circle at 50% 50%, #ff6b6b, #4ecdc4);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: #333;
+        }
+
+        .comic-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-20px); }
+            60% { transform: translateY(-10px); }
+        }
+
+        .title {
+            font-family: 'Bangers', cursive;
+            font-size: 4rem;
+            color: #fff;
+            text-shadow: 4px 4px 0px #000, 8px 8px 0px rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+            transform: rotate(-2deg);
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            color: #ffe066;
+            text-shadow: 2px 2px 0px #000;
+            background: rgba(0,0,0,0.7);
+            padding: 10px 20px;
+            border-radius: 20px;
+            display: inline-block;
+            transform: rotate(1deg);
+        }
+
+        .karpathy-quote {
+            background: #fff;
+            border: 4px solid #000;
+            border-radius: 20px;
+            padding: 20px;
+            margin: 30px 0;
+            font-style: italic;
+            font-size: 1.2rem;
+            box-shadow: 8px 8px 0px rgba(0,0,0,0.3);
+            position: relative;
+            transform: rotate(-1deg);
+        }
+
+        .karpathy-quote::before {
+            content: '"';
+            font-family: 'Bangers', cursive;
+            font-size: 4rem;
+            color: #ff6b6b;
+            position: absolute;
+            top: -10px;
+            left: 10px;
+        }
+
+        .progress-container {
+            position: sticky;
+            top: 10px;
+            z-index: 100;
+        }
+        
+        .progress-bar {
+            background: #000;
+            border-radius: 20px;
+            height: 30px;
+            margin: 20px 0;
+            overflow: hidden;
+            border: 3px solid #fff;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .progress-fill {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(255,255,255,0.2) 10px,
+                rgba(255,255,255,0.2) 20px
+            );
+        }
+
+        .phase-selector {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 30px 0;
+            gap: 20px;
+        }
+
+        .phase-button {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transform: skew(-10deg);
+            transition: all 0.3s ease;
+            border: 3px solid #000;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.5);
+        }
+
+        .phase-button:hover {
+            transform: skew(-10deg) scale(1.1);
+            box-shadow: 6px 6px 0px rgba(0,0,0,0.5);
+        }
+
+        .phase-button.active {
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+        }
+
+        .comic-panel {
+            background: #fff;
+            border: 5px solid #000;
+            border-radius: 20px;
+            margin: 30px 0;
+            padding: 30px;
+            box-shadow: 10px 10px 0px rgba(0,0,0,0.3);
+            position: relative;
+            transform: rotate(0.5deg);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: rotate(0.5deg) translateY(0px); }
+            50% { transform: rotate(-0.5deg) translateY(-10px); }
+        }
+
+        .comic-panel:nth-child(even) {
+            transform: rotate(-0.5deg);
+            animation-delay: -3s;
+        }
+
+        .week-title {
+            font-family: 'Bangers', cursive;
+            font-size: 2.5rem;
+            color: #ff6b6b;
+            text-shadow: 2px 2px 0px #000;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .week-title::before {
+            content: "💥";
+            position: absolute;
+            left: -50px;
+            top: -5px;
+            font-size: 3rem;
+        }
+
+        .goal {
+            background: linear-gradient(135deg, #ffe066, #ffd93d);
+            padding: 15px;
+            border-radius: 15px;
+            border: 3px solid #000;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .goal::before {
+            content: "🎯";
+            position: absolute;
+            left: -15px;
+            top: -15px;
+            font-size: 2rem;
+            background: #fff;
+            border-radius: 50%;
+            padding: 5px;
+            border: 3px solid #000;
+        }
+
+        .day-group {
+            background: #fff;
+            border: 3px dashed #ccc;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .day-title {
+            font-family: 'Bangers', cursive;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            padding: 10px;
+            background: #fff;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid;
+        }
+
+        .task-item:hover {
+            color: white;
+            transform: translateX(10px);
+        }
+        .task-item:hover a { color: white; }
+
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            border-radius: 5px;
+            margin-right: 15px;
+            cursor: pointer;
+            position: relative;
+            flex-shrink: 0;
+            border: 3px solid;
+        }
+
+        .task-item.checked {
+            text-decoration: line-through;
+            color: #aaa;
+        }
+
+        .task-item.checked .task-checkbox {
+            background: #81c784; /* A neutral green for checked state */
+            border-color: #81c784;
+        }
+
+        .task-item.checked .task-checkbox::after {
+            content: "✓";
+            position: absolute;
+            color: white;
+            font-weight: bold;
+            top: -5px;
+            left: 2px;
+            font-size: 1.2rem;
+        }
+        
+        .task-item a {
+            color: inherit;
+            text-decoration: none;
+            flex-grow: 1;
+        }
+        .task-item:hover a {
+            text-decoration: underline;
+        }
+        .task-item.checked a {
+            color: #aaa;
+        }
+
+        /* --- Task Color Categories --- */
+        /* Knowledge (Pink/Red) */
+        .task-item[data-task-category="knowledge"] { border-color: #ffadad; }
+        .task-item[data-task-category="knowledge"]:hover { background: #ffadad; }
+        .task-item[data-task-category="knowledge"] .task-checkbox { border-color: #ffadad; }
+        .task-item[data-task-category="knowledge"].checked { background-color: #ffebee; }
+
+        /* Action (Blue) */
+        .task-item[data-task-category="action"] { border-color: #a0c4ff; }
+        .task-item[data-task-category="action"]:hover { background: #a0c4ff; }
+        .task-item[data-task-category="action"] .task-checkbox { border-color: #a0c4ff; }
+        .task-item[data-task-category="action"].checked { background-color: #e3f2fd; }
+
+        /* Tools (Green) */
+        .task-item[data-task-category="tools"] { border-color: #caffbf; }
+        .task-item[data-task-category="tools"]:hover { background: #caffbf; color: #333; }
+        .task-item[data-task-category="tools"]:hover a { color: #333; }
+        .task-item[data-task-category="tools"] .task-checkbox { border-color: #caffbf; }
+        .task-item[data-task-category="tools"].checked { background-color: #f1f8e9; }
+
+        /* Synthesis (Yellow) */
+        .task-item[data-task-category="synthesis"] { border-color: #fdffb6; }
+        .task-item[data-task-category="synthesis"]:hover { background: #fdffb6; color: #333; }
+        .task-item[data-task-category="synthesis"]:hover a { color: #333; }
+        .task-item[data-task-category="synthesis"] .task-checkbox { border-color: #fdffb6; }
+        .task-item[data-task-category="synthesis"].checked { background-color: #fffde7; }
+
+        /* Output (Purple) */
+        .task-item[data-task-category="output"] { border-color: #bdb2ff; }
+        .task-item[data-task-category="output"]:hover { background: #bdb2ff; }
+        .task-item[data-task-category="output"] .task-checkbox { border-color: #bdb2ff; }
+        .task-item[data-task-category="output"].checked { background-color: #ede7f6; }
+
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="comic-container">
+        <div class="header">
+            <h1 class="title">CONTEXT ENGINEERING</h1>
+            <div class="subtitle">COMPLETE LEARNING PLAN</div>
+        </div>
+
+        <div class="karpathy-quote">
+            From Prompt Engineering to Neural Field Theory
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill">0%</div>
+            </div>
+        </div>
+
+        <div class="phase-selector">
+            <button class="phase-button active" onclick="switchPhase(1)">PHASE 1: Foundation</button>
+            <button class="phase-button" onclick="switchPhase(2)">PHASE 2: Systems</button>
+            <button class="phase-button" onclick="switchPhase(3)">PHASE 3: Fields</button>
+            <button class="phase-button" onclick="switchPhase(4)">PHASE 4: Integration</button>
+        </div>
+
+        <div id="phase1-content"></div>
+        <div id="phase2-content" class="hidden"></div>
+        <div id="phase3-content" class="hidden"></div>
+        <div id="phase4-content" class="hidden"></div>
+    </div>
+
+    <script>
+        const learningPlan = {
+            phases: [
+                {
+                    title: "Foundation Building",
+                    weeks: [
+                        {
+                            title: "Week 1: Atomic Context Units",
+                            goal: "Deconstruct prompts into their fundamental components to optimize for token efficiency and precise model control.",
+                            days: [
+                                {
+                                    title: "Day 1-2: Context vs. Prompt Engineering",
+                                    tasks: [
+                                        { type: 'Read', text: "00_foundations/01_atoms_prompting.md" },
+                                        { type: 'Practice', text: "Run 10_guides_zero_to_hero/01_min_prompt.ipynb" },
+                                        { type: 'Resource', text: "Andrej Karpathy's Context Engineering Tweet", link: "https://x.com/karpathy/status/1937902205765607626" },
+                                        { type: 'Exercise', text: "Engineer 5 atomic prompts for distinct tasks and document their token efficiency." }
+                                    ]
+                                },
+                                {
+                                    title: "Day 3-4: Token Budgeting Fundamentals",
+                                    tasks: [
+                                        { type: 'Read', text: "40_reference/token_budgeting.md" },
+                                        { type: 'Study', text: "20_templates/minimal_context.yaml" },
+                                        { type: 'Tool', text: "Use OpenAI's tokenizer to precisely measure context size.", link: "https://platform.openai.com/tokenizer" },
+                                        { type: 'Exercise', text: "Refactor a verbose prompt, reducing token count by 25% while preserving output quality." }
+                                    ]
+                                },
+                                {
+                                    title: "Day 5-7: Basic Context Structures",
+                                    tasks: [
+                                        { type: 'Implement', text: "30_examples/00_toy_chatbot/" },
+                                        { type: 'Resource', text: "3Blue1Brown on Abstraction", link: "https://www.youtube.com/watch?v=spUNpyF58BY" },
+                                        { type: 'Exercise', text: "Architect a simple Q&A system that injects relevant text as context." }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            title: "Week 2: Molecular Patterns (Few-Shot Learning)",
+                            goal: "Master the art of in-context learning by crafting high-quality examples (few-shot prompts) to guide model behavior.",
+                            days: [
+                                {
+                                    title: "Day 8-10: Few-Shot Context Design",
+                                    tasks: [
+                                        { type: 'Read', text: "00_foundations/02_molecules_context.md" },
+                                        { type: 'Practice', text: "10_guides_zero_to_hero/02_expand_context.ipynb" },
+                                        { type: 'Research', text: "Analyze 3 recent papers on few-shot learning from ArXiv.", link: "https://arxiv.org/search/?query=few-shot+learning&searchtype=all&source=header" },
+                                        { type: 'Exercise', text: "Develop and curate distinct few-shot example sets for classification, generation, and reasoning tasks." }
+                                    ]
+                                },
+                                {
+                                    title: "Day 11-13: Example Selection & Curation",
+                                    tasks: [
+                                        { type: 'Study', text: "40_reference/patterns.md" },
+                                        { type: 'Implement', text: "A k-NN algorithm for dynamic example selection." },
+                                        { type: 'Resource', text: "Papers on demonstration selection for in-context learning" },
+                                        { type: 'Exercise', text: "Build an example curator that programmatically selects optimal demonstrations from a larger set." }
+                                    ]
+                                },
+                                {
+                                    title: "Day 14: Integration & Assessment",
+                                    tasks: [
+                                        { type: 'Build', text: "A few-shot learning system with dynamic example selection." },
+                                        { type: 'Evaluate', text: "Quantitatively compare performance between static and dynamic example strategies." },
+                                        { type: 'Document', text: "Your findings and establish best practices for example curation." }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            title: "Week 3: Cellular Memory Systems",
+                            goal: "Engineer systems with persistent memory to enable long-horizon reasoning and stateful interactions.",
+                            days: [
+                                {
+                                    title: "Day 15-17: Memory Architecture",
+                                    tasks: [
+                                        { type: 'Read', text: "00_foundations/03_cells_memory.md" },
+                                        { type: 'Study', text: "MEM1 Research Paper", link: "https://arxiv.org/pdf/2506.15841" },
+                                        { type: 'Implement', text: "A basic memory consolidation system (e.g., conversation summarizer)." },
+                                        { type: 'Exercise', text: "Develop a chatbot that maintains conversational state across multiple turns using a summarization strategy." }
+                                    ]
+                                },
+                                {
+                                    title: "Day 18-20: Context Window Management",
+                                    tasks: [
+                                        { type: 'Practice', text: "10_guides_zero_to_hero/03_control_loops.ipynb" },
+                                        { type: 'Resource', text: "Articles on Context Window Optimization Techniques" },
+                                        { type: 'Tool', text: "Implement sliding window and context pruning algorithms." },
+                                        { type: 'Exercise', text: "Create a system that maintains coherent context across a 100-turn conversation." }
+                                    ]
+                                },
+                                {
+                                    title: "Day 21: Memory Integration",
+                                    tasks: [
+                                        { type: 'Build', text: "A complete memory system featuring consolidation and retrieval." },
+                                        { type: 'Test', text: "Validate the system against long-conversation scenarios (100+ turns)." },
+                                        { type: 'Optimize', text: "Refine memory efficiency and retrieval accuracy based on test results." }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    title: "Organic Systems",
+                    weeks: [
+                        {
+                            title: "Week 4: Organ-Level Applications",
+                            goal: "Architect multi-component systems that coordinate specialized agents and external knowledge to solve complex problems.",
+                            days: [
+                                {
+                                    title: "Day 22-24: Multi-Agent Orchestration",
+                                    tasks: [
+                                        { type: 'Read', text: "00_foundations/04_organs_applications.md" },
+                                        { type: 'Implement', text: "30_examples/02_multi_agent_orchestrator/" },
+                                        { type: 'Resource', text: "Survey of multi-agent system frameworks (e.g., LangGraph, Autogen)." },
+                                        { type: 'Exercise', text: "Architect and implement a 3-agent system (e.g., Planner, Researcher, Writer) that collaborates to solve a problem." }
+                                    ]
+                                },
+                                {
+                                    title: "Day 25-27: RAG Integration",
+                                    tasks: [
+                                        { type: 'Practice', text: "10_guides_zero_to_hero/04_rag_recipes.ipynb" },
+                                        { type: 'Study', text: "40_reference/retrieval_indexing.md" },
+                                        { type: 'Implement', text: "30_examples/04_rag_minimal/" },
+                                        { type: 'Exercise', text: "Build a RAG system that uses semantic search to retrieve and inject external documents into the context." }
+                                    ]
+                                },
+                                {
+                                    title: "Day 28: System Integration",
+                                    tasks: [
+                                        { type: 'Combine', text: "The memory, multi-agent, and RAG systems into a unified application." },
+                                        { type: 'Evaluate', text: "Assess the end-to-end performance and identify bottlenecks." },
+                                        { type: 'Document', text: "Create an architecture diagram and explain key trade-offs." }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            title: "Week 5: Cognitive Tools Framework",
+                            goal: "Implement a structured reasoning framework by deconstructing prompts into modular, reusable 'cognitive tools'.",
+                            days: [
+                                {
+                                    title: "Day 29-31: Understanding Cognitive Tools",
+                                    tasks: [
+                                        { type: 'Read', text: "IBM Zurich Cognitive Tools Paper", link: "https://www.arxiv.org/pdf/2506.12115" },
+                                        { type: 'Study', text: "00_foundations/05_cognitive_tools.md" },
+                                        { type: 'Explore', text: "cognitive-tools/README.md" },
+                                        { type: 'Exercise', text: "Deconstruct a complex prompt into 5-7 distinct cognitive operations." }
+                                    ]
+                                },
+                                {
+                                    title: "Day 32-34: Building Cognitive Templates",
+                                    tasks: [
+                                        { type: 'Study', text: "cognitive-tools/cognitive-templates/" },
+                                        { type: 'Implement', text: "Reusable templates for understanding, reasoning, and verification." },
+                                        { type: 'Resource', text: "Cognitive science papers on heuristics and mental models." },
+                                        { type: 'Exercise', text: "Create a library of cognitive tool templates for your specific domain." }
+                                    ]
+                                },
+                                {
+                                    title: "Day 35: Cognitive System Integration",
+                                    tasks: [
+                                        { type: 'Build', text: "A complete cognitive reasoning system that chains tools together." },
+                                        { type: 'Test', text: "The system against complex problem-solving scenarios." },
+                                        { type: 'Measure', text: "Quantify the improvement in reasoning accuracy vs. a monolithic prompt." }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            title: "Week 6: Advanced Applications",
+                            goal: "Deploy a real-world, tool-augmented application and validate its effectiveness.",
+                            days: [
+                                {
+                                    title: "Day 36-38: Prompt Programming",
+                                    tasks: [
+                                        { type: 'Read', text: "00_foundations/07_prompt_programming.md" },
+                                        { type: 'Study', text: "cognitive-tools/cognitive-programs/" },
+                                        { type: 'Implement', text: "Programmatic structures (loops, conditionals) for complex reasoning." },
+                                        { type: 'Exercise', text: "Build a prompt program that solves multi-step mathematical problems." }
+                                    ]
+                                },
+                                {
+                                    title: "Day 39-41: Real-World Deployment",
+                                    tasks: [
+                                        { type: 'Study', text: "30_examples/03_vscode_helper/" },
+                                        { type: 'Build', text: "An IDE helper or similar practical application using your cognitive tools." },
+                                        { type: 'Resource', text: "Best practices for deploying and monitoring LLM applications." },
+                                        { type: 'Exercise', text: "Deploy your system as a service and gather user feedback." }
+                                    ]
+                                },
+                                {
+                                    title: "Day 42: Phase 2 Integration",
+                                    tasks: [
+                                        { type: 'Combine', text: "All cognitive tools and systems built in this phase." },
+                                        { type: 'Evaluate', text: "Benchmark performance against baseline prompt engineering techniques." },
+                                        { type: 'Reflect', text: "Document key insights and prepare for advanced topics." }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    title: "Neural Field Theory",
+                    weeks: [
+                        {
+                            title: "Week 7: Neural Field Foundations",
+                            goal: "Shift perspective from discrete context to dynamic, continuous 'meaning fields' to model complex interactions.",
+                            days: [
+                                {
+                                    title: "Day 43-45: Field Theory Basics",
+                                    tasks: [
+                                        { type: 'Read', text: "00_foundations/08_neural_fields_foundations.md" },
+                                        { type: 'Study', text: "Quantum Semantics Paper", link: "https://arxiv.org/pdf/2506.10077" },
+                                        { type: 'Resource', text: "Introductions to Dynamical Systems Theory" },
+                                        { type: 'Exercise', text: "Create a visual model of a Q&A interaction as a dynamic field, identifying potential attractors." }
+                                    ]
+                                },
+                                {
+                                    title: "Day 46-48: Persistence and Resonance",
+                                    tasks: [
+                                        { type: 'Read', text: "00_foundations/09_persistence_and_resonance.md" },
+                                        { type: 'Practice', text: "10_guides_zero_to_hero/05_protocol_bootstrap.ipynb" },
+                                        { type: 'Study', text: "LLM Attractors Shanghai AI Paper", link: "https://arxiv.org/pdf/2502.15208" },
+                                        { type: 'Exercise', text: "Implement a basic mechanism for field persistence (e.g., saving context state)." }
+                                    ]
+                                },
+                                {
+                                    title: "Day 49: Field Measurement",
+                                    tasks: [
+                                        { type: 'Implement', text: "20_templates/resonance_measurement.py" },
+                                        { type: 'Practice', text: "10_guides_zero_to_hero/09_residue_tracking.ipynb" },
+                                        { type: 'Exercise', text: "Develop a script to measure and log field dynamics in your systems." }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            title: "Week 8: Symbolic Mechanisms",
+                            goal: "Bridge the gap between continuous field theory and discrete symbolic reasoning within LLMs.",
+                            days: [
+                                {
+                                    title: "Day 50-52: Emergent Symbols",
+                                    tasks: [
+                                        { type: 'Read', text: "00_foundations/12_symbolic_mechanisms.md" },
+                                        { type: 'Study', text: "Emergent Symbolic Mechanisms ICML Princeton Paper", link: "https://openreview.net/forum?id=y1SnRPDWx4" },
+                                        { type: 'Implement', text: "70_agents/01_residue_scanner/" },
+                                        { type: 'Exercise', text: "Build a system that detects and logs symbolic residue." }
+                                    ]
+                                },
+                                {
+                                    title: "Day 53-55: Quantum Semantics",
+                                    tasks: [
+                                        { type: 'Read', text: "00_foundations/13_quantum_semantics.md" },
+                                        { type: 'Study', text: "Techniques for multiple meaning superposition." },
+                                        { type: 'Resource', text: "Analogies from quantum computing for context management." },
+                                        { type: 'Exercise', text: "Implement a context design that leverages meaning superposition." }
+                                    ]
+                                },
+                                {
+                                    title: "Day 56: Symbolic Integration",
+                                    tasks: [
+                                        { type: 'Combine', text: "Field theory concepts with symbolic mechanisms." },
+                                        { type: 'Test', text: "Scenarios requiring both complex reasoning and symbolic manipulation." },
+                                        { type: 'Document', text: "Observed emergent behaviors and patterns." }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            title: "Week 9: Protocol Systems",
+                            goal: "Master the use of protocol shells to create robust, self-regulating, and unified field operations.",
+                            days: [
+                                {
+                                    title: "Day 57-59: Protocol Shells",
+                                    tasks: [
+                                        { type: 'Explore', text: "60_protocols/shells/" },
+                                        { type: 'Study', text: "Protocol shell documentation and examples." },
+                                        { type: 'Implement', text: "20_templates/field_protocol_shells.py" },
+                                        { type: 'Exercise', text: "Create custom protocol shells tailored to your domain." }
+                                    ]
+                                },
+                                {
+                                    title: "Day 60-62: Attractor Dynamics",
+                                    tasks: [
+                                        { type: 'Practice', text: "10_guides_zero_to_hero/10_attractor_formation.ipynb" },
+                                        { type: 'Implement', text: "70_agents/03_attractor_modulator/" },
+                                        { type: 'Study', text: "40_reference/attractor_dynamics.md" },
+                                        { type: 'Exercise', text: "Build context systems based on attractor dynamics." }
+                                    ]
+                                },
+                                {
+                                    title: "Day 63: Unified System",
+                                    tasks: [
+                                        { type: 'Read', text: "00_foundations/14_unified_field_theory.md" },
+                                        { type: 'Build', text: "A complete, unified field protocol system." },
+                                        { type: 'Evaluate', text: "The system's emergence and self-organization capabilities." }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    title: "Advanced Integration",
+                    weeks: [
+                        {
+                            title: "Week 10: Complete Field Integration",
+                            goal: "Architect and build production-ready, field-based systems that are adaptive and self-repairing.",
+                            days: [
+                                {
+                                    title: "Day 64-66: Field Integration Projects",
+                                    tasks: [
+                                        { type: 'Study', text: "80_field_integration/" },
+                                        { type: 'Choose', text: "One complete integration project to build from the repository." },
+                                        { type: 'Implement', text: "The chosen end-to-end field-based application." },
+                                        { type: 'Exercise', text: "Document the observed field dynamics and emergence patterns." }
+                                    ]
+                                },
+                                {
+                                    title: "Day 67-69: Self-Repair and Adaptation",
+                                    tasks: [
+                                        { type: 'Implement', text: "70_agents/02_self_repair_loop/" },
+                                        { type: 'Study', text: "Principles of self-organizing systems." },
+                                        { type: 'Build', text: "Systems with adaptive context boundaries." },
+                                        { type: 'Exercise', text: "Create context fields that are self-maintaining." }
+                                    ]
+                                },
+                                {
+                                    title: "Day 70: System Validation",
+                                    tasks: [
+                                        { type: 'Test', text: "The complete system under various stress conditions." },
+                                        { type: 'Measure', text: "Metrics for emergence, resilience, and adaptation." },
+                                        { type: 'Document', text: "Field behavior and strategies for optimization." }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            title: "Week 11: Meta-Recursion and Emergence",
+                            goal: "Implement self-improving, meta-recursive systems and establish a lab for studying emergent behaviors.",
+                            days: [
+                                {
+                                    title: "Day 71-73: Meta-Recursive Frameworks",
+                                    tasks: [
+                                        { type: 'Study', text: "Design patterns for meta-recursive systems." },
+                                        { type: 'Implement', text: "Mechanisms for self-reflection and automatic improvement." },
+                                        { type: 'Practice', text: "10_guides_zero_to_hero/08_emergence_detection.ipynb" },
+                                        { type: 'Exercise', text: "Build systems that can modify their own context protocols." }
+                                    ]
+                                },
+                                {
+                                    title: "Day 74-76: Emergence Laboratory",
+                                    tasks: [
+                                        { type: 'Explore', text: "30_examples/09_emergence_lab/" },
+                                        { type: 'Experiment', text: "With controlled emergence scenarios." },
+                                        { type: 'Measure', text: "Using 20_templates/emergence_metrics.py" },
+                                        { type: 'Exercise', text: "Create a catalog of different types of emergent behaviors." }
+                                    ]
+                                },
+                                {
+                                    title: "Day 77: Meta-System Integration",
+                                    tasks: [
+                                        { type: 'Combine', text: "All meta-recursive components into a single system." },
+                                        { type: 'Test', text: "The system's self-improvement capabilities." },
+                                        { type: 'Validate', text: "The interpretability of its evolution and control." }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            title: "Week 12: Mastery and Contribution",
+                            goal: "Demonstrate complete mastery by designing novel evaluation frameworks, conducting original research, and contributing back to the community.",
+                            days: [
+                                {
+                                    title: "Day 78-80: Advanced Evaluation",
+                                    tasks: [
+                                        { type: 'Study', text: "40_reference/eval_checklist.md" },
+                                        { type: 'Implement', text: "A comprehensive evaluation framework for your systems." },
+                                        { type: 'Resource', text: "Methodologies for research evaluation." },
+                                        { type: 'Exercise', text: "Design novel evaluation metrics for field-based systems." }
+                                    ]
+                                },
+                                {
+                                    title: "Day 81-83: Original Research",
+                                    tasks: [
+                                        { type: 'Identify', text: "Novel research questions in context engineering." },
+                                        { type: 'Design', text: "Experiments to test your hypotheses." },
+                                        { type: 'Implement', text: "A prototype solution for your research question." },
+                                        { type: 'Exercise', text: "Document your findings and potential contributions." }
+                                    ]
+                                },
+                                {
+                                    title: "Day 84: Community Contribution",
+                                    tasks: [
+                                        { type: 'Study', text: ".github/CONTRIBUTING.md" },
+                                        { type: 'Contribute', text: "To the repository with your innovations." },
+                                        { type: 'Share', text: "Your learnings with the community via a blog post or presentation." },
+                                        { type: 'Reflect', text: "On your complete journey from prompts to fields." }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        };
+
+        const taskTypeToCategory = {
+            'Read': 'knowledge', 'Study': 'knowledge', 'Research': 'knowledge', 'Resource': 'knowledge',
+            'Practice': 'action', 'Exercise': 'action', 'Implement': 'action', 'Build': 'action', 'Code': 'action', 'Test': 'action', 'Experiment': 'action',
+            'Tool': 'tools', 'Explore': 'tools',
+            'Combine': 'synthesis', 'Design': 'synthesis', 'Evaluate': 'synthesis', 'Optimize': 'synthesis', 'Identify': 'synthesis', 'Measure': 'synthesis', 'Validate': 'synthesis',
+            'Document': 'output', 'Share': 'output', 'Contribute': 'output', 'Reflect': 'output', 'Deliverable': 'output', 'Choose': 'output'
+        };
+
+        function getTaskCategory(type) {
+            return taskTypeToCategory[type] || 'action'; // Default to 'action'
+        }
+
+        let totalCheckableItems = 0;
+        learningPlan.phases.forEach(phase => {
+            phase.weeks.forEach(week => {
+                week.days.forEach(day => {
+                    totalCheckableItems += day.tasks.length;
+                });
+            });
+        });
+        
+        let completedItems = 0;
+
+        function createTaskElement(task) {
+            const repoBaseUrl = "https://github.com/davidkimai/Context-Engineering/tree/main/";
+            const category = getTaskCategory(task.type);
+            let content = `<strong>${task.type}:</strong> ${task.text}`;
+
+            if (task.link) {
+                content = `<a href="${task.link}" target="_blank" onclick="event.stopPropagation()">${content}</a>`;
+            } else if (task.text.includes('/')) {
+                 content = `<a href="${repoBaseUrl}${task.text}" target="_blank" onclick="event.stopPropagation()">${content}</a>`;
+            }
+
+            return `
+                <div class="task-item" data-task-category="${category}" onclick="toggleItem(this)">
+                    <div class="task-checkbox"></div>
+                    <div>${content}</div>
+                </div>
+            `;
+        }
+
+        function createDayGroup(dayData) {
+            return `
+                <div class="day-group">
+                    <h4 class="day-title">${dayData.title}</h4>
+                    ${dayData.tasks.map(createTaskElement).join('')}
+                </div>
+            `;
+        }
+        
+        function createWeekPanel(weekData) {
+            return `
+                <div class="comic-panel">
+                    <h2 class="week-title">${weekData.title}</h2>
+                    <div class="goal">${weekData.goal}</div>
+                    ${weekData.days.map(createDayGroup).join('')}
+                </div>
+            `;
+        }
+
+        function renderPhase(phaseIndex) {
+            const phase = learningPlan.phases[phaseIndex - 1];
+            const contentDiv = document.getElementById(`phase${phaseIndex}-content`);
+            contentDiv.innerHTML = '';
+            phase.weeks.forEach(week => {
+                contentDiv.innerHTML += createWeekPanel(week);
+            });
+        }
+
+        function switchPhase(phaseIndex) {
+            for (let i = 1; i <= 4; i++) {
+                document.getElementById(`phase${i}-content`).classList.toggle('hidden', i !== phaseIndex);
+            }
+            document.querySelectorAll('.phase-button').forEach((btn, index) => {
+                btn.classList.toggle('active', index + 1 === phaseIndex);
+            });
+        }
+
+        function toggleItem(itemElement) {
+            const wasChecked = itemElement.classList.contains('checked');
+            if (wasChecked) {
+                completedItems--;
+            } else {
+                completedItems++;
+            }
+            itemElement.classList.toggle('checked');
+            updateProgress();
+            saveState();
+        }
+
+        function updateProgress() {
+            const percentage = totalCheckableItems > 0 ? Math.round((completedItems / totalCheckableItems) * 100) : 0;
+            const progressFill = document.getElementById('progressFill');
+            progressFill.style.width = `${percentage}%`;
+            progressFill.textContent = `${percentage}%`;
+        }
+        
+        function saveState() {
+            const allItems = document.querySelectorAll('.task-item');
+            const state = [];
+            allItems.forEach(item => {
+                state.push(item.classList.contains('checked'));
+            });
+            localStorage.setItem('comicRoadmapProgress', JSON.stringify(state));
+        }
+
+        function loadState() {
+            const savedState = JSON.parse(localStorage.getItem('comicRoadmapProgress'));
+            if (savedState) {
+                const allItems = document.querySelectorAll('.task-item');
+                completedItems = 0;
+                allItems.forEach((item, index) => {
+                    if (savedState[index]) {
+                        item.classList.add('checked');
+                        completedItems++;
+                    } else {
+                        item.classList.remove('checked');
+                    }
+                });
+            }
+            updateProgress();
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            renderPhase(1);
+            renderPhase(2);
+            renderPhase(3);
+            renderPhase(4);
+            switchPhase(1); // Start on phase 1
+            loadState();
+        });
+
+    </script>
+</body>
+</html>
