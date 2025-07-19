@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Context Engineering Bootcamp - Comic Style</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Comic Neue', cursive;
+            background: radial-gradient(circle at 50% 50%, #ff6b6b, #4ecdc4);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: #333;
+        }
+
+        .comic-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-20px); }
+            60% { transform: translateY(-10px); }
+        }
+
+        .title {
+            font-family: 'Bangers', cursive;
+            font-size: 4rem;
+            color: #fff;
+            text-shadow: 4px 4px 0px #000, 8px 8px 0px rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+            transform: rotate(-2deg);
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            color: #ffe066;
+            text-shadow: 2px 2px 0px #000;
+            background: rgba(0,0,0,0.7);
+            padding: 10px 20px;
+            border-radius: 20px;
+            display: inline-block;
+            transform: rotate(1deg);
+        }
+
+        .karpathy-quote {
+            background: #fff;
+            border: 4px solid #000;
+            border-radius: 20px;
+            padding: 20px;
+            margin: 30px 0;
+            font-style: italic;
+            font-size: 1.2rem;
+            box-shadow: 8px 8px 0px rgba(0,0,0,0.3);
+            position: relative;
+            transform: rotate(-1deg);
+        }
+
+        .karpathy-quote::before {
+            content: '"';
+            font-family: 'Bangers', cursive;
+            font-size: 4rem;
+            color: #ff6b6b;
+            position: absolute;
+            top: -10px;
+            left: 10px;
+        }
+
+        .progress-container {
+            position: sticky;
+            top: 10px;
+            z-index: 100;
+        }
+        
+        .progress-bar {
+            background: #000;
+            border-radius: 20px;
+            height: 30px;
+            margin: 20px 0;
+            overflow: hidden;
+            border: 3px solid #fff;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .progress-fill {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(255,255,255,0.2) 10px,
+                rgba(255,255,255,0.2) 20px
+            );
+        }
+
+        .day-selector {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+            gap: 20px;
+        }
+
+        .day-button {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transform: skew(-10deg);
+            transition: all 0.3s ease;
+            border: 3px solid #000;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.5);
+        }
+
+        .day-button:hover {
+            transform: skew(-10deg) scale(1.1);
+            box-shadow: 6px 6px 0px rgba(0,0,0,0.5);
+        }
+
+        .day-button.active {
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+        }
+
+        .comic-panel {
+            background: #fff;
+            border: 5px solid #000;
+            border-radius: 20px;
+            margin: 30px 0;
+            padding: 30px;
+            box-shadow: 10px 10px 0px rgba(0,0,0,0.3);
+            position: relative;
+            transform: rotate(0.5deg);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: rotate(0.5deg) translateY(0px); }
+            50% { transform: rotate(-0.5deg) translateY(-10px); }
+        }
+
+        .comic-panel:nth-child(even) {
+            transform: rotate(-0.5deg);
+            animation-delay: -3s;
+        }
+
+        .hour-title {
+            font-family: 'Bangers', cursive;
+            font-size: 2.5rem;
+            color: #ff6b6b;
+            text-shadow: 2px 2px 0px #000;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .hour-title::before {
+            content: "💥";
+            position: absolute;
+            left: -50px;
+            top: -5px;
+            font-size: 3rem;
+        }
+
+        .objective {
+            background: linear-gradient(135deg, #ffe066, #ffd93d);
+            padding: 15px;
+            border-radius: 15px;
+            border: 3px solid #000;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .objective::before {
+            content: "🎯";
+            position: absolute;
+            left: -15px;
+            top: -15px;
+            font-size: 2rem;
+            background: #fff;
+            border-radius: 50%;
+            padding: 5px;
+            border: 3px solid #000;
+        }
+
+        .section-title {
+            font-family: 'Bangers', cursive;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .resources {
+            background: #e8f8f5;
+            border: 3px dashed #4ecdc4;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .resources h4 { color: #4ecdc4; }
+
+        .tasks {
+            background: #fff3e0;
+            border: 3px solid #ff9800;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .tasks h4 { color: #ff9800; }
+
+        .kpis {
+            background: #e1f5fe;
+            border: 3px solid #03a9f4;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .kpis h4 { color: #03a9f4; }
+
+        .task-item, .resource-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            padding: 10px;
+            background: #fff;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .task-item { border: 2px solid #ff9800; }
+        .resource-item { border: 2px solid #4ecdc4; }
+
+        .task-item:hover {
+            background: #ff9800;
+            color: white;
+            transform: translateX(10px);
+        }
+
+        .resource-item:hover {
+            background: #4ecdc4;
+            color: white;
+            transform: translateX(10px);
+        }
+        .resource-item:hover a { color: white; }
+
+
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            border-radius: 5px;
+            margin-right: 15px;
+            cursor: pointer;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .task-item .task-checkbox { border: 3px solid #ff9800; }
+        .resource-item .task-checkbox { border: 3px solid #4ecdc4; }
+
+        .task-item.checked, .resource-item.checked {
+            text-decoration: line-through;
+            color: #aaa;
+        }
+        .task-item.checked { background-color: #fbe9e7; }
+        .resource-item.checked { background-color: #e0f2f1; }
+
+        .task-item.checked .task-checkbox, .resource-item.checked .task-checkbox {
+            background: #81c784; /* A neutral green for checked state */
+            border-color: #81c784;
+        }
+
+        .task-item.checked .task-checkbox::after, .resource-item.checked .task-checkbox::after {
+            content: "✓";
+            position: absolute;
+            color: white;
+            font-weight: bold;
+            top: -5px;
+            left: 2px;
+            font-size: 1.2rem;
+        }
+        
+        .resource-item a {
+            color: inherit;
+            text-decoration: none;
+            flex-grow: 1;
+        }
+        .resource-item:hover a {
+            text-decoration: underline;
+        }
+        .resource-item.checked a {
+            color: #aaa;
+        }
+
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="comic-container">
+        <div class="header">
+            <h1 class="title">CONTEXT ENGINEERING</h1>
+            <div class="subtitle">48-HOUR BOOTCAMP</div>
+        </div>
+
+        <div class="karpathy-quote">
+            Context engineering is the delicate art and science of filling the context window with just the right information for the next step.
+            <div style="text-align: right; margin-top: 15px; font-weight: bold;">— Andrej Karpathy</div>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill">0%</div>
+            </div>
+        </div>
+
+        <div class="day-selector">
+            <button class="day-button active" onclick="switchDay(1)">DAY 1</button>
+            <button class="day-button" onclick="switchDay(2)">DAY 2</button>
+        </div>
+
+        <div id="day1-content">
+            <!-- All Day 1 Panels will be injected here by JS -->
+        </div>
+
+        <div id="day2-content" class="hidden">
+            <!-- All Day 2 Panels will be injected here by JS -->
+        </div>
+    </div>
+
+    <script>
+        const bootcampData = {
+            day1: [
+                {
+                    hours: "1-2",
+                    title: "Atoms - The Mindset",
+                    objective: "Break free from prompt engineering limitations and master the context engineering mindset!",
+                    resources: [
+                        { text: "Repository README - 'Why This Repository Exists' section", link: "https://github.com/davidkimai/Context-Engineering" },
+                        { text: "Study: 00_foundations/01_atoms_prompting.md", link: "https://github.com/davidkimai/Context-Engineering/blob/main/00_foundations/01_atoms_prompting.md" },
+                        { text: "Karpathy's Tweet - Original context engineering definition", link: "https://x.com/karpathy/status/1937902205765607626" },
+                        { text: "Context Engineering Survey - Section 1-2", link: "https://arxiv.org/pdf/2507.13334" }
+                    ],
+                    tasks: [
+                        "Understand: Why “what you say” < “everything the model sees”",
+                        "Key Insight: Context window is your programming environment",
+                        "Exercise: Audit your current prompts - identify context waste",
+                        "Deliverable: Your first context template"
+                    ],
+                    kpis: [
+                        "Token Efficiency: Achieve at least a 15% token reduction in a converted prompt.",
+                        "Functionality: A minimal example runs without errors.",
+                        "Deliverable: A functional context template is created."
+                    ]
+                },
+                {
+                    hours: "3-5",
+                    title: "Molecules - Few-Shot Mastery",
+                    objective: "Master example-based learning and context expansion like a pro!",
+                    resources: [
+                        { text: "Read: 00_foundations/02_molecules_context.md", link: "https://github.com/davidkimai/Context-Engineering/blob/main/00_foundations/02_molecules_context.md" },
+                        { text: "Study: IBM Zurich Paper - Section 2 'Few-shot Learning'", link: "https://www.arxiv.org/pdf/2506.12115" },
+                        { text: "Reference: 40_reference/patterns.md - Few-shot pattern library", link: "https://github.com/davidkimai/Context-Engineering/blob/main/40_reference/patterns.md" },
+                        { text: "Example: 30_examples/01_data_annotator/ - Real few-shot implementation", link: "https://github.com/davidkimai/Context-Engineering/tree/main/30_examples/01_data_annotator" }
+                    ],
+                    tasks: [
+                        "Theory: Why examples > explanations",
+                        "Practice: Create perfect example sets for your domain",
+                        "Rule: Every example must be gold standard",
+                        "Exercise: Build 5 high-quality examples for a specific task",
+                        "Deliverable: Optimized few-shot system with metrics"
+                    ],
+                    kpis: [
+                        "Performance Lift: Demonstrate a measurable accuracy improvement (>10%) using 5-shot vs. 0-shot.",
+                        "Analysis: Produce a clear chart comparing token cost to performance.",
+                        "Deliverable: An optimized few-shot system with documented metrics."
+                    ]
+                },
+                {
+                    hours: "6-8",
+                    title: "Cells - Memory Systems",
+                    objective: "Build persistent, stateful context memory systems that remember and learn!",
+                    resources: [
+                        { text: "Read: 00_foundations/03_cells_memory.md", link: "https://github.com/davidkimai/Context-Engineering/blob/main/00_foundations/03_cells_memory.md" },
+                        { text: "Study: MEM1 Paper - Abstract & Section 3 'Memory Architecture'", link: "https://arxiv.org/pdf/2506.15841" },
+                        { text: "Tool: Chroma DB Documentation", link: "https://docs.trychroma.com/" },
+                        { text: "Code: 10_guides_zero_to_hero/04_rag_recipes.ipynb", link: "https://github.com/davidkimai/Context-Engineering/blob/main/10_guides_zero_to_hero/04_rag_recipes.ipynb" }
+                    ],
+                    tasks: [
+                        "Theory: Context as persistent memory",
+                        "Practice: Implement basic conversation memory",
+                        "Pattern: Design memory retention strategies",
+                        "Exercise: Build a simple stateful chatbot",
+                        "Deliverable: Working RAG system with memory"
+                    ],
+                    kpis: [
+                        "Statefulness: Chatbot correctly references information from 3 turns prior.",
+                        "Efficiency: Memory system stays below a predefined token limit.",
+                        "Deliverable: A working RAG system answers questions using retrieved documents."
+                    ]
+                },
+                {
+                    hours: "9-12",
+                    title: "Organs - Multi-Agent Systems",
+                    objective: "Orchestrate complex multi-agent systems that work in harmony!",
+                    resources: [
+                        { text: "Read: 00_foundations/04_organs_applications.md", link: "https://github.com/davidkimai/Context-Engineering/blob/main/00_foundations/04_organs_applications.md" },
+                        { text: "Tool: LangGraph Documentation", link: "https://langchain-ai.github.io/langgraph/" },
+                        { text: "Study: 70_agents/02_self_repair_loop/", link: "https://github.com/davidkimai/Context-Engineering/tree/main/70_agents/02_self_repair_loop" }
+                    ],
+                    tasks: [
+                        "Theory: Breaking complex tasks into steps",
+                        "Practice: Design control flow for complex task",
+                        "Pattern: Specialist agents for different steps",
+                        "Exercise: Build 3-agent pipeline",
+                        "Deliverable: Complete context engineering system"
+                    ],
+                    kpis: [
+                        "Task Completion: The 3-agent pipeline successfully completes its assigned complex task.",
+                        "State Management: Context is correctly passed between agents.",
+                        "Deliverable: A complete multi-agent system that integrates memory."
+                    ]
+                }
+            ],
+            day2: [
+                {
+                    hours: "25-28",
+                    title: "Meta-Recursive Frameworks",
+                    objective: "Build self-improving context systems that evolve!",
+                    resources: [
+                        { text: "Study: 00_foundations/11_emergence_and_attractor_dynamics.md", link: "https://github.com/davidkimai/Context-Engineering/blob/main/00_foundations/11_emergence_and_attractor_dynamics.md" },
+                        { text: "Tool: Matplotlib for visualization", link: "https://matplotlib.org/" }
+                    ],
+                    tasks: [
+                        "Theory: Systems that improve their own context",
+                        "Practice: Design recursive feedback loops",
+                        "Pattern: Self-reflection and adaptation",
+                        "Exercise: Build basic recursive improvement system",
+                        "Deliverable: Self-improving context system"
+                    ],
+                    kpis: [
+                        "Self-Improvement: System demonstrates improved performance after 5 recursive loops.",
+                        "Interpretability: The evolution of the system is clearly visible in a visualization.",
+                        "Deliverable: A working, self-improving context system."
+                    ]
+                },
+                {
+                    hours: "29-32",
+                    title: "Production Systems",
+                    objective: "Build scalable, robust context engineering systems for the real world!",
+                    resources: [
+                        { text: "Tool: Weights & Biases for monitoring", link: "https://wandb.ai/quickstart" }
+                    ],
+                    tasks: [
+                        "Practice: Optimize token usage and latency",
+                        "Code: Implement caching and preprocessing",
+                        "Pattern: Efficient context management",
+                        "Exercise: Build high-performance context system",
+                        "Deliverable: Production-ready context platform"
+                    ],
+                    kpis: [
+                        "Latency: Caching reduces response time by at least 20%.",
+                        "Reliability: System handles simulated tool failures gracefully.",
+                        "Deliverable: A production-ready context platform with monitoring."
+                    ]
+                },
+                {
+                    hours: "33-36",
+                    title: "Advanced Research Implementation",
+                    objective: "Implement cutting-edge research findings!",
+                    tasks: [
+                        "Code: Implement attractor detection and formation",
+                        "Practice: Create dynamic attractor systems",
+                        "Pattern: Self-organizing context attractors",
+                        "Exercise: Build attractor-based context system",
+                        "Deliverable: Complete field theory implementation"
+                    ],
+                    kpis: [
+                        "Functionality: All research concepts are implemented and run without errors.",
+                        "Integration: All field concepts are successfully combined.",
+                        "Deliverable: A complete, working field theory implementation."
+                    ]
+                },
+                {
+                    hours: "45-48",
+                    title: "Mastery & Portfolio",
+                    objective: "Complete mastery demonstration and portfolio creation!",
+                    tasks: [
+                        "Practice: Integrate all 48 hours of learning",
+                        "Code: Build unified, optimized system",
+                        "Test: Comprehensive system validation",
+                        "Measure: Performance across all metrics",
+                        "Deliverable: Complete context engineering mastery portfolio"
+                    ],
+                    kpis: [
+                        "System Integration: The unified system runs and passes all tests.",
+                        "Documentation: The portfolio is well-documented and easy to understand.",
+                        "Deliverable: A complete context engineering mastery portfolio."
+                    ]
+                }
+            ]
+        };
+
+        let totalCheckableItems = 0;
+        bootcampData.day1.forEach(panel => {
+            totalCheckableItems += panel.tasks.length;
+            if(panel.resources) totalCheckableItems += panel.resources.length;
+        });
+        bootcampData.day2.forEach(panel => {
+            totalCheckableItems += panel.tasks.length;
+            if(panel.resources) totalCheckableItems += panel.resources.length;
+        });
+        
+        let completedItems = 0;
+
+        function createTaskElement(taskText) {
+            return `
+                <div class="task-item" onclick="toggleItem(this)">
+                    <div class="task-checkbox"></div>
+                    <div>${taskText}</div>
+                </div>
+            `;
+        }
+
+        function createResourceElement(resource) {
+            return `
+                <div class="resource-item" onclick="toggleItem(this)">
+                    <div class="task-checkbox"></div>
+                    <a href="${resource.link}" target="_blank" onclick="event.stopPropagation()">${resource.text}</a>
+                </div>
+            `;
+        }
+
+        function createKpiElement(kpiText) {
+            return `<li style="margin-bottom: 8px;">${kpiText}</li>`;
+        }
+
+        function createPanel(panelData) {
+            return `
+                <div class="comic-panel">
+                    <h2 class="hour-title">Hours ${panelData.hours}: ${panelData.title}</h2>
+                    <div class="objective">${panelData.objective}</div>
+                    
+                    ${panelData.resources ? `
+                    <div class="resources">
+                        <h4 class="section-title">📚 Learning Resources</h4>
+                        ${panelData.resources.map(createResourceElement).join('')}
+                    </div>` : ''}
+
+                    <div class="tasks">
+                        <h4 class="section-title">🎯 Your Mission</h4>
+                        ${panelData.tasks.map(createTaskElement).join('')}
+                    </div>
+
+                    ${panelData.kpis ? `
+                    <div class="kpis">
+                        <h4 class="section-title">🏆 Key Performance Indicators</h4>
+                        <ul>${panelData.kpis.map(createKpiElement).join('')}</ul>
+                    </div>` : ''}
+                </div>
+            `;
+        }
+
+        function renderDay(day) {
+            const contentDiv = document.getElementById(`day${day}-content`);
+            contentDiv.innerHTML = '';
+            bootcampData[`day${day}`].forEach(panel => {
+                contentDiv.innerHTML += createPanel(panel);
+            });
+        }
+
+        function switchDay(day) {
+            document.getElementById('day1-content').classList.toggle('hidden', day !== 1);
+            document.getElementById('day2-content').classList.toggle('hidden', day !== 2);
+            document.querySelectorAll('.day-button').forEach((btn, index) => {
+                btn.classList.toggle('active', index + 1 === day);
+            });
+        }
+
+        function toggleItem(itemElement) {
+            const wasChecked = itemElement.classList.contains('checked');
+            if (wasChecked) {
+                completedItems--;
+            } else {
+                completedItems++;
+            }
+            itemElement.classList.toggle('checked');
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const percentage = totalCheckableItems > 0 ? Math.round((completedItems / totalCheckableItems) * 100) : 0;
+            const progressFill = document.getElementById('progressFill');
+            progressFill.style.width = `${percentage}%`;
+            progressFill.textContent = `${percentage}%`;
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            renderDay(1);
+            renderDay(2);
+            switchDay(1); // Start on day 1
+        });
+
+    </script>
+</body>
+</html>
