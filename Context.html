@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Context Academy: Granular Roadmap v2 (Complete)</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        .font-bangers { font-family: 'Bangers', cursive; }
+        .font-comic-neue { font-family: 'Comic Neue', cursive; }
+
+        /* --- Base & Dark Mode Styles --- */
+        body {
+            background-color: #1f2937;
+            color: #e5e7eb;
+            background-image: radial-gradient(#4b5563 1px, transparent 1px);
+            background-size: 20px 20px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .tower-path {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 8px;
+            background-image: linear-gradient(to bottom, #f59e0b 40%, #3b82f6 60%);
+            background-size: 100% 20px;
+            transform: translateX(-50%);
+            z-index: -1;
+            animation: path-flow 10s linear infinite;
+        }
+        @keyframes path-flow {
+            from { background-position: 0 0; }
+            to { background-position: 0 -200px; }
+        }
+        .comic-panel {
+            border: 4px solid #111827;
+            box-shadow: 8px 8px 0px #000;
+            background-color: #374151;
+            transition: all 0.2s ease-out;
+        }
+        .comic-panel:hover:not(.completed) {
+            transform: translate(-4px, -4px);
+            box-shadow: 12px 12px 0px #3b82f6;
+        }
+        .comic-panel.completed {
+            border-color: #16a34a;
+            box-shadow: 8px 8px 0px #15803d;
+            background-color: rgba(22, 163, 74, 0.1);
+        }
+        .completion-banner {
+            transform: rotate(-10deg);
+            text-shadow: 2px 2px 0 #000;
+            display: none;
+        }
+        .comic-panel.completed .completion-banner {
+            display: block;
+        }
+        .task-item input:checked + label {
+            text-decoration: line-through;
+            color: #9ca3af;
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1f2937; }
+        ::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
+        .resource-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        .kpi-box {
+            background: rgba(0,0,0,0.2);
+            border-left: 4px solid #f59e0b;
+        }
+        .milestone-box {
+            background-color: #1f2937;
+        }
+        .header {
+            background-color: #1f2937/90;
+        }
+
+        /* --- Enhanced Light Mode Styles --- */
+        body.light-mode {
+            background-color: #f9fafb; /* Lighter gray background */
+            color: #111827; /* Darker text for high contrast */
+            background-image: radial-gradient(#e5e7eb 1px, transparent 1px);
+        }
+        body.light-mode .header {
+            background-color: #f9fafb/90;
+        }
+        body.light-mode .comic-panel {
+            background-color: #ffffff;
+            border-color: #e5e7eb;
+            box-shadow: 8px 8px 0px #d1d5db;
+        }
+        body.light-mode .comic-panel:hover:not(.completed) {
+            box-shadow: 12px 12px 0px #2563eb; /* Darker blue for hover */
+        }
+        body.light-mode .comic-panel.completed {
+            border-color: #16a34a;
+            box-shadow: 8px 8px 0px #15803d;
+            background-color: #f0fdf4;
+        }
+        body.light-mode .milestone-box {
+            background-color: #f3f4f6; /* Slightly off-white for contrast */
+            border-color: #d1d5db;
+        }
+        body.light-mode .kpi-box {
+            background: #fffbeb; /* Light yellow for KPI box */
+            border-left-color: #f59e0b;
+        }
+        body.light-mode .task-item input:checked + label {
+            color: #6b7280;
+        }
+        body.light-mode ::-webkit-scrollbar-track { background: #e5e7eb; }
+        
+        /* High-contrast text colors for light mode */
+        body.light-mode .text-cyan-400 { color: #0e7490; } /* Darker Cyan */
+        body.light-mode .text-fuchsia-400 { color: #c026d3; } /* Darker Fuchsia */
+        body.light-mode .text-yellow-300 { color: #ca8a04; } /* Darker Yellow/Amber */
+        body.light-mode .text-amber-500 { color: #d97706; } /* Darker Amber */
+        body.light-mode .text-blue-400 { color: #2563eb; } /* Darker Blue */
+        body.light-mode .text-amber-400 { color: #d97706; } /* Darker Amber */
+        body.light-mode .completion-banner { color: #16a34a; } /* Darker Green */
+
+
+        /* Theme Toggle Switch */
+        .theme-switch-wrapper {
+            display: flex;
+            align-items: center;
+        }
+        .theme-switch {
+            display: inline-block;
+            height: 34px;
+            position: relative;
+            width: 60px;
+        }
+        .theme-switch input {
+            display:none;
+        }
+        .slider {
+            background-color: #374151;
+            bottom: 0;
+            cursor: pointer;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            background-color: #fff;
+            bottom: 4px;
+            content: "";
+            height: 26px;
+            left: 4px;
+            position: absolute;
+            transition: .4s;
+            width: 26px;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #3b82f6;
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+    </style>
+</head>
+<body class="font-comic-neue overflow-x-hidden">
+
+    <header class="header sticky top-0 z-50 backdrop-blur-sm border-b-4 border-black p-4">
+        <div class="container mx-auto flex justify-between items-center gap-4">
+            <h1 class="font-bangers text-3xl md:text-5xl text-amber-500 tracking-wider" style="text-shadow: 3px 3px 0px #000;">Context Academy</h1>
+            <div class="flex-grow max-w-xs">
+                <div class="font-bangers text-lg text-center text-blue-400">Overall Progress</div>
+                <div class="bg-black border-2 border-gray-600 rounded-full h-6 p-1">
+                    <div id="power-meter-bar" class="bg-gradient-to-r from-blue-500 to-cyan-400 h-full rounded-full transition-all duration-500" style="width: 0%;"></div>
+                </div>
+                <div id="power-meter-text" class="text-center font-bold text-sm">0% Complete</div>
+            </div>
+            <div class="flex items-center gap-4">
+                <button id="collapse-all-btn" class="font-bold bg-fuchsia-600 hover:bg-fuchsia-500 text-white py-2 px-4 rounded-lg border-2 border-black text-sm">Collapse All</button>
+                <div class="theme-switch-wrapper">
+                    <label class="theme-switch" for="theme-toggle">
+                        <input type="checkbox" id="theme-toggle" />
+                        <div class="slider round"></div>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-12">
+        <div class="relative">
+            <div class="tower-path hidden md:block"></div>
+            
+            <div id="guide" class="comic-panel rounded-2xl mb-16 p-6 border-amber-500">
+                <h2 class="font-bangers text-4xl md:text-5xl text-amber-500">How to Use This Roadmap</h2>
+                <div class="mt-4 space-y-4 text-lg">
+                    <p><strong class="text-blue-400">1. Understand the Structure:</strong> The bootcamp is broken down into <span class="font-bold">Days</span> and multi-hour <span class="font-bold">Modules</span>. Each module is a "comic panel" you can expand.</p>
+                    <p><strong class="text-blue-400">2. Expand Modules for Details:</strong> Click any panel header to reveal the granular, hour-by-hour breakdown. Inside, you'll find three key sections:</p>
+                    <ul class="list-disc list-inside ml-6 space-y-2">
+                        <li><strong class="text-yellow-400">📚 Resources:</strong> The materials you need for the task (papers, code, tools).</li>
+                        <li><strong class="text-yellow-400">✅ Actionable Steps:</strong> The specific, smaller tasks to complete. Check them off as you go.</li>
+                        <li><strong class="text-yellow-400">🎯 Key Performance Indicators (KPIs):</strong> The measurable success criteria for the module. Use these to verify your mastery.</li>
+                    </ul>
+                    <p><strong class="text-blue-400">3. Track Your Progress:</strong> The "Overall Progress" meter in the header fills as you check off actionable steps. A module turns green and gets a "COMPLETE!" banner when all its steps are done.</p>
+                    <p><strong class="text-blue-400">4. Monitor Timelines:</strong> Each module has a clear time budget (e.g., "Hour 1-2"). Use this to manage your pace and meet the 48-hour deadline.</p>
+                </div>
+            </div>
+
+            <!-- ########## DAY 1: TIMELINE 0-24 HOURS ########## -->
+            <div class="mb-16">
+                <h2 class="font-bangers text-5xl md:text-7xl text-center text-amber-500 my-8" style="text-shadow: 4px 4px 0px #000;">Day 1: Foundation to Advanced</h2>
+                
+                <!-- ## Module: Atoms ## -->
+                <div id="module-atoms" class="comic-panel rounded-2xl mb-12 cursor-pointer p-6 relative overflow-hidden">
+                    <div class="absolute top-4 right-4 font-bangers text-5xl text-green-400 completion-banner">COMPLETE!</div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="text-6xl mr-6">⚛️</div>
+                            <div>
+                                <h3 class="font-bangers text-4xl text-cyan-400">Module 1: Atoms - The Mindset</h3>
+                                <p class="font-bold">Objective: Shift your thinking from writing simple prompts to strategically engineering the entire context window for optimal model performance.</p>
+                            </div>
+                        </div>
+                        <div class="font-bangers text-2xl text-amber-500 text-center">
+                            <span>Deadline</span><br><span>Hour 2</span>
+                        </div>
+                    </div>
+                    <div class="module-content hidden mt-6 space-y-6 text-left">
+                        <div class="milestone-box p-4 rounded-lg border border-gray-700">
+                            <h4 class="font-bangers text-2xl text-yellow-300">Milestone 1.1: Theory & Mindset Shift (Hour 1)</h4>
+                            <p class="mt-1 italic">This milestone establishes the core philosophy of context engineering, moving beyond simple instructions to viewing the context window as a programmable environment. This is the foundational insight for all subsequent modules.</p>
+                            <h5 class="font-bold mt-2">📚 Resources:</h5>
+                            <ul class="list-disc list-inside space-y-2 mt-2">
+                                <li><span class="resource-tag bg-red-600">Read</span><a href="https://github.com/davidkimai/Context-Engineering" target="_blank" class="underline hover:text-yellow-300">Repository README</a> - “Why This Repository Exists” section</li>
+                                <li><span class="resource-tag bg-blue-600">Study</span><a href="https://github.com/davidkimai/Context-Engineering/blob/main/00_foundations/01_atoms_prompting.md" target="_blank" class="underline hover:text-yellow-300"><code>00_foundations/01_atoms_prompting.md</code></a></li>
+                                <li><span class="resource-tag bg-green-600">Reference</span><a href="https://x.com/karpathy/status/1937902205765607626" target="_blank" class="underline hover:text-yellow-300">Karpathy’s Tweet</a> - Original context engineering definition</li>
+                                <li><span class="resource-tag bg-purple-600">Background</span><a href="https://arxiv.org/pdf/2507.13334" target="_blank" class="underline hover:text-yellow-300">Context Engineering Survey</a> - Section 1-2</li>
+                            </ul>
+                            <h5 class="font-bold mt-4">✅ Actionable Steps:</h5>
+                            <ul class="list-none space-y-2 mt-2">
+                                <li class="task-item"><input type="checkbox" id="task1_1"><label for="task1_1" class="ml-2">Articulate the difference between prompt content and full context.</label></li>
+                                <li class="task-item"><input type="checkbox" id="task1_2"><label for="task1_2" class="ml-2">Identify and list 3 sources of "context waste" in existing prompts.</label></li>
+                            </ul>
+                        </div>
+                         <div class="milestone-box p-4 rounded-lg border border-gray-700">
+                            <h4 class="font-bangers text-2xl text-yellow-300">Milestone 1.2: Hands-On Implementation (Hour 2)</h4>
+                            <p class="mt-1 italic">This milestone translates theory into practice. By creating your first context-engineered template, you will gain a tangible understanding of how to control the model's environment for better results and efficiency.</p>
+                            <h5 class="font-bold mt-2">📚 Resources:</h5>
+                            <ul class="list-disc list-inside space-y-2 mt-2">
+                                <li><span class="resource-tag bg-red-600">Code</span><a href="https://github.com/davidkimai/Context-Engineering/blob/main/10_guides_zero_to_hero/01_min_prompt.ipynb" target="_blank" class="underline hover:text-yellow-300"><code>10_guides_zero_to_hero/01_min_prompt.ipynb</code></a></li>
+                                <li><span class="resource-tag bg-blue-600">Template</span><a href="https://github.com/davidkimai/Context-Engineering/blob/main/20_templates/minimal_context.yaml" target="_blank" class="underline hover:text-yellow-300"><code>20_templates/minimal_context.yaml</code></a></li>
+                                <li><span class="resource-tag bg-green-600">Example</span><a href="https://github.com/davidkimai/Context-Engineering/tree/main/30_examples/00_toy_chatbot" target="_blank" class="underline hover:text-yellow-300"><code>30_examples/00_toy_chatbot/</code></a></li>
+                                <li><span class="resource-tag bg-purple-600">Tool</span><a href="https://platform.openai.com/tokenizer" target="_blank" class="underline hover:text-yellow-300">OpenAI Tokenizer</a></li>
+                            </ul>
+                            <h5 class="font-bold mt-4">✅ Actionable Steps:</h5>
+                            <ul class="list-none space-y-2 mt-2">
+                                <li class="task-item"><input type="checkbox" id="task2_1"><label for="task2_1" class="ml-2">Build a minimal working example of a context-engineered prompt.</label></li>
+                                <li class="task-item"><input type="checkbox" id="task2_2"><label for="task2_2" class="ml-2">Convert one personal prompt to a context template and measure token difference.</label></li>
+                            </ul>
+                        </div>
+                        <div class="kpi-box p-4 rounded-lg mt-4">
+                            <h4 class="font-bangers text-2xl text-amber-400">🎯 Key Performance Indicators (KPIs)</h4>
+                            <ul class="list-disc list-inside mt-2 space-y-1">
+                                <li>**Token Efficiency:** Achieve at least a 15% token reduction in the converted prompt.</li>
+                                <li>**Functionality:** The minimal example runs without errors.</li>
+                                <li>**Deliverable:** A functional `context_template.yaml` is created.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ## Module: Molecules ## -->
+                <div id="module-molecules" class="comic-panel rounded-2xl mb-12 cursor-pointer p-6 relative overflow-hidden">
+                    <div class="absolute top-4 right-4 font-bangers text-5xl text-green-400 completion-banner">COMPLETE!</div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="text-6xl mr-6">🧪</div>
+                            <div>
+                                <h3 class="font-bangers text-4xl text-cyan-400">Module 2: Molecules - Few-Shot Mastery</h3>
+                                <p class="font-bold">Objective: Go beyond simple instructions by providing high-quality examples (shots) within the context to guide the model's behavior and improve accuracy.</p>
+                            </div>
+                        </div>
+                        <div class="font-bangers text-2xl text-amber-500 text-center">
+                            <span>Deadline</span><br><span>Hour 5</span>
+                        </div>
+                    </div>
+                    <div class="module-content hidden mt-6 space-y-6 text-left">
+                        <div class="milestone-box p-4 rounded-lg border border-gray-700">
+                            <h4 class="font-bangers text-2xl text-yellow-300">Milestone 2.1: Few-Shot Fundamentals (Hour 3)</h4>
+                            <p class="mt-1 italic">This milestone focuses on the art of creating "gold standard" examples. Learning to craft perfect shots is crucial for steering the model towards the desired output format and reasoning style.</p>
+                            <h5 class="font-bold mt-2">📚 Resources:</h5>
+                            <ul class="list-disc list-inside space-y-2 mt-2">
+                                <li><span class="resource-tag bg-red-600">Read</span><a href="https://github.com/davidkimai/Context-Engineering/blob/main/00_foundations/02_molecules_context.md" target="_blank" class="underline hover:text-yellow-300"><code>00_foundations/02_molecules_context.md</code></a></li>
+                                <li><span class="resource-tag bg-blue-600">Study</span><a href="https://www.arxiv.org/pdf/2506.12115" target="_blank" class="underline hover:text-yellow-300">IBM Zurich Paper</a> - Section 2 “Few-shot Learning”</li>
+                                <li><span class="resource-tag bg-green-600">Reference</span><a href="https://github.com/davidkimai/Context-Engineering/blob/main/40_reference/patterns.md" target="_blank" class="underline hover:text-yellow-300"><code>40_reference/patterns.md</code></a></li>
+                                <li><span class="resource-tag bg-purple-600">Example</span><a href="https://github.com/davidkimai/Context-Engineering/tree/main/30_examples/01_data_annotator" target="_blank" class="underline hover:text-yellow-300"><code>30_examples/01_data_annotator/</code></a></li>
+                            </ul>
+                             <h5 class="font-bold mt-4">✅ Actionable Steps:</h5>
+                             <ul class="list-none space-y-2 mt-2">
+                                <li class="task-item"><input type="checkbox" id="task3_1"><label for="task3_1" class="ml-2">Develop a set of 5 "gold standard" examples for a chosen task.</label></li>
+                                <li class="task-item"><input type="checkbox" id="task3_2"><label for="task3_2" class="ml-2">Justify why each example is high-quality.</label></li>
+                            </ul>
+                        </div>
+                         <div class="milestone-box p-4 rounded-lg border border-gray-700">
+                            <h4 class="font-bangers text-2xl text-yellow-300">Milestone 2.2: Context Expansion & Optimization (Hour 4-5)</h4>
+                            <p class="mt-1 italic">Here, you'll learn to balance performance with cost. This milestone teaches the vital skill of measuring the impact of adding more examples versus their token cost, a key to building efficient systems.</p>
+                            <h5 class="font-bold mt-2">📚 Resources:</h5>
+                            <ul class="list-disc list-inside space-y-2 mt-2">
+                                <li><span class="resource-tag bg-red-600">Code</span><a href="https://github.com/davidkimai/Context-Engineering/blob/main/10_guides_zero_to_hero/02_expand_context.ipynb" target="_blank" class="underline hover:text-yellow-300"><code>10_guides_zero_to_hero/02_expand_context.ipynb</code></a></li>
+                                <li><span class="resource-tag bg-blue-600">Study</span><a href="https://github.com/davidkimai/Context-Engineering/blob/main/40_reference/token_budgeting.md" target="_blank" class="underline hover:text-yellow-300"><code>40_reference/token_budgeting.md</code></a></li>
+                                <li><span class="resource-tag bg-green-600">Tool</span><a href="https://huggingface.co/spaces/Xenova/the-tokenizer-playground" target="_blank" class="underline hover:text-yellow-300">Token Counter</a></li>
+                                <li><span class="resource-tag bg-purple-600">Reference</span>MEM1 paper context expansion methodology</li>
+                            </ul>
+                            <h5 class="font-bold mt-4">✅ Actionable Steps:</h5>
+                            <ul class="list-none space-y-2 mt-2">
+                                <li class="task-item"><input type="checkbox" id="task4_1"><label for="task4_1" class="ml-2">Run and document performance of 1-shot vs. 5-shot prompts.</label></li>
+                                <li class="task-item"><input type="checkbox" id="task4_2"><label for="task4_2" class="ml-2">Create a simple token vs. performance cost calculation.</label></li>
+                                <li class="task-item"><input type="checkbox" id="task4_3"><label for="task4_3" class="ml-2">A/B test two different sets of few-shot examples.</label></li>
+                            </ul>
+                        </div>
+                        <div class="kpi-box p-4 rounded-lg mt-4">
+                            <h4 class="font-bangers text-2xl text-amber-400">🎯 Key Performance Indicators (KPIs)</h4>
+                            <ul class="list-disc list-inside mt-2 space-y-1">
+                                <li>**Performance Lift:** Demonstrate a measurable accuracy improvement (e.g., >10%) using 5-shot vs. 0-shot.</li>
+                                <li>**Analysis:** Produce a clear chart or table comparing token cost to performance.</li>
+                                <li>**Deliverable:** An optimized few-shot system with documented performance metrics.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ## Module: Cells ## -->
+                <div id="module-cells" class="comic-panel rounded-2xl mb-12 cursor-pointer p-6 relative overflow-hidden">
+                    <div class="absolute top-4 right-4 font-bangers text-5xl text-green-400 completion-banner">COMPLETE!</div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="text-6xl mr-6">🧠</div>
+                            <div>
+                                <h3 class="font-bangers text-4xl text-cyan-400">Module 3: Cells - Memory Systems</h3>
+                                <p class="font-bold">Objective: Give the model a persistent memory, enabling it to recall past interactions and access external knowledge bases for more informed, stateful conversations.</p>
+                            </div>
+                        </div>
+                        <div class="font-bangers text-2xl text-amber-500 text-center">
+                            <span>Deadline</span><br><span>Hour 8</span>
+                        </div>
+                    </div>
+                    <div class="module-content hidden mt-6 space-y-6 text-left">
+                        <div class="milestone-box p-4 rounded-lg border border-gray-700">
+                            <h4 class="font-bangers text-2xl text-yellow-300">Milestone 3.1: Memory Architecture & RAG (Hour 6-8)</h4>
+                            <p class="mt-1 italic">This milestone is your entry into building truly intelligent agents. By implementing conversational memory and Retrieval-Augmented Generation (RAG), you enable the system to learn from the past and pull in new information on the fly.</p>
+                            <h5 class="font-bold mt-2">📚 Resources:</h5>
+                            <ul class="list-disc list-inside space-y-2 mt-2">
+                                <li><span class="resource-tag bg-red-600">Read</span><a href="https://github.com/davidkimai/Context-Engineering/blob/main/00_foundations/03_cells_memory.md" target="_blank" class="underline hover:text-yellow-300"><code>00_foundations/03_cells_memory.md</code></a></li>
+                                <li><span class="resource-tag bg-blue-600">Study</span><a href="https://arxiv.org/pdf/2506.15841" target="_blank" class="underline hover:text-yellow-300">MEM1 Paper</a></li>
+                                <li><span class="resource-tag bg-purple-600">Tool</span><a href="https://docs.trychroma.com/" target="_blank" class="underline hover:text-yellow-300">Chroma DB Documentation</a></li>
+                                <li><span class="resource-tag bg-red-600">Code</span><a href="https://github.com/davidkimai/Context-Engineering/blob/main/10_guides_zero_to_hero/04_rag_recipes.ipynb" target="_blank" class="underline hover:text-yellow-300"><code>10_guides_zero_to_hero/04_rag_recipes.ipynb</code></a></li>
+                            </ul>
+                            <h5 class="font-bold mt-4">✅ Actionable Steps:</h5>
+                            <ul class="list-none space-y-2 mt-2">
+                                <li class="task-item"><input type="checkbox" id="task6_1"><label for="task6_1" class="ml-2">Implement a basic conversational memory that stores the last 5 turns.</label></li>
+                                <li class="task-item"><input type="checkbox" id="task7_1"><label for="task7_1" class="ml-2">Implement a memory summarization technique to manage token budget.</label></li>
+                                <li class="task-item"><input type="checkbox" id="task8_1"><label for="task8_1" class="ml-2">Set up a basic vector database and implement a RAG pipeline.</label></li>
+                            </ul>
+                        </div>
+                        <div class="kpi-box p-4 rounded-lg mt-4">
+                            <h4 class="font-bangers text-2xl text-amber-400">🎯 Key Performance Indicators (KPIs)</h4>
+                            <ul class="list-disc list-inside mt-2 space-y-1">
+                                <li>**Statefulness:** Chatbot correctly references information from 3 turns prior.</li>
+                                <li>**Efficiency:** Memory system successfully stays below a predefined token limit (e.g., 4096 tokens).</li>
+                                <li>**Deliverable:** A working RAG system that answers questions using retrieved documents.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ## Module: Organs ## -->
+                <div id="module-organs" class="comic-panel rounded-2xl mb-12 cursor-pointer p-6 relative overflow-hidden">
+                    <div class="absolute top-4 right-4 font-bangers text-5xl text-green-400 completion-banner">COMPLETE!</div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="text-6xl mr-6">📜</div>
+                            <div>
+                                <h3 class="font-bangers text-4xl text-cyan-400">Module 4: Organs - Multi-Agent Systems</h3>
+                                <p class="font-bold">Objective: Orchestrate multiple specialized AI agents to collaborate on complex tasks that a single model would struggle with, enabling sophisticated, multi-step problem-solving.</p>
+                            </div>
+                        </div>
+                        <div class="font-bangers text-2xl text-amber-500 text-center">
+                            <span>Deadline</span><br><span>Hour 12</span>
+                        </div>
+                    </div>
+                    <div class="module-content hidden mt-6 space-y-6 text-left">
+                        <div class="milestone-box p-4 rounded-lg border border-gray-700">
+                            <h4 class="font-bangers text-2xl text-yellow-300">Milestone 4.1: Agent & Control Flow Design (Hour 9-10)</h4>
+                            <p class="mt-1 italic">Learn to think like an architect. This milestone is about breaking down a large problem into smaller, manageable sub-tasks and assigning each to a specialized agent, laying the groundwork for a powerful collaborative system.</p>
+                            <h5 class="font-bold mt-2">📚 Resources:</h5>
+                            <ul class="list-disc list-inside space-y-2 mt-2">
+                                <li><span class="resource-tag bg-red-600">Read</span><a href="https://github.com/davidkimai/Context-Engineering/blob/main/00_foundations/04_organs_applications.md" target="_blank" class="underline hover:text-yellow-300"><code>00_foundations/04_organs_applications.md</code></a></li>
+                                <li><span class="resource-tag bg-red-600">Code</span><a href="https://github.com/davidkimai/Context-Engineering/blob/main/10_guides_zero_to_hero/03_control_loops.ipynb" target="_blank" class="underline hover:text-yellow-300"><code>10_guides_zero_to_hero/03_control_loops.ipynb</code></a></li>
+                                <li><span class="resource-tag bg-purple-600">Tool</span><a href="https://langchain-ai.github.io/langgraph/" target="_blank" class="underline hover:text-yellow-300">LangGraph Documentation</a></li>
+                            </ul>
+                            <h5 class="font-bold mt-4">✅ Actionable Steps:</h5>
+                            <ul class="list-none space-y-2 mt-2">
+                                <li class="task-item"><input type="checkbox" id="task9_1"><label for="task9_1" class="ml-2">Design a 3-agent pipeline for a complex task (e.g., Planner, Researcher, Writer).</label></li>
+                                <li class="task-item"><input type="checkbox" id="task10_1"><label for="task10_1" class="ml-2">Implement a coordinator agent that passes tasks and context between specialist agents.</label></li>
+                            </ul>
+                        </div>
+                        <div class="milestone-box p-4 rounded-lg border border-gray-700">
+                            <h4 class="font-bangers text-2xl text-yellow-300">Milestone 4.2: Advanced Orchestration & Integration (Hour 11-12)</h4>
+                             <p class="mt-1 italic">This is where the system comes alive. By implementing feedback loops and integrating the memory systems from Module 3, you create a dynamic, stateful team of agents that can adapt and remember.</p>
+                             <h5 class="font-bold mt-2">📚 Resources:</h5>
+                            <ul class="list-disc list-inside space-y-2 mt-2">
+                                <li><span class="resource-tag bg-blue-600">Study</span><a href="https://github.com/davidkimai/Context-Engineering/tree/main/70_agents/02_self_repair_loop" target="_blank" class="underline hover:text-yellow-300"><code>70_agents/02_self_repair_loop/</code></a></li>
+                                <li><span class="resource-tag bg-purple-600">Tool</span><a href="https://wandb.ai/quickstart" target="_blank" class="underline hover:text-yellow-300">Weights & Biases for monitoring</a></li>
+                            </ul>
+                            <h5 class="font-bold mt-4">✅ Actionable Steps:</h5>
+                            <ul class="list-none space-y-2 mt-2">
+                                <li class="task-item"><input type="checkbox" id="task11_1"><label for="task11_1" class="ml-2">Implement a feedback loop where one agent can correct another's output.</label></li>
+                                <li class="task-item"><input type="checkbox" id="task12_1"><label for="task12_1" class="ml-2">Combine the multi-agent system with the memory system from Module 3.</label></li>
+                            </ul>
+                        </div>
+                        <div class="kpi-box p-4 rounded-lg mt-4">
+                            <h4 class="font-bangers text-2xl text-amber-400">🎯 Key Performance Indicators (KPIs)</h4>
+                            <ul class="list-disc list-inside mt-2 space-y-1">
+                                <li>**Task Completion:** The 3-agent pipeline successfully completes its assigned complex task.</li>
+                                <li>**State Management:** Context and state are correctly passed between agents without loss.</li>
+                                <li>**Deliverable:** A complete multi-agent system that integrates memory and solves a multi-step problem.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                 <!-- ## Module: Cognitive Tools ## -->
+                <div id="module-cognitive-tools" class="comic-panel rounded-2xl mb-12 cursor-pointer p-6 relative overflow-hidden">
+                    <div class="absolute top-4 right-4 font-bangers text-5xl text-green-400 completion-banner">COMPLETE!</div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="text-6xl mr-6">⚙️</div>
+                            <div>
+                                <h3 class="font-bangers text-4xl text-cyan-400">Module 5: Cognitive Tools Revolution</h3>
+                                <p class="font-bold">Objective: Deconstruct monolithic prompts into a modular toolkit of "cognitive operations," allowing for more precise, efficient, and interpretable reasoning processes based on IBM Zurich's research.</p>
+                            </div>
+                        </div>
+                        <div class="font-bangers text-2xl text-amber-500 text-center">
+                            <span>Deadline</span><br><span>Hour 16</span>
+                        </div>
+                    </div>
+                    <div class="module-content hidden mt-6 space-y-6 text-left">
+                        <div class="milestone-box p-4 rounded-lg border border-gray-700">
+                            <h4 class="font-bangers text-2xl text-yellow-300">Milestone 5.1: Building Cognitive Tools (Hour 13-14)</h4>
+                             <p class="mt-1 italic">This milestone involves creating discrete, single-purpose prompts that act as specialized tools for reasoning, a powerful alternative to large, complex prompts.</p>
+                            <h5 class="font-bold mt-2">📚 Resources:</h5>
+                            <ul class="list-disc list-inside space-y-2 mt-2">
+                                <li><span class="resource-tag bg-blue-600">Study</span><a href="https://www.arxiv.org/pdf/2506.12115" target="_blank" class="underline hover:text-yellow-300">IBM Zurich - Cognitive Tools Paper</a></li>
+                                <li><span class="resource-tag bg-red-600">Read</span><a href="https://github.com/davidkimai/Context-Engineering/blob/main/00_foundations/05_cognitive_tools.md" target="_blank" class="underline hover:text-yellow-300"><code>00_foundations/05_cognitive_tools.md</code></a></li>
+                            </ul>
+                            <h5 class="font-bold mt-4">✅ Actionable Steps:</h5>
+                            <ul class="list-none space-y-2 mt-2">
+                                <li class="task-item"><input type="checkbox" id="task13_1"><label for="task13_1" class="ml-2">Implement "understand question" and "recall related" as distinct cognitive tools.</label></li>
+                                <li class="task-item"><input type="checkbox" id="task14_1"><label for="task14_1" class="ml-2">Build 3 additional cognitive tools relevant to your domain.</label></li>
+                            </ul>
+                        </div>
+                        <div class="milestone-box p-4 rounded-lg border border-gray-700">
+                            <h4 class="font-bangers text-2xl text-yellow-300">Milestone 5.2: Cognitive Architecture (Hour 15-16)</h4>
+                            <p class="mt-1 italic">Here, you'll assemble your individual tools into a sophisticated reasoning engine, learning how to chain them together to solve complex problems step-by-step.</p>
+                             <h5 class="font-bold mt-2">📚 Resources:</h5>
+                            <ul class="list-disc list-inside space-y-2 mt-2">
+                                <li><span class="resource-tag bg-purple-600">Tool</span><a href="https://python.langchain.com/docs/modules/agents/tools/" target="_blank" class="underline hover:text-yellow-300">LangChain Tools</a></li>
+                                <li><span class="resource-tag bg-purple-600">Tool</span><a href="https://docs.smith.langchain.com/" target="_blank" class="underline hover:text-yellow-300">LangSmith for monitoring</a></li>
+                            </ul>
+                            <h5 class="font-bold mt-4">✅ Actionable Steps:</h5>
+                            <ul class="list-none space-y-2 mt-2">
+                                <li class="task-item"><input type="checkbox" id="task15_1"><label for="task15_1" class="ml-2">Implement a tool selection logic that chooses the right cognitive tool for a given step.</label></li>
+                                <li class="task-item"><input type="checkbox" id="task16_1"><label for="task16_1" class="ml-2">Build a reasoning pipeline that chains multiple cognitive tools to solve a problem.</label></li>
+                            </ul>
+                        </div>
+                        <div class="kpi-box p-4 rounded-lg mt-4">
+                            <h4 class="font-bangers text-2xl text-amber-400">🎯 Key Performance Indicators (KPIs)</h4>
+                            <ul class="list-disc list-inside mt-2 space-y-1">
+                                <li>**Modularity:** Each cognitive tool can be run independently.</li>
+                                <li>**Performance:** The cognitive architecture shows improved reasoning quality over a monolithic prompt.</li>
+                                <li>**Deliverable:** A production-ready cognitive tools system with at least 5 tools.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ## Module: Neural Field Theory ## -->
+                <div id="module-neural-fields" class="comic-panel rounded-2xl mb-12 cursor-pointer p-6 relative overflow-hidden">
+                    <div class="absolute top-4 right-4 font-bangers text-5xl text-green-400 completion-banner">COMPLETE!</div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="text-6xl mr-6">✨</div>
+                            <div>
+                                <h3 class="font-bangers text-4xl text-cyan-400">Module 6: Neural Field Theory Intro</h3>
+                                <p class="font-bold">Objective: Explore the advanced concept of context as a continuous "meaning field," understanding how ideas form attractors and create emergent symbolic structures within the model.</p>
+                            </div>
+                        </div>
+                        <div class="font-bangers text-2xl text-amber-500 text-center">
+                            <span>Deadline</span><br><span>Hour 20</span>
+                        </div>
+                    </div>
+                     <div class="module-content hidden mt-6 space-y-6 text-left">
+                        <div class="milestone-box p-4 rounded-lg border border-gray-700">
+                            <h4 class="font-bangers text-2xl text-yellow-300">Milestone 6.1: Theory & Symbolic Mechanisms (Hour 17-18)</h4>
+                            <p class="mt-1 italic">This milestone introduces a paradigm shift from discrete context chunks to continuous fields, helping you visualize how meaning and symbols emerge from the model's internal dynamics.</p>
+                            <h5 class="font-bold mt-2">📚 Resources:</h5>
+                            <ul class="list-disc list-inside space-y-2 mt-2">
+                                <li><span class="resource-tag bg-blue-600">Study</span><a href="https://arxiv.org/pdf/2502.15208" target="_blank" class="underline hover:text-yellow-300">Shanghai AI Lab - LLM Attractors Paper</a></li>
+                                <li><span class="resource-tag bg-blue-600">Study</span><a href="https://openreview.net/forum?id=y1SnRPDWx4" target="_blank" class="underline hover:text-yellow-300">ICML Princeton - Emergent Symbolic Mechanisms Paper</a></li>
+                            </ul>
+                            <h5 class="font-bold mt-4">✅ Actionable Steps:</h5>
+                            <ul class="list-none space-y-2 mt-2">
+                                <li class="task-item"><input type="checkbox" id="task17_1"><label for="task17_1" class="ml-2">Visualize a context window as a "meaning field" with attractors.</label></li>
+                                <li class="task-item"><input type="checkbox" id="task18_1"><label for="task18_1" class="ml-2">Design a symbolic representation for a piece of context (e.g., JSON schema).</label></li>
+                            </ul>
+                        </div>
+                        <div class="milestone-box p-4 rounded-lg border border-gray-700">
+                            <h4 class="font-bangers text-2xl text-yellow-300">Milestone 6.2: Field Implementation (Hour 19-20)</h4>
+                            <p class="mt-1 italic">Transitioning from abstract theory to concrete code, this milestone involves creating the basic building blocks of a field-based context system.</p>
+                             <h5 class="font-bold mt-2">📚 Resources:</h5>
+                            <ul class="list-disc list-inside space-y-2 mt-2">
+                                <li><span class="resource-tag bg-blue-600">Study</span><a href="https://arxiv.org/pdf/2506.10077" target="_blank" class="underline hover:text-yellow-300">Indiana University - Quantum Semantics Paper</a></li>
+                                <li><span class="resource-tag bg-red-600">Code</span><a href="https://github.com/davidkimai/Context-Engineering/blob/main/10_guides_zero_to_hero/08_emergence_detection.ipynb" target="_blank" class="underline hover:text-yellow-300"><code>10_guides_zero_to_hero/08_emergence_detection.ipynb</code></a></li>
+                            </ul>
+                            <h5 class="font-bold mt-4">✅ Actionable Steps:</h5>
+                            <ul class="list-none space-y-2 mt-2">
+                                <li class="task-item"><input type="checkbox" id="task19_1"><label for="task19_1" class="ml-2">Implement a basic "field operation" (e.g., a function that adds or removes context).</label></li>
+                                <li class="task-item"><input type="checkbox" id="task20_1"><label for="task20_1" class="ml-2">Create a persistence mechanism for the field (e.g., saving context to a file).</label></li>
+                            </ul>
+                        </div>
+                        <div class="kpi-box p-4 rounded-lg mt-4">
+                            <h4 class="font-bangers text-2xl text-amber-400">🎯 Key Performance Indicators (KPIs)</h4>
+                            <ul class="list-disc list-inside mt-2 space-y-1">
+                                <li>**Visualization:** A clear diagram of a context field is produced.</li>
+                                <li>**Functionality:** Field operations correctly modify the persisted context.</li>
+                                <li>**Deliverable:** A working neural field prototype with persistence.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ## Module: Advanced Applications ## -->
+                <div id="module-advanced-apps" class="comic-panel rounded-2xl mb-12 cursor-pointer p-6 relative overflow-hidden">
+                    <div class="absolute top-4 right-4 font-bangers text-5xl text-green-400 completion-banner">COMPLETE!</div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="text-6xl mr-6">🚀</div>
+                            <div>
+                                <h3 class="font-bangers text-4xl text-cyan-400">Module 7: Day 1 Integration & Wrap-up</h3>
+                                <p class="font-bold">Objective: Synthesize all concepts from the first 24 hours into a single, unified context engineering platform and document your progress.</p>
+                            </div>
+                        </div>
+                        <div class="font-bangers text-2xl text-amber-500 text-center">
+                            <span>Deadline</span><br><span>Hour 24</span>
+                        </div>
+                    </div>
+                     <div class="module-content hidden mt-6 space-y-6 text-left">
+                        <div class="milestone-box p-4 rounded-lg border border-gray-700">
+                            <h4 class="font-bangers text-2xl text-yellow-300">Milestone 7.1: System Integration & Review (Hour 21-24)</h4>
+                            <p class="mt-1 italic">This is the capstone for Day 1. You will assemble all the individual components—atoms, molecules, cells, and organs—into a cohesive system, solidifying your understanding and preparing for the advanced topics of Day 2.</p>
+                            <h5 class="font-bold mt-4">✅ Actionable Steps:</h5>
+                            <ul class="list-none space-y-2 mt-2">
+                                <li class="task-item"><input type="checkbox" id="task21_1"><label for="task21_1" class="ml-2">Implement a protocol shell runner from the repository.</label></li>
+                                <li class="task-item"><input type="checkbox" id="task22_1"><label for="task22_1" class="ml-2">Implement an emergence detection algorithm to track attractor formation.</label></li>
+                                <li class="task-item"><input type="checkbox" id="task23_1"><label for="task23_1" class="ml-2">Integrate Atoms, Molecules, Cells, and Organs into a unified platform.</label></li>
+                                <li class="task-item"><input type="checkbox" id="task24_1"><label for="task24_1" class="ml-2">Document key learnings and insights from Day 1.</label></li>
+                            </ul>
+                        </div>
+                        <div class="kpi-box p-4 rounded-lg mt-4">
+                            <h4 class="font-bangers text-2xl text-amber-400">🎯 Key Performance Indicators (KPIs)</h4>
+                            <ul class="list-disc list-inside mt-2 space-y-1">
+                                <li>**Integration:** The unified platform can run a task using all previous concepts.</li>
+                                <li>**Documentation:** A personal summary of Day 1 is written.</li>
+                                <li>**Deliverable:** A complete context engineering toolkit from Day 1.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ########## DAY 2: TIMELINE 25-48 HOURS ########## -->
+            <div class="mb-16">
+                <h2 class="font-bangers text-5xl md:text-7xl text-center text-amber-500 my-8" style="text-shadow: 4px 4px 0px #000;">Day 2: Advanced Implementation & Mastery</h2>
+
+                <!-- ## Module: Meta-Recursive Frameworks ## -->
+                <div id="module-meta-recursive" class="comic-panel rounded-2xl mb-12 cursor-pointer p-6 relative overflow-hidden">
+                    <div class="absolute top-4 right-4 font-bangers text-5xl text-green-400 completion-banner">COMPLETE!</div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="text-6xl mr-6">🔄</div>
+                            <div>
+                                <h3 class="font-bangers text-4xl text-fuchsia-400">Module 8: Meta-Recursive Frameworks</h3>
+                                <p class="font-bold">Objective: Build systems that can improve themselves by reflecting on their own performance and dynamically adjusting their internal context and parameters.</p>
+                            </div>
+                        </div>
+                        <div class="font-bangers text-2xl text-amber-500 text-center">
+                            <span>Deadline</span><br><span>Hour 28</span>
+                        </div>
+                    </div>
+                    <div class="module-content hidden mt-6 space-y-6 text-left">
+                        <div class="milestone-box p-4 rounded-lg border border-gray-700">
+                            <h4 class="font-bangers text-2xl text-yellow-300">Milestone 8.1: Recursive & Meta-Learning (Hour 25-26)</h4>
+                            <p class="mt-1 italic">This milestone introduces the concept of self-improvement loops, where the system's output is used as input to refine its future behavior, creating a foundation for autonomous optimization.</p>
+                            <h5 class="font-bold mt-4">✅ Actionable Steps:</h5>
+                            <ul class="list-none space-y-2 mt-2">
+                                <li class="task-item"><input type="checkbox" id="task25_1"><label for="task25_1" class="ml-2">Build a basic recursive system that refines its own context based on output.</label></li>
+                                <li class="task-item"><input type="checkbox" id="task26_1"><label for="task26_1" class="ml-2">Implement a meta-learning component that self-tunes a parameter (e.g., number of few-shots).</label></li>
+                            </ul>
+                        </div>
+                        <div class="milestone-box p-4 rounded-lg border border-gray-700">
+                            <h4 class="font-bangers text-2xl text-yellow-300">Milestone 8.2: Interpretable Evolution (Hour 27-28)</h4>
+                            <p class="mt-1 italic">A self-improving system is only useful if you can understand how it's changing. This milestone focuses on creating visualizations and tracking mechanisms to make the system's evolution transparent.</p>
+                            <h5 class="font-bold mt-2">📚 Resources:</h5>
+                            <ul class="list-disc list-inside space-y-2 mt-2">
+                                <li><span class="resource-tag bg-purple-600">Tool</span><a href="https://matplotlib.org/" target="_blank" class="underline hover:text-yellow-300">Matplotlib for visualization</a></li>
+                            </ul>
+                            <h5 class="font-bold mt-4">✅ Actionable Steps:</h5>
+                            <ul class="list-none space-y-2 mt-2">
+                                <li class="task-item"><input type="checkbox" id="task27_1"><label for="task27_1" class="ml-2">Create a visualization that tracks the system's parameter changes over time.</label></li>
+                                <li class="task-item"><input type="checkbox" id="task28_1"><label for="task28_1" class="ml-2">Implement a multi-level recursive system and validate its improvement.</label></li>
+                            </ul>
+                        </div>
+                        <div class="kpi-box p-4 rounded-lg mt-4">
+                            <h4 class="font-bangers text-2xl text-amber-400">🎯 Key Performance Indicators (KPIs)</h4>
+                            <ul class="list-disc list-inside mt-2 space-y-1">
+                                <li>**Self-Improvement:** System demonstrates improved performance after 5 recursive loops.</li>
+                                <li>**Interpretability:** The evolution of the system is clearly visible in the visualization.</li>
+                                <li>**Deliverable:** A working, self-improving context system.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ## Module: Production Systems ## -->
+                <div id="module-production" class="comic-panel rounded-2xl mb-12 cursor-pointer p-6 relative overflow-hidden">
+                    <div class="absolute top-4 right-4 font-bangers text-5xl text-green-400 completion-banner">COMPLETE!</div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="text-6xl mr-6">🏭</div>
+                            <div>
+                                <h3 class="font-bangers text-4xl text-fuchsia-400">Module 9: Production Systems</h3>
+                                <p class="font-bold">Objective: Harden your context engineering systems for real-world deployment by focusing on performance optimization, error handling, scalability, and observability.</p>
+                            </div>
+                        </div>
+                        <div class="font-bangers text-2xl text-amber-500 text-center">
+                            <span>Deadline</span><br><span>Hour 32</span>
+                        </div>
+                    </div>
+                     <div class="module-content hidden mt-6 space-y-6 text-left">
+                        <div class="milestone-box p-4 rounded-lg border border-gray-700">
+                            <h4 class="font-bangers text-2xl text-yellow-300">Milestone 9.1: Optimization & Robustness (Hour 29-30)</h4>
+                             <p class="mt-1 italic">Production systems must be fast and reliable. This milestone teaches you to implement caching to reduce latency and create fallback mechanisms to ensure your system is resilient to failure.</p>
+                            <h5 class="font-bold mt-4">✅ Actionable Steps:</h5>
+                            <ul class="list-none space-y-2 mt-2">
+                                <li class="task-item"><input type="checkbox" id="task29_1"><label for="task29_1" class="ml-2">Implement a caching layer for frequently used context.</label></li>
+                                <li class="task-item"><input type="checkbox" id="task30_1"><label for="task30_1" class="ml-2">Create fallback mechanisms for when an agent or tool fails.</label></li>
+                            </ul>
+                        </div>
+                        <div class="milestone-box p-4 rounded-lg border border-gray-700">
+                            <h4 class="font-bangers text-2xl text-yellow-300">Milestone 9.2: Scaling & Monitoring (Hour 31-32)</h4>
+                             <p class="mt-1 italic">A system that works for one user must also work for a thousand. Here you will design a scalable architecture and build monitoring dashboards to observe your system's health and performance in real-time.</p>
+                            <h5 class="font-bold mt-2">📚 Resources:</h5>
+                            <ul class="list-disc list-inside space-y-2 mt-2">
+                                <li><span class="resource-tag bg-purple-600">Tool</span><a href="https://wandb.ai/quickstart" target="_blank" class="underline hover:text-yellow-300">Weights & Biases for monitoring</a></li>
+                            </ul>
+                            <h5 class="font-bold mt-4">✅ Actionable Steps:</h5>
+                            <ul class="list-none space-y-2 mt-2">
+                                <li class="task-item"><input type="checkbox" id="task31_1"><label for="task31_1" class="ml-2">Design a scalable architecture using microservices for context components.</label></li>
+                                <li class="task-item"><input type="checkbox" id="task32_1"><label for="task32_1" class="ml-2">Implement a basic monitoring dashboard showing latency and token usage.</label></li>
+                            </ul>
+                        </div>
+                        <div class="kpi-box p-4 rounded-lg mt-4">
+                            <h4 class="font-bangers text-2xl text-amber-400">🎯 Key Performance Indicators (KPIs)</h4>
+                            <ul class="list-disc list-inside mt-2 space-y-1">
+                                <li>**Latency:** Caching reduces response time by at least 20%.</li>
+                                <li>**Reliability:** System handles simulated tool failures gracefully.</li>
+                                <li>**Deliverable:** A production-ready context platform with monitoring.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ## Module: Advanced Research ## -->
+                <div id="module-advanced-research" class="comic-panel rounded-2xl mb-12 cursor-pointer p-6 relative overflow-hidden">
+                    <div class="absolute top-4 right-4 font-bangers text-5xl text-green-400 completion-banner">COMPLETE!</div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="text-6xl mr-6">🔬</div>
+                            <div>
+                                <h3 class="font-bangers text-4xl text-fuchsia-400">Module 10: Advanced Research Implementation</h3>
+                                <p class="font-bold">Objective: Translate cutting-edge academic research on attractor dynamics, symbolic residue, and boundary management into practical, working code.</p>
+                            </div>
+                        </div>
+                        <div class="font-bangers text-2xl text-amber-500 text-center">
+                            <span>Deadline</span><br><span>Hour 36</span>
+                        </div>
+                    </div>
+                     <div class="module-content hidden mt-6 space-y-6 text-left">
+                        <div class="milestone-box p-4 rounded-lg border border-gray-700">
+                            <h4 class="font-bangers text-2xl text-yellow-300">Milestone 10.1: Attractors & Residue (Hour 33-34)</h4>
+                             <p class="mt-1 italic">This milestone involves implementing the most advanced theories, building systems that can detect and form their own conceptual "attractors" and track the persistent "symbolic residue" they leave behind.</p>
+                            <h5 class="font-bold mt-4">✅ Actionable Steps:</h5>
+                            <ul class="list-none space-y-2 mt-2">
+                                <li class="task-item"><input type="checkbox" id="task33_1"><label for="task33_1" class="ml-2">Implement attractor detection and create a self-organizing attractor system.</label></li>
+                                <li class="task-item"><input type="checkbox" id="task34_1"><label for="task34_1" class="ml-2">Implement symbolic residue detection and analysis.</label></li>
+                            </ul>
+                        </div>
+                        <div class="milestone-box p-4 rounded-lg border border-gray-700">
+                            <h4 class="font-bangers text-2xl text-yellow-300">Milestone 10.2: Boundaries & Fields (Hour 35-36)</h4>
+                            <p class="mt-1 italic">Here you will build systems with flexible, adaptive context boundaries and combine all the field-based concepts into a single, comprehensive implementation of Neural Field Theory.</p>
+                            <h5 class="font-bold mt-4">✅ Actionable Steps:</h5>
+                            <ul class="list-none space-y-2 mt-2">
+                                <li class="task-item"><input type="checkbox" id="task35_1"><label for="task35_1" class="ml-2">Implement dynamic boundary management for flexible context.</label></li>
+                                <li class="task-item"><input type="checkbox" id="task36_1"><label for="task36_1" class="ml-2">Combine all field concepts into a complete field theory implementation.</label></li>
+                            </ul>
+                        </div>
+                        <div class="kpi-box p-4 rounded-lg mt-4">
+                            <h4 class="font-bangers text-2xl text-amber-400">🎯 Key Performance Indicators (KPIs)</h4>
+                            <ul class="list-disc list-inside mt-2 space-y-1">
+                                <li>**Functionality:** All research concepts are implemented and run without errors.</li>
+                                <li>**Integration:** All field concepts are successfully combined.</li>
+                                <li>**Deliverable:** A complete, working field theory implementation.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ## Module: Real-World Applications ## -->
+                <div id="module-real-world" class="comic-panel rounded-2xl mb-12 cursor-pointer p-6 relative overflow-hidden">
+                    <div class="absolute top-4 right-4 font-bangers text-5xl text-green-400 completion-banner">COMPLETE!</div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="text-6xl mr-6">🌍</div>
+                            <div>
+                                <h3 class="font-bangers text-4xl text-fuchsia-400">Module 11: Real-World Applications</h3>
+                                <p class="font-bold">Objective: Apply your fully integrated context engineering system to solve a practical, domain-specific problem, complete with a user interface and real-world validation.</p>
+                            </div>
+                        </div>
+                        <div class="font-bangers text-2xl text-amber-500 text-center">
+                            <span>Deadline</span><br><span>Hour 40</span>
+                        </div>
+                    </div>
+                     <div class="module-content hidden mt-6 space-y-6 text-left">
+                        <div class="milestone-box p-4 rounded-lg border border-gray-700">
+                            <h4 class="font-bangers text-2xl text-yellow-300">Milestone 11.1: Domain Application & Integration (Hour 37-38)</h4>
+                            <p class="mt-1 italic">Theory becomes reality. This milestone requires you to select a real-world problem and deploy your system to solve it, then build an API so it can be integrated with other tools.</p>
+                            <h5 class="font-bold mt-4">✅ Actionable Steps:</h5>
+                            <ul class="list-none space-y-2 mt-2">
+                                <li class="task-item"><input type="checkbox" id="task37_1"><label for="task37_1" class="ml-2">Apply your full context engineering system to a specific domain problem.</label></li>
+                                <li class="task-item"><input type="checkbox" id="task38_1"><label for="task38_1" class="ml-2">Build an API layer to integrate your system with an existing workflow.</label></li>
+                            </ul>
+                        </div>
+                        <div class="milestone-box p-4 rounded-lg border border-gray-700">
+                            <h4 class="font-bangers text-2xl text-yellow-300">Milestone 11.2: UX & Validation (Hour 39-40)</h4>
+                            <p class="mt-1 italic">A powerful system needs a usable interface. Here you will build a simple UI to control your application and then rigorously test its performance against real-world scenarios.</p>
+                            <h5 class="font-bold mt-2">📚 Resources:</h5>
+                            <ul class="list-disc list-inside space-y-2 mt-2">
+                                <li><span class="resource-tag bg-purple-600">Tool</span><a href="https://streamlit.io/" target="_blank" class="underline hover:text-yellow-300">Streamlit for UI</a></li>
+                            </ul>
+                            <h5 class="font-bold mt-4">✅ Actionable Steps:</h5>
+                            <ul class="list-none space-y-2 mt-2">
+                                <li class="task-item"><input type="checkbox" id="task39_1"><label for="task39_1" class="ml-2">Build a user-friendly control interface for your system.</label></li>
+                                <li class="task-item"><input type="checkbox" id="task40_1"><label for="task40_1" class="ml-2">Validate your application against real-world test scenarios.</label></li>
+                            </ul>
+                        </div>
+                        <div class="kpi-box p-4 rounded-lg mt-4">
+                            <h4 class="font-bangers text-2xl text-amber-400">🎯 Key Performance Indicators (KPIs)</h4>
+                            <ul class="list-disc list-inside mt-2 space-y-1">
+                                <li>**Problem Solved:** The system successfully solves the chosen real-world problem.</li>
+                                <li>**Usability:** The UI is intuitive and easy to use.</li>
+                                <li>**Deliverable:** A validated, real-world application with a user interface.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ## Module: Advanced Topics ## -->
+                <div id="module-future" class="comic-panel rounded-2xl mb-12 cursor-pointer p-6 relative overflow-hidden">
+                    <div class="absolute top-4 right-4 font-bangers text-5xl text-green-400 completion-banner">COMPLETE!</div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="text-6xl mr-6">🔮</div>
+                            <div>
+                                <h3 class="font-bangers text-4xl text-fuchsia-400">Module 12: Advanced Topics & Future Directions</h3>
+                                <p class="font-bold">Objective: Explore the speculative and forward-looking edges of context engineering, drawing inspiration from consciousness, quantum mechanics, and biology to prototype experimental systems.</p>
+                            </div>
+                        </div>
+                        <div class="font-bangers text-2xl text-amber-500 text-center">
+                            <span>Deadline</span><br><span>Hour 44</span>
+                        </div>
+                    </div>
+                     <div class="module-content hidden mt-6 space-y-6 text-left">
+                        <div class="milestone-box p-4 rounded-lg border border-gray-700">
+                            <h4 class="font-bangers text-2xl text-yellow-300">Milestone 12.1: Theoretical Exploration (Hour 41-43)</h4>
+                            <p class="mt-1 italic">This milestone is about creative exploration. You will implement patterns inspired by other complex systems to push the boundaries of what's possible with context engineering.</p>
+                            <h5 class="font-bold mt-4">✅ Actionable Steps:</h5>
+                            <ul class="list-none space-y-2 mt-2">
+                                <li class="task-item"><input type="checkbox" id="task41_1"><label for="task41_1" class="ml-2">Implement a consciousness-inspired pattern (e.g., attention mechanism).</label></li>
+                                <li class="task-item"><input type="checkbox" id="task42_1"><label for="task42_1" class="ml-2">Implement a quantum-inspired pattern (e.g., superposition of contexts).</label></li>
+                                <li class="task-item"><input type="checkbox" id="task43_1"><label for="task43_1" class="ml-2">Implement a bio-inspired pattern (e.g., neural plasticity).</label></li>
+                            </ul>
+                        </div>
+                        <div class="milestone-box p-4 rounded-lg border border-gray-700">
+                            <h4 class="font-bangers text-2xl text-yellow-300">Milestone 12.2: Future Research (Hour 44)</h4>
+                            <p class="mt-1 italic">Identify a promising new direction and build a prototype to test its feasibility, contributing to the future of the field.</p>
+                            <h5 class="font-bold mt-4">✅ Actionable Steps:</h5>
+                            <ul class="list-none space-y-2 mt-2">
+                                <li class="task-item"><input type="checkbox" id="task44_1"><label for="task44_1" class="ml-2">Prototype an experimental approach for a promising research direction.</label></li>
+                            </ul>
+                        </div>
+                        <div class="kpi-box p-4 rounded-lg mt-4">
+                            <h4 class="font-bangers text-2xl text-amber-400">🎯 Key Performance Indicators (KPIs)</h4>
+                            <ul class="list-disc list-inside mt-2 space-y-1">
+                                <li>**Functionality:** All experimental patterns run without errors.</li>
+                                <li>**Innovation:** The prototype demonstrates a novel approach.</li>
+                                <li>**Deliverable:** Experimental future systems and prototypes.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ## Module: Mastery & Portfolio ## -->
+                <div id="module-mastery" class="comic-panel rounded-2xl mb-12 cursor-pointer p-6 relative overflow-hidden">
+                    <div class="absolute top-4 right-4 font-bangers text-5xl text-green-400 completion-banner">COMPLETE!</div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="text-6xl mr-6">🏆</div>
+                            <div>
+                                <h3 class="font-bangers text-4xl text-fuchsia-400">Module 13: Mastery & Portfolio</h3>
+                                <p class="font-bold">Objective: Consolidate all learned concepts into a single, powerful system and create a professional portfolio to showcase your new expertise as a Context Engineer.</p>
+                            </div>
+                        </div>
+                        <div class="font-bangers text-2xl text-amber-500 text-center">
+                            <span>Deadline</span><br><span>Hour 48</span>
+                        </div>
+                    </div>
+                     <div class="module-content hidden mt-6 space-y-6 text-left">
+                        <div class="milestone-box p-4 rounded-lg border border-gray-700">
+                            <h4 class="font-bangers text-2xl text-yellow-300">Milestone 13.1: Final Integration & Documentation (Hour 45-46)</h4>
+                            <p class="mt-1 italic">This is the grand synthesis. You will combine every technique—from atomic templates to memory and multi-agent systems—into one cohesive application, proving your ability to build complex, layered AI solutions.</p>
+                            <h5 class="font-bold mt-4">✅ Actionable Steps:</h5>
+                            <ul class="list-none space-y-2 mt-2">
+                                <li class="task-item"><input type="checkbox" id="task45_1"><label for="task45_1" class="ml-2">Integrate all concepts from the 48 hours into one unified system.</label></li>
+                                <li class="task-item"><input type="checkbox" id="task46_1"><label for="task46_1" class="ml-2">Create comprehensive documentation for your implementations.</label></li>
+                            </ul>
+                        </div>
+                        <div class="milestone-box p-4 rounded-lg border border-gray-700">
+                            <h4 class="font-bangers text-2xl text-yellow-300">Milestone 13.2: Portfolio & Future Planning (Hour 47-48)</h4>
+                            <p class="mt-1 italic">The final step is to package your work professionally. This milestone ensures you leave the bootcamp not just with knowledge, but with a tangible asset to demonstrate your skills and a clear plan for your continued growth in the field.</p>
+                            <h5 class="font-bold mt-4">✅ Actionable Steps:</h5>
+                            <ul class="list-none space-y-2 mt-2">
+                                <li class="task-item"><input type="checkbox" id="task47_1"><label for="task47_1" class="ml-2">Create an impressive portfolio showcasing your best work.</label></li>
+                                <li class="task-item"><input type="checkbox" id="task48_1"><label for="task48_1" class="ml-2">Create a personal roadmap for continued development.</label></li>
+                            </ul>
+                        </div>
+                        <div class="kpi-box p-4 rounded-lg mt-4">
+                            <h4 class="font-bangers text-2xl text-amber-400">🎯 Key Performance Indicators (KPIs)</h4>
+                            <ul class="list-disc list-inside mt-2 space-y-1">
+                                <li>**System Integration:** The unified system runs and passes all tests.</li>
+                                <li>**Documentation:** The portfolio is well-documented and easy to understand.</li>
+                                <li>**Deliverable:** A complete context engineering mastery portfolio.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div id="final-panel" class="text-center my-16 hidden">
+                <div class="inline-block p-8 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg border-4 border-black rotate-3">
+                    <h2 class="font-bangers text-5xl md:text-7xl text-black -rotate-3" style="text-shadow: 2px 2px 0px #fff;">MASTERY ACHIEVED!</h2>
+                    <p class="font-bold mt-2 text-black text-xl -rotate-3">You've conquered the roadmap! Professor Context is proud. You are now a Context Engineer!</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const comicPanels = document.querySelectorAll('.comic-panel:not(#guide)');
+            const allTasks = document.querySelectorAll('.task-item input[type="checkbox"]');
+            const totalTasks = allTasks.length;
+            const powerMeterBar = document.getElementById('power-meter-bar');
+            const powerMeterText = document.getElementById('power-meter-text');
+            const finalPanel = document.getElementById('final-panel');
+            const collapseAllBtn = document.getElementById('collapse-all-btn');
+            const themeToggle = document.getElementById('theme-toggle');
+
+            // Function to set the theme
+            const setTheme = (isLight) => {
+                if (isLight) {
+                    document.body.classList.add('light-mode');
+                    themeToggle.checked = true;
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    document.body.classList.remove('light-mode');
+                    themeToggle.checked = false;
+                    localStorage.setItem('theme', 'dark');
+                }
+            };
+
+            // Theme toggle event listener
+            themeToggle.addEventListener('change', () => {
+                setTheme(themeToggle.checked);
+            });
+
+            // Check for saved theme in localStorage
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                setTheme(true);
+            } else {
+                setTheme(false); // Default to dark
+            }
+
+            const updateProgress = () => {
+                const completedTasks = document.querySelectorAll('.task-item input[type="checkbox"]:checked').length;
+                const percentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+                
+                powerMeterBar.style.width = `${percentage}%`;
+                powerMeterText.textContent = `${percentage}% Complete`;
+
+                comicPanels.forEach(panel => {
+                    const tasksInPanel = panel.querySelectorAll('.task-item input[type="checkbox"]');
+                    if (tasksInPanel.length === 0) return;
+                    const completedInPanel = panel.querySelectorAll('.task-item input[type="checkbox"]:checked');
+                    if (tasksInPanel.length === completedInPanel.length) {
+                        panel.classList.add('completed');
+                    } else {
+                        panel.classList.remove('completed');
+                    }
+                });
+                
+                if (percentage === 100) {
+                    finalPanel.classList.remove('hidden');
+                } else {
+                    finalPanel.classList.add('hidden');
+                }
+            };
+
+            comicPanels.forEach(panel => {
+                const header = panel.querySelector('.flex.items-center.justify-between');
+                if (header) {
+                    header.addEventListener('click', (event) => {
+                        const content = panel.querySelector('.module-content');
+                        if (content) {
+                            content.classList.toggle('hidden');
+                        }
+                    });
+                }
+            });
+
+            collapseAllBtn.addEventListener('click', () => {
+                document.querySelectorAll('.module-content').forEach(content => {
+                    content.classList.add('hidden');
+                });
+            });
+
+            allTasks.forEach(task => {
+                task.addEventListener('change', updateProgress);
+            });
+
+            updateProgress();
+        });
+    </script>
+
+</body>
+</html>
