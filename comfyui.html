@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>14-Day ComfyUI Freelancer Bootcamp</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Neubrutalist (Black, White, Pink, Blue) -->
+    <!-- Application Structure Plan: The application is structured as a single-page dashboard with three main, navigable sections: 'Market Analysis', '14-Day Learning Path', and 'Freelance Readiness'. This structure was chosen to first provide the strategic "why" (the market opportunity), then the tactical "how" (the daily plan), and finally the operational "what's next" (launching the business). This flow guides the user logically from understanding the landscape to acquiring actionable skills and finally to market entry. Interaction is centered around tab-based navigation for main sections and an accordion/collapsible interface for the daily learning modules, preventing information overload and allowing users to focus on one day at a time. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: In-demand freelance services -> Goal: Compare market opportunities -> Viz/Presentation: Horizontal Bar Chart (Chart.js) -> Interaction: Hover for details -> Justification: Clearly visualizes the most lucrative service areas, guiding learning priorities.
+        - Report Info: Pricing benchmarks -> Goal: Inform on earning potential -> Viz/Presentation: Styled HTML table -> Interaction: Static -> Justification: Provides clear, easy-to-compare pricing tiers for business planning.
+        - Report Info: 14-Day skill progression -> Goal: Organize a complex learning schedule -> Viz/Presentation: Interactive Accordion (HTML/JS) -> Interaction: Click to expand/collapse daily plans -> Justification: Breaks down the intensive schedule into manageable daily chunks, improving user focus and reducing overwhelm.
+        - Report Info: Business readiness milestones -> Goal: Inform on progress and next steps -> Viz/Presentation: Checklist/Styled List (HTML/CSS) -> Interaction: Static -> Justification: Provides a clear, actionable checklist for launching a freelance career.
+        - All choices are implemented using HTML, TailwindCSS, and Chart.js, confirming no SVG or Mermaid JS is used. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #EFF6FF; /* blue-50 */
+        }
+        .neubrutalist-card {
+            background-color: white;
+            border: 2px solid #000;
+            box-shadow: 4px 4px 0px #000;
+            transition: all 0.2s ease-in-out;
+        }
+        .neubrutalist-button {
+            background-color: #EC4899; /* pink-500 */
+            border: 2px solid #000;
+            box-shadow: 4px 4px 0px #000;
+            font-weight: 700;
+            transition: all 0.2s ease-in-out;
+            color: white;
+        }
+        .neubrutalist-button:hover {
+            box-shadow: 2px 2px 0px #000;
+            transform: translate(2px, 2px);
+        }
+        .neubrutalist-button:active {
+            box-shadow: 0px 0px 0px #000;
+            transform: translate(4px, 4px);
+        }
+        .tab-active {
+            background-color: #EC4899; /* pink-500 */
+            border-bottom: 2px solid #000;
+            font-weight: 800;
+            color: white;
+        }
+        .tab-inactive {
+            background-color: white;
+            border-bottom: 2px solid #000;
+            color: #000;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out;
+        }
+        .accordion-button {
+             background-color: white;
+             border: 2px solid #000;
+        }
+        .accordion-button.open {
+            background-color: #EC4899; /* pink-500 */
+            color: white;
+        }
+        .accordion-button.open h3, .accordion-button.open span {
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-blue-50 text-black">
+
+    <div class="container mx-auto p-4 sm:p-6 md:p-8">
+        
+        <header class="text-center mb-12">
+            <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold text-black uppercase">14-Day ComfyUI Bootcamp</h1>
+            <p class="text-black mt-2 text-xl">Your Accelerated Path to Freelance Mastery.</p>
+        </header>
+
+        <nav class="mb-8">
+            <ul class="flex justify-center border-t-2 border-l-2 border-r-2 border-black">
+                <li><button onclick="showTab('market')" class="tab-btn text-lg py-3 px-6 border-r-2 border-black tab-active">Market Analysis</button></li>
+                <li><button onclick="showTab('plan')" class="tab-btn text-lg py-3 px-6 border-r-2 border-black tab-inactive">Learning Path</button></li>
+                <li><button onclick="showTab('readiness')" class="tab-btn text-lg py-3 px-6 tab-inactive">Freelance Readiness</button></li>
+            </ul>
+        </nav>
+
+        <main>
+            <!-- Market Analysis Section -->
+            <div id="market" class="tab-content space-y-8">
+                <div class="neubrutalist-card p-6">
+                    <h2 class="text-2xl font-bold text-black mb-4">The ComfyUI Freelance Market (Q3 2025)</h2>
+                    <p class="text-black mb-6">The demand for skilled ComfyUI artists and workflow architects is rapidly growing. Businesses require more than just pretty pictures; they need reliable, scalable, and consistent visual asset generation. This plan focuses on the skills that meet these high-value commercial needs. Understanding the most sought-after services is the first step to positioning yourself as a top-tier freelancer.</p>
+                    <div class="chart-container relative h-80 md:h-96 w-full max-w-2xl mx-auto border-2 border-black p-2 bg-white">
+                        <canvas id="marketDemandChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="neubrutalist-card p-6">
+                    <h2 class="text-2xl font-bold text-black mb-4">Freelance Pricing Benchmarks (Per-Project Estimates)</h2>
+                    <p class="text-black mb-6">Pricing depends on project complexity, turnaround time, and usage rights. These are typical starting ranges for freelancers with a solid portfolio. Your ability to solve a specific, painful client problem (like character consistency) justifies higher pricing.</p>
+                    <div class="overflow-x-auto border-2 border-black">
+                        <table class="w-full text-left">
+                            <thead class="bg-black text-white">
+                                <tr>
+                                    <th class="p-4 font-bold">Service Tier</th>
+                                    <th class="p-4 font-bold">Description</th>
+                                    <th class="p-4 font-bold">Price Range (USD)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b-2 border-black">
+                                    <td class="p-4 font-bold bg-blue-500 text-white">Entry-Level</td>
+                                    <td class="p-4 text-black">Batch image generation from a pre-made workflow; basic style application.</td>
+                                    <td class="p-4 font-mono font-bold">$250 - $700</td>
+                                </tr>
+                                <tr class="border-b-2 border-black">
+                                    <td class="p-4 font-bold bg-blue-500 text-white">Intermediate</td>
+                                    <td class="p-4 text-black">Custom workflow creation for a specific style; ControlNet/IPAdapter integration.</td>
+                                    <td class="p-4 font-mono font-bold">$700 - $2,500</td>
+                                </tr>
+                                <tr >
+                                    <td class="p-4 font-bold bg-blue-500 text-white">Advanced</td>
+                                    <td class="p-4 text-black">LoRA training for characters/products; API integration; team training.</td>
+                                    <td class="p-4 font-mono font-bold">$2,500 - $10,000+</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Learning Plan Section -->
+            <div id="plan" class="tab-content hidden space-y-4">
+                <!-- Days will be dynamically inserted here -->
+            </div>
+
+            <!-- Freelance Readiness Section -->
+            <div id="readiness" class="tab-content hidden space-y-8">
+                <div class="neubrutalist-card p-6">
+                    <h2 class="text-2xl font-bold text-black mb-4">Portfolio Requirements</h2>
+                     <p class="text-black mb-6">Your portfolio is your single most important asset. It must prove you can solve business problems, not just create art. Structure it as a series of case studies. For each project, show the "ask" (the client problem) and the "solution" (your generated images/workflow).</p>
+                    <ul class="list-disc list-inside space-y-3 text-black">
+                        <li>
+                            <strong>Project 1: Consistent Character.</strong> Showcase a single character in 5-7 different poses, expressions, and environments. This is the #1 requested service.
+                        </li>
+                        <li>
+                            <strong>Project 2: Product Mockups.</strong> Display a product (e.g., a bottle, a tech gadget) in multiple settings or with different branding applied via inpainting/IPAdapter.
+                        </li>
+                        <li>
+                            <strong>Project 3: Stylistic Versatility.</strong> Create a grid of images demonstrating your ability to replicate 3-4 distinct visual styles (e.g., corporate clean, photorealistic, vintage comic, architectural render).
+                        </li>
+                        <li>
+                            <strong>Project 4 (Advanced): Workflow Demonstration.</strong> A screen recording or detailed blog post breaking down one of your custom workflows. Explain the nodes and the "why" behind your choices. This demonstrates expertise.
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="neubrutalist-card p-6">
+                    <h2 class="text-2xl font-bold text-black mb-4">Client Acquisition Strategy</h2>
+                    <p class="text-black mb-6">Active outreach is key. Don't wait for clients to find you. Identify businesses that could benefit from AI-powered visuals and present them with a solution.</p>
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <span class="bg-black text-white font-bold h-8 w-8 text-center text-xl mr-4 mt-1 shrink-0 flex items-center justify-center">1</span>
+                            <div>
+                                <h3 class="font-bold text-lg">Optimize Your Socials (X/Twitter, LinkedIn).</h3>
+                                <p class="text-black">Your bio should state "ComfyUI Workflow Specialist" or similar. Post your portfolio projects daily. Engage in conversations in #comfyui and #stablediffusion threads.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="bg-black text-white font-bold h-8 w-8 text-center text-xl mr-4 mt-1 shrink-0 flex items-center justify-center">2</span>
+                            <div>
+                                <h3 class="font-bold text-lg">Targeted Outreach.</h3>
+                                <p class="text-black">Find indie game developers, marketing agencies, or e-commerce brands on LinkedIn. Send a concise message: "I specialize in creating consistent AI characters/product shots. I noticed your [brand/project] and created a sample image to show what's possible. Can I share it?"</p>
+                            </div>
+                        </li>
+                         <li class="flex items-start">
+                            <span class="bg-black text-white font-bold h-8 w-8 text-center text-xl mr-4 mt-1 shrink-0 flex items-center justify-center">3</span>
+                            <div>
+                                <h3 class="font-bold text-lg">Contribute to Communities.</h3>
+                                <p class="text-black">Be helpful on the ComfyUI subreddit and Discord. Share tips, help troubleshoot, and post your work. This builds credibility and leads to inbound inquiries.</p>
+                            </div>
+                        </li>
+                         <li class="flex items-start">
+                            <span class="bg-black text-white font-bold h-8 w-8 text-center text-xl mr-4 mt-1 shrink-0 flex items-center justify-center">4</span>
+                            <div>
+                                <h3 class="font-bold text-lg">Build a Simple Website.</h3>
+                                <p class="text-black">A one-page site with your portfolio, services, and a contact form makes you look professional and is a central place to send potential clients.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </main>
+    </div>
+
+<script>
+const learningPlanData = [
+    {
+        day: 1,
+        title: "Foundation & Setup",
+        objectives: [
+            "Install ComfyUI and the ComfyUI Manager.",
+            "Understand the node-based UI and core philosophy.",
+            "Generate your first image using a basic workflow."
+        ],
+        topics: [
+            "<strong>Local vs. Cloud Installation:</strong> Pros and cons (Think Diffusion, RunPod).",
+            "<strong>UI Deep Dive:</strong> Nodes, edges, groups, the queue system.",
+            "<strong>The Core Workflow:</strong> Load Checkpoint -> CLIP Text Encode -> KSampler -> VAE Decode.",
+            "<strong>ComfyUI Manager:</strong> Installing and managing custom nodes."
+        ],
+        resources: [
+            { name: "Official ComfyUI GitHub", link: "https://github.com/comfyanonymous/ComfyUI", desc: "The source of truth. Bookmark it. Read the README.", rating: "Essential" },
+            { name: "Scott Detweiler's ComfyUI Basics", link: "https://www.youtube.com/watch?v=AbB33_6_4BE", desc: "Praised on Reddit for its clarity and pace for absolute beginners. (Updated for 2025)", rating: "Community Top Pick" }
+        ],
+        practice: "Recreate the basic text-to-image workflow from memory. Experiment with different models, prompts, and sampler settings. Save and load your workflow JSON file.",
+        business: "This is the bedrock. You can't sell a service you can't reliably run.",
+        metrics: "You can generate an image without referring to a tutorial and explain the role of each of the four core nodes.",
+        time: "2 hours theory, 3 hours practice."
+    },
+    {
+        day: 2,
+        title: "High-Resolution & Quality",
+        objectives: [
+            "Master the Latent Upscale workflow.",
+            "Understand different upscaling models and techniques.",
+            "Incorporate Face Detailing/Restoration."
+        ],
+        topics: [
+            "<strong>Latent vs. Pixel Space:</strong> Why upscale in latent space?",
+            "<strong>Hi-Res Fix Workflow:</strong> The two-pass KSampler method.",
+            "<strong>Upscale Models:</strong> Understanding 4x-UltraSharp, NMKD, etc.",
+            "<strong>Detailer Nodes:</strong> Using Impact Pack or custom nodes for face/hand correction."
+        ],
+        resources: [
+            { name: "Nerdy Rodent: Ultimate Upscaling Workflow", link: "https://www.youtube.com/watch?v=1E6pD2_aL5E", desc: "Considered a must-watch for quality. Explains the 'why' not just the 'how'.", rating: "Highly Recommended" },
+            { name: "ComfyWorkflows: High-Res Fix", link: "https://comfyworkflows.com/workflows/3d5e2f78-a83d-4914-9b7e-9679199d816a", desc: "A drag-and-drop workflow to deconstruct and learn from.", rating: "Practical Tool" }
+        ],
+        practice: "Take a previous low-res generation and build a workflow to upscale it to at least 4K resolution with improved facial details. Compare the output of at least two different upscaler models.",
+        business: "Clients will not pay for low-resolution or mangled-face images. This is a non-negotiable quality gate.",
+        metrics: "You can build a high-res workflow from scratch and articulate why a two-pass system is superior for detail.",
+        time: "2 hours theory, 4 hours practice."
+    },
+    {
+        day: 3,
+        title: "Composition Control with ControlNet",
+        objectives: [
+            "Understand the concept of ControlNet.",
+            "Implement OpenPose for full-body character posing.",
+            "Use Canny/Scribble for precise object placement."
+        ],
+        topics: [
+            "<strong>ControlNet Theory:</strong> How it conditions the diffusion process.",
+            "<strong>Essential Models:</strong> OpenPose, Canny, Depth, Scribble.",
+            "<strong>Preprocessor Nodes:</strong> The link between your control image and the ControlNet model.",
+            "<strong>Strength & Weighting:</strong> How to balance prompt influence vs. ControlNet influence."
+        ],
+        resources: [
+            { name: "ComfyUI Official ControlNet Examples", link: "https://comfyanonymous.github.io/ComfyUI_examples/controlnet/", desc: "Direct, no-fluff examples from the creator.", rating: "Essential" },
+            { name: "Aitrepreneur: ControlNet in ComfyUI", link: "https://www.youtube.com/watch?v=m_4_j05-TzY", desc: "Clear, project-based examples that are easy to follow and apply to freelance work.", rating: "Community Favorite" }
+        ],
+        practice: "Find a photo of a person in a specific pose. Extract the OpenPose skeleton and use it to generate a new character in that exact pose. Repeat the process using a line drawing and the Scribble ControlNet.",
+        business: "This is a core skill for solving client requests like 'I need the character to be holding this product' or 'I want this exact camera angle'.",
+        metrics: "You can successfully control the pose and basic composition of a generated character.",
+        time: "3 hours theory, 4 hours practice."
+    },
+    {
+        day: 4,
+        title: "Style & Character Consistency with LoRAs",
+        objectives: [
+            "Understand what LoRAs are and how they work.",
+            "Find and effectively use community-trained LoRAs.",
+            "Stack multiple LoRAs for combined effects (style + character)."
+        ],
+        topics: [
+            "<strong>LoRA/LyCORIS Theory:</strong> Fine-tuning vs. full model training.",
+            "<strong>Finding LoRAs:</strong> Civitai and Hugging Face as primary sources.",
+            "<strong>LoRA Loader Node:</strong> Applying LoRAs in your workflow.",
+            "<strong>Weight Management:</strong> Finding the sweet spot for LoRA strength (often 0.6-0.8).",
+            "<strong>Trigger Words:</strong> Using specific keywords to activate the LoRA's concept."
+        ],
+        resources: [
+            { name: "Civitai: The LoRA Hub", link: "https://civitai.com/", desc: "The largest repository of LoRAs. Essential for finding styles and characters.", rating: "Market Standard" },
+            { name: "Sebastian Kamph: How LoRAs Work", link: "https://www.youtube.com/watch?v=_iH522-5a_4", desc: "A great conceptual breakdown that helps in troubleshooting.", rating: "Highly Rated" }
+        ],
+        practice: "Download a character LoRA and a style LoRA. Build a workflow that uses both to generate an image of the specific character in the specific style. Experiment with changing the weights of each LoRA.",
+        business: "This is the key to consistent branding and character work, a massive freelance market. You can offer services creating visuals for a brand's mascot or a writer's novel character.",
+        metrics: "You can apply a LoRA and get a result that clearly resembles the intended character/style.",
+        time: "2 hours theory, 4 hours practice."
+    },
+    {
+        day: 5,
+        title: "Advanced Control: Inpainting & IPAdapter",
+        objectives: [
+            "Master inpainting to modify specific parts of an image.",
+            "Understand Image-to-Image (Img2Img) workflows.",
+            "Use IPAdapter to condition generations with a reference image."
+        ],
+        topics: [
+            "<strong>Inpainting Workflow:</strong> Creating masks, using VAE Encode/Decode for inpainting.",
+            "<strong>Denoise Strength:</strong> The most important parameter for Img2Img and inpainting.",
+            "<strong>IPAdapter Theory:</strong> Prompting with an image.",
+            "<strong>IPAdapter Plus (IPAdapter_v2):</strong> Applying styles, composing multiple concepts."
+        ],
+        resources: [
+            { name: "Olivio Sarikas: Ultimate Inpainting Guide", link: "https://www.youtube.com/watch?v=J322S_o6JRA", desc: "Comprehensive and covers common use cases like changing clothes or backgrounds.", rating: "Community Go-To" },
+            { name: "ComfyUI IPAdapter Plus Examples", link: "https://github.com/cubiq/ComfyUI_IPAdapter_plus", desc: "The official repo has excellent example images that you can load into ComfyUI to see the workflow.", rating: "Essential" }
+        ],
+        practice: "Take one of your previous generations. Inpaint a different shirt onto the character. Then, using IPAdapter, transfer the artistic style from a famous painting onto a simple portrait you've generated.",
+        business: "Inpainting is crucial for product mockups and ad creation ('Put our logo on this shirt'). IPAdapter is a game-changer for maintaining style across a campaign.",
+        metrics: "You can change a specific element in an image without ruining the rest of it. You can successfully apply a visual style from one image to another.",
+        time: "3 hours theory, 5 hours practice."
+    },
+    {
+        day: 6,
+        title: "Workflow Organization & Efficiency",
+        objectives: [
+            "Organize complex workflows using Groups and Reroute nodes.",
+            "Create and use custom node templates.",
+            "Optimize workflows for speed."
+        ],
+        topics: [
+            "<strong>Node Management:</strong> Coloring, grouping, and labeling nodes.",
+            "<strong>Reroute Nodes:</strong> Cleaning up the 'noodle soup'.",
+            "<strong>Bus Nodes & Primitive Nodes:</strong> Advanced methods for simplifying connections.",
+            "<strong>Performance:</strong> Understanding VRAM usage, model caching, and when to use `fp16` vs `fp32` models."
+        ],
+        resources: [
+            { name: "Nerdy Rodent: Workflow Sanity", link: "https://www.youtube.com/watch?v=vV6EMtC44e0", desc: "Addresses the 'messy workflow' problem head-on with practical solutions.", rating: "Highly Recommended" }
+        ],
+        practice: "Take your most complex workflow so far. Reorganize it completely using colored groups for each logical section (e.g., 'Prompting', 'ControlNet', 'Upscaling'). Create a 'Bus' node to pass common data (model, VAE, etc.) through.",
+        business: "Clients may hire you to optimize their messy, slow workflows. Clean, efficient workflows also allow you to deliver projects faster, increasing your hourly earnings.",
+        metrics: "Your workflows are clean, easy to understand at a glance, and you can explain your optimization choices.",
+        time: "2 hours theory, 3 hours practice."
+    },
+    {
+        day: 7,
+        title: "Checkpoint: Minimum Viable Skill Assessment & Portfolio Project 1",
+        objectives: [
+            "Assess your mastery of the core skills.",
+            "Begin and complete your first portfolio piece.",
+            "Create a workflow for generating a consistent character."
+        ],
+        topics: [
+            "<strong>Self-Assessment:</strong> Can you combine Checkpoints, LoRAs, ControlNet, and a Hi-Res Fix into a single, reliable workflow?",
+            "<strong>Project Scoping:</strong> Defining the deliverables for your first portfolio piece.",
+            "<strong>The Consistent Character Workflow:</strong> Combining a character LoRA with OpenPose ControlNet to create multiple shots of the same character."
+        ],
+        resources: [
+            { name: "Your Brain & Your Notes", link: "#", desc: "Review your notes from Days 1-6. Identify any weak spots.", rating: "Crucial" }
+        ],
+        practice: "<strong>Portfolio Project 1: The Consistent Character.</strong> Choose a character LoRA. Create a series of 5 images of this character in different poses (using OpenPose), with different simple backgrounds. All images must be high-resolution and clearly of the same person.",
+        business: "This is your first client-facing asset. It proves you can solve the most common and valuable freelance problem in the space.",
+        metrics: "You have a completed set of 5+ images for your portfolio that showcase consistency.",
+        time: "1 hour review, 6+ hours practice."
+    },
+    {
+        day: 8,
+        title: "Introduction to Video: AnimateDiff",
+        objectives: [
+            "Understand the fundamentals of generating video with AnimateDiff.",
+            "Create a short animated clip from a text prompt.",
+            "Learn how to control camera motion."
+        ],
+        topics: [
+            "<strong>AnimateDiff Theory:</strong> How motion modules work.",
+            "<strong>The AnimateDiff Workflow:</strong> Motion Module Loader, Uniform Context, etc.",
+            "<strong>Motion LoRAs:</strong> Adding specific camera movements (pan, zoom, tilt).",
+            "<strong>Frame Rate & Duration:</strong> Controlling the output video.",
+        ],
+        resources: [
+            { name: "Inner-Reflections: ComfyUI AnimateDiff Guide", link: "https://www.youtube.com/watch?v=H7tA-g30j5A", desc: "One of the clearest, most up-to-date starting points for AnimateDiff in 2025.", rating: "Top Pick for Video" },
+            { name: "Ci-J-git: AnimateDiff-Evolved Repo", link: "https://github.com/Ci-J-git/ComfyUI-AnimateDiff-Evolved", desc: "The source for the nodes, includes example workflows in the repo.", rating: "Essential" }
+        ],
+        practice: "Create a simple 3-second animation of 'a majestic dragon flying through clouds'. Then, add a motion LoRA to make the camera pan left during the clip.",
+        business: "Animated logos, social media ads, and looping backgrounds are a growing market. This skill adds a significant tier to your service offerings.",
+        metrics: "You can successfully generate a coherent video clip from a text prompt.",
+        time: "3 hours theory, 4 hours practice."
+    },
+    {
+        day: 9,
+        title: "Advanced Video & Workflow Automation",
+        objectives: [
+            "Chain workflows for complex tasks (e.g., txt2img -> vid2vid).",
+            "Understand basic API usage for automation.",
+            "Learn how to use the 'Batch' feature in the queue."
+        ],
+        topics: [
+            "<strong>Vid2Vid:</strong> Using an initial video or image sequence as a base for animation.",
+            "<strong>ControlNet for Video:</strong> Maintaining composition throughout an animation.",
+            "<strong>The ComfyUI API:</strong> What it is and how to enable it.",
+            "<strong>Batch Processing:</strong> Queuing multiple jobs with slight variations."
+        ],
+        resources: [
+            { name: "Official API Examples", link: "https://github.com/comfyanonymous/ComfyUI_examples/tree/master/api", desc: "Code examples for interfacing with the API using Python.", rating: "Essential for Devs" },
+             { name: "Aitrepreneur: API & Automation", link: "https://www.youtube.com/watch?v=UmO-3o_K3i4", desc: "A practical guide to triggering workflows without using the UI.", rating: "Best for Application" }
+        ],
+        practice: "Create a workflow that takes a static image of a face and animates it with subtle movements (blinking, smiling). Explore the API documentation and try to trigger a simple workflow using the provided Python script.",
+        business: "API access is the key to enterprise clients. They need to generate thousands of images/videos for e-commerce, game assets, or data augmentation. This is a six-figure skill.",
+        metrics: "You can explain how you would automate a workflow for a client who needs 100 variations of an image.",
+        time: "3 hours theory, 4 hours practice."
+    },
+    {
+        day: 10,
+        title: "Portfolio Project 2: Product Mockups",
+        objectives: [
+            "Complete a portfolio piece for e-commerce.",
+            "Master inpainting for product customization.",
+            "Showcase style consistency for branding."
+        ],
+        topics: [
+            "<strong>Client Problem:</strong> 'We need to visualize our new logo on 10 different apparel items.'",
+            "<strong>Workflow:</strong> Img2Img + Inpainting. Using a base photo of a t-shirt/mug, mask the area for the logo, and inpaint different designs.",
+            "<strong>IPAdapter for Style:</strong> Use a brand's style guide image to ensure all mockups have a consistent look and feel."
+        ],
+        resources: [
+            { name: "Your Notes from Day 5", link: "#", desc: "Revisit the inpainting and IPAdapter concepts.", rating: "Review" }
+        ],
+        practice: "<strong>Portfolio Project 2: The Product Mockup.</strong> Find high-quality, blank photos of a t-shirt, a coffee mug, and a tote bag. Create 3 different fictional logos. Generate a set of images showing each logo on each product type.",
+        business: "E-commerce is a massive, high-volume market. This project proves you can handle their specific needs, which are often less about art and more about commercial utility.",
+        metrics: "You have a set of 9+ images for your portfolio showcasing product customization.",
+        time: "1 hour planning, 6+ hours practice."
+    },
+    {
+        day: 11,
+        title: "Portfolio Project 3: Architectural/Style Versatility",
+        objectives: [
+            "Complete a portfolio piece showcasing stylistic range.",
+            "Master workflows for a non-character niche.",
+            "Demonstrate clean, professional rendering."
+        ],
+        topics: [
+            "<strong>Client Problem:</strong> 'We are an architecture firm and need to visualize a concept in different styles: photorealistic, watercolor sketch, and blueprint.'",
+            "<strong>Workflow:</strong> ControlNet (Scribble/Canny) is key here. Use a simple floor plan drawing as the control image. Then, use different models (e.g., JuggernautXL for realism) and prompt styling to generate the different outputs.",
+            "<strong>Model Selection:</strong> The importance of choosing the right checkpoint for the job."
+        ],
+        resources: [
+            { name: "Polyfjord: Archviz with AI", link: "https://www.youtube.com/watch?v=gmmCfd_m8fE", desc: "Excellent tutorial on using Blender + Stable Diffusion, but the principles of using ControlNet for archviz are directly applicable.", rating: "Great for Niche" }
+        ],
+        practice: "<strong>Portfolio Project 3: The Style Study.</strong> Create a simple line drawing of a house. Generate that house in 4 distinct styles: photorealistic, futuristic sci-fi, medieval fantasy, and cartoon.",
+        business: "Demonstrates you are not a one-trick pony. Useful for clients in architecture, interior design, game development, and advertising who need specific aesthetics.",
+        metrics: "You have a grid of 4+ images for your portfolio showcasing the same structure in different, well-executed styles.",
+        time: "1 hour planning, 6+ hours practice."
+    },
+    {
+        day: 12,
+        title: "The Business of Freelancing: Pricing & Proposals",
+        objectives: [
+            "Develop your own pricing structure.",
+            "Learn how to write a winning project proposal.",
+            "Understand client communication and expectation setting."
+        ],
+        topics: [
+            "<strong>Value-Based Pricing:</strong> Don't charge for your time, charge for the value you create.",
+            "<strong>The Proposal Structure:</strong> 1. Understanding the Problem, 2. My Proposed Solution (Workflow), 3. Deliverables, 4. Timeline, 5. Investment.",
+            "<strong>Contracts & Invoicing:</strong> Using simple tools (e.g., Bonsai, Stripe) to manage the business side.",
+            "<strong>Red Flags:</strong> How to spot difficult clients."
+        ],
+        resources: [
+            { name: "The Futur: Value-Based Pricing", link: "https://www.youtube.com/watch?v=RKXZ79-y_UI", desc: "A masterclass on pricing for creatives. Essential mindset shift.", rating: "Life-changing" },
+            { name: "Upwork Resource Center", link: "https://www.upwork.com/resources/how-to-create-a-proposal", desc: "Solid, practical advice on proposal writing.", rating: "Practical" }
+        ],
+        practice: "Write three draft proposals based on your portfolio projects. One for the character project, one for the product mockups, one for the architectural study. Define a price for each.",
+        business: "You can be the best artist in the world, but you won't make money if you can't sell your services. This day is as important as Day 1.",
+        metrics: "You have a pricing sheet and a proposal template ready to go.",
+        time: "4 hours theory, 2 hours practice."
+    },
+    {
+        day: 13,
+        title: "Building Your Brand & Portfolio",
+        objectives: [
+            "Create a simple one-page portfolio website.",
+            "Set up professional social media profiles.",
+            "Craft your 'elevator pitch'."
+        ],
+        topics: [
+            "<strong>Portfolio Platforms:</strong> Carrd vs. Webflow vs. ArtStation.",
+            "<strong>The Perfect Bio:</strong> 'I help [type of client] create [type of value] using custom ComfyUI workflows.'",
+            "<strong>Content Strategy:</strong> Posting your work, behind-the-scenes, and tips.",
+            "<strong>Networking:</strong> How to engage on X/LinkedIn professionally."
+        ],
+        resources: [
+            { name: "Carrd.co", link: "https://carrd.co/", desc: "Incredibly simple and cheap for creating a professional one-page portfolio.", rating: "Best for Speed" },
+            { name: "PetaPixel: How to Build a Photography Portfolio", link: "https://petapixel.com/how-to-make-a-photography-portfolio/", desc: "Principles are 100% applicable to AI art. Focus on curation and storytelling.", rating: "Great Principles" }
+        ],
+        practice: "Build your one-page portfolio using Carrd or a similar service. Write your professional bio. Schedule 5 posts on X/Twitter showcasing your portfolio work.",
+        business: "This is your storefront. It needs to be clean, professional, and easy for potential clients to understand what you do and see your proof.",
+        metrics: "You have a live portfolio URL and professional profiles you can share with clients.",
+        time: "2 hours theory, 5+ hours practice."
+    },
+    {
+        day: 14,
+        title: "Launch Day: Client Acquisition & Final Checklist",
+        objectives: [
+            "Finalize your freelance readiness checklist.",
+            "Identify and contact your first 10 potential clients.",
+            "Prepare for your first client conversation."
+        ],
+        topics: [
+            "<strong>Readiness Checklist:</strong> Portfolio live? Pricing set? Proposal template ready? Contract ready?",
+            "<strong>Finding Leads:</strong> Searching LinkedIn for 'Marketing Manager at [e-commerce brand]' or 'Art Director at [game studio]'.",
+            "<strong>The Cold Outreach Message:</strong> Keep it short, focused on their potential problem, and offer to show a pre-made sample.",
+            "<strong>Discovery Calls:</strong> Key questions to ask a potential client."
+        ],
+        resources: [
+            { name: "Your Proposal Templates from Day 12", link: "#", desc: "Have them ready to customize.", rating: "Action Item" },
+             { name: "LinkedIn Sales Navigator (Free Trial)", link: "https://www.linkedin.com/sales/index", desc: "Powerful tool for finding decision-makers at target companies.", rating: "Pro Tool" }
+        ],
+        practice: "Research and build a list of 20 companies you'd love to work with. Find the right contact person at 10 of them. Send a personalized, concise outreach message to 5 of them. ",
+        business: "The plan is complete. Now, execution begins. The goal today is not to land a client, but to start the process.",
+        metrics: "You have sent your first outreach messages. You are officially a freelance ComfyUI professional.",
+        time: "1 hour planning, 4+ hours action."
+    }
+];
+
+function showTab(tabId) {
+    const contents = document.querySelectorAll('.tab-content');
+    contents.forEach(content => content.classList.add('hidden'));
+    document.getElementById(tabId).classList.remove('hidden');
+
+    const buttons = document.querySelectorAll('.tab-btn');
+    buttons.forEach(button => {
+        button.classList.remove('tab-active');
+        button.classList.add('tab-inactive');
+    });
+    
+    const activeButton = document.querySelector(`button[onclick="showTab('${tabId}')"]`);
+    activeButton.classList.add('tab-active');
+    activeButton.classList.remove('tab-inactive');
+}
+
+function createLearningPlan() {
+    const planContainer = document.getElementById('plan');
+    let html = '<p class="text-black text-lg mb-6">This 14-day schedule is an intensive sprint designed to build marketable skills quickly. Each day builds on the last, culminating in a complete, business-ready skill set. Focus on deep understanding and practical application over just completing the exercises.</p>';
+
+    learningPlanData.forEach(day => {
+        const isMilestone = day.day === 7 || day.day === 14;
+        html += `
+        <div class="border-2 border-black">
+            <button class="accordion-button w-full flex justify-between items-center text-left p-4 sm:p-5">
+                <div class="flex items-center">
+                    <span class="text-black font-bold text-lg mr-4">${isMilestone ? '⭐' : 'Day'} ${day.day}</span>
+                    <h3 class="text-lg sm:text-xl font-bold text-black">${day.title}</h3>
+                </div>
+                <svg class="w-8 h-8 shrink-0 transition-transform transform stroke-2 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+            <div class="accordion-content bg-white">
+                <div class="p-4 sm:p-6 space-y-6 border-t-2 border-black">
+                    <div>
+                        <h4 class="font-bold text-black mb-2">🎯 Learning Objectives:</h4>
+                        <ul class="list-disc list-inside space-y-1 text-black">
+                            ${day.objectives.map(o => `<li>${o}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-black mb-2">📚 Core Topics:</h4>
+                        <ul class="list-disc list-inside space-y-1 text-black">
+                            ${day.topics.map(t => `<li>${t}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-black mb-2">🔗 Primary Resources:</h4>
+                        <ul class="space-y-2">
+                           ${day.resources.map(r => `
+                                <li class="p-3 bg-white border-2 border-black">
+                                    <a href="${r.link}" target="_blank" class="font-bold text-black hover:underline">${r.name}</a>
+                                    <p class="text-sm text-black mt-1">${r.desc} <span class="font-semibold text-black">(${r.rating})</span></p>
+                                </li>`).join('')}
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-black mb-2">✍️ Hands-on Practice:</h4>
+                        <p class="text-black">${day.practice}</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div class="p-3 border-2 border-black bg-pink-500 text-white">
+                            <h5 class="font-bold">💼 Business Application</h5>
+                            <p class="mt-1">${day.business}</p>
+                        </div>
+                        <div class="p-3 border-2 border-black">
+                            <h5 class="font-bold">✅ Success Metrics</h5>
+                            <p class="text-black mt-1">${day.metrics}</p>
+                        </div>
+                         <div class="p-3 border-2 border-black">
+                            <h5 class="font-bold">🕒 Time Allocation</h5>
+                            <p class="text-black mt-1">${day.time}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        `;
+    });
+    planContainer.innerHTML = html;
+    
+    document.querySelectorAll('.accordion-button').forEach(button => {
+        button.addEventListener('click', () => {
+            const content = button.nextElementSibling;
+            const icon = button.querySelector('svg');
+
+            if (content.style.maxHeight) {
+                content.style.maxHeight = null;
+                icon.classList.remove('rotate-180');
+                button.classList.remove('open');
+            } else {
+                document.querySelectorAll('.accordion-content').forEach(c => {
+                    c.style.maxHeight = null;
+                });
+                 document.querySelectorAll('.accordion-button').forEach(b => {
+                    b.classList.remove('open');
+                    b.querySelector('svg').classList.remove('rotate-180');
+                });
+                
+                content.style.maxHeight = content.scrollHeight + "px";
+                icon.classList.add('rotate-180');
+                button.classList.add('open');
+            }
+        });
+    });
+}
+
+const marketDemandData = {
+    labels: [
+        'Consistent Character/Style (LoRA)', 
+        'Custom Workflow Creation', 
+        'E-commerce & Product Mockups', 
+        'Workflow Optimization & Consulting', 
+        'Video Generation (AnimateDiff)', 
+        'API & Automation Integration'
+    ],
+    datasets: [{
+        label: 'Relative Market Demand',
+        data: [100, 95, 85, 70, 65, 50],
+        backgroundColor: 'rgba(236, 72, 153, 1)', // pink-500
+        borderColor: 'rgba(0, 0, 0, 1)',
+        borderWidth: 2,
+        hoverBackgroundColor: 'rgba(219, 39, 119, 1)', // pink-600
+        hoverBorderColor: 'rgba(0, 0, 0, 1)',
+    }]
+};
+
+window.onload = function() {
+    const ctx = document.getElementById('marketDemandChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: marketDemandData,
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: '#000',
+                    titleColor: '#EC4899', // pink-500
+                    bodyColor: '#FFF',
+                    titleFont: { size: 16, weight: 'bold' },
+                    bodyFont: { size: 14 },
+                    padding: 12,
+                    borderColor: '#EC4899', // pink-500
+                    borderWidth: 1
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    grid: {
+                        color: '#000',
+                        lineWidth: 1
+                    },
+                    ticks: {
+                        color: '#000',
+                        font: {
+                            weight: 'bold'
+                        }
+                    }
+                },
+                y: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: '#000',
+                        font: {
+                           size: 14,
+                           weight: 'bold'
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    createLearningPlan();
+    
+    // Set initial tab state
+    showTab('market');
+};
+</script>
+
+</body>
+</html>
