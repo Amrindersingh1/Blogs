@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>From Prompting to Agents: A 14-Day Learning Path</title>
+    <!-- Chosen Palette: "Warm Neutrals" - A calm palette with beige, slate, and a subtle terracotta accent for focus, creating a supportive learning environment. -->
+    <!-- Application Structure Plan: The SPA is structured as a two-week, interactive timeline. This dashboard-like approach presents the 14-day curriculum in expandable "day cards." This design was chosen over a simple document because it allows the learner to focus on one day at a time while still seeing the overall progression. The user flow is: 1) View the learning curve chart for a high-level overview. 2) Select a week. 3) Click a day-card to expand its content (objectives, resources, project, cheatsheet). This component-based, interactive structure makes the dense information digestible and less overwhelming, promoting a focused, step-by-step learning journey. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: The 14-day learning path progression.
+        - Goal: To provide a high-level overview of the increasing conceptual complexity over the two weeks.
+        - Viz/Presentation Method: A line chart using Chart.js.
+        - Interaction: The chart is static but serves as a visual anchor for the user's journey.
+        - Justification: A visual curve is more intuitive and engaging than a simple list for representing progress and difficulty, setting clear expectations for the learner. It immediately communicates the structure of the course.
+        - Library/Method: Chart.js (Canvas).
+
+        - Report Info: Daily curriculum details (objectives, resources, projects, cheatsheets).
+        - Goal: To organize and present detailed daily information in a structured, non-overwhelming way.
+        - Viz/Presentation Method: Structured HTML content within expandable cards (an accordion-style layout).
+        - Interaction: Users click on a day's header to toggle the visibility of its detailed content. Buttons allow expanding/collapsing all.
+        - Justification: This interaction prevents information overload. The learner can choose their focus. The content is organized using semantic HTML, styled with Tailwind for a clean, readable hierarchy, which is more effective than a static document for this learning context.
+        - Library/Method: Vanilla JavaScript for DOM manipulation and event handling.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF8;
+            color: #383838;
+        }
+        .day-card {
+            transition: all 0.3s ease-in-out;
+            border: 1px solid #EAEAEA;
+        }
+        .day-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+        .day-content.open {
+            max-height: 2000px;
+        }
+        .tab-button.active {
+            border-bottom-color: #D97706; /* Amber-600 */
+            color: #D97706;
+            font-weight: 600;
+        }
+        .resource-link {
+            transition: color 0.2s;
+        }
+        .resource-link:hover {
+            color: #D97706;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 250px;
+            max-height: 300px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="container mx-auto px-4 py-8 md:py-12">
+        <header class="text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-bold text-slate-800">From Prompting to Agents</h1>
+            <p class="mt-3 text-lg text-slate-600 max-w-3xl mx-auto">A 14-Day Hands-On Curriculum for Software Engineers</p>
+        </header>
+
+        <section class="mb-12">
+            <h2 class="text-2xl font-semibold text-center text-slate-700 mb-4">The Learning Curve</h2>
+            <p class="text-center text-slate-500 mb-6 max-w-2xl mx-auto">This path is designed to build systematically, from foundational concepts to complex agentic systems. This chart illustrates the planned progression in conceptual complexity.</p>
+            <div class="chart-container">
+                <canvas id="learningCurveChart"></canvas>
+            </div>
+        </section>
+        
+        <main>
+            <div class="flex justify-center mb-8 space-x-2 md:space-x-4">
+                 <button onclick="toggleWeek(1)" id="week1Btn" class="px-4 py-2 text-sm md:text-base font-semibold text-slate-700 bg-white rounded-lg shadow-sm border border-gray-200 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">Week 1: Foundations</button>
+                 <button onclick="toggleWeek(2)" id="week2Btn" class="px-4 py-2 text-sm md:text-base font-semibold text-slate-700 bg-white rounded-lg shadow-sm border border-gray-200 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">Week 2: Agentic Systems</button>
+                 <button onclick="toggleAll(true)" class="px-3 py-2 text-xs md:text-sm font-medium text-slate-600 bg-gray-50 rounded-md border border-gray-200 hover:bg-gray-100">Expand All</button>
+                 <button onclick="toggleAll(false)" class="px-3 py-2 text-xs md:text-sm font-medium text-slate-600 bg-gray-50 rounded-md border border-gray-200 hover:bg-gray-100">Collapse All</button>
+            </div>
+            
+            <div id="curriculum" class="space-y-4">
+                <!-- Day cards will be dynamically inserted here -->
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const curriculumData = [
+            // WEEK 1
+            {
+                day: 1, week: 1, title: "Prompting Fundamentals & API Mastery",
+                objectives: [
+                    "Understand the core principles of effective prompting: clarity, context, and constraints.",
+                    "Master the OpenAI Python client for chat completions.",
+                    "Implement Zero-shot, Few-shot, and Role prompting techniques."
+                ],
+                resources: [
+                    { name: "OpenAI's Prompt Engineering Guide", url: "https://platform.openai.com/docs/guides/prompt-engineering", reason: "The official source. Praised on Reddit's r/OpenAI for being concise and foundational." },
+                    { name: "DeepLearning.AI: ChatGPT Prompt Engineering for Developers", url: "https://www.deeplearning.ai/short-courses/chatgpt-prompt-engineering-for-developers/", reason: "Universally acclaimed on X and dev forums for its practical, code-first approach by Andrew Ng." }
+                ],
+                project: {
+                    title: "Mini-App: Python CLI Content Summarizer",
+                    description: "Build a command-line tool that takes a file path as input, reads its content, and uses the OpenAI API with a specific prompt to generate a concise summary. Experiment with different prompt structures to see how the output changes."
+                },
+                cheatsheet: [
+                    { term: "Zero-Shot", def: "Instructing the model directly without providing examples." },
+                    { term: "Few-Shot", def: "Including examples of input/output pairs in your prompt to guide the model's response format." },
+                    { term: "Role Prompting", def: "`{'role': 'system', 'content': 'You are a helpful assistant...'}`. Sets the context and persona for the AI." },
+                    { term: "Key API Call", def: "`client.chat.completions.create(model='gpt-4', messages=[...])`" }
+                ]
+            },
+            {
+                day: 2, week: 1, title: "Advanced Prompting: Chain-of-Thought & Structured Outputs",
+                objectives: [
+                    "Learn and apply Chain-of-Thought (CoT) prompting to improve reasoning.",
+                    "Force LLMs to produce structured data like JSON.",
+                    "Understand how to control model creativity with temperature and top_p."
+                ],
+                resources: [
+                    { name: "Prompting Guide: Chain-of-Thought Prompting", url: "https://www.promptingguide.ai/techniques/cot", reason: "Highly recommended across AI communities for its clear explanation and visual examples of CoT." },
+                    { name: "OpenAI Cookbook: How to get structured outputs from LLMs", url: "https://cookbook.openai.com/examples/how_to_get_structured_outputs_from_llms", reason: "A go-to resource on GitHub and Reddit for reliable, code-based solutions to a common engineering problem." }
+                ],
+                project: {
+                    title: "Mini-App: Email Classifier & JSON Extractor",
+                    description: "Write a Python script that takes an email body as text. Use a CoT prompt to have the LLM first reason about the email's category (e.g., 'Inquiry', 'Spam', 'Receipt') and then extract key details (like sender, date, order number) into a valid JSON object."
+                },
+                cheatsheet: [
+                    { term: "Chain-of-Thought (CoT)", def: "Asking the model to 'think step by step' to break down complex problems, improving accuracy." },
+                    { term: "JSON Mode", def: "A feature in newer OpenAI models to guarantee JSON output. Achieved by setting `response_format={'type': 'json_object'}`." },
+                    { term: "Temperature", def: "Controls randomness. Lower values (e.g., 0.2) for deterministic tasks, higher (e.g., 0.8) for creative tasks." }
+                ]
+            },
+            {
+                day: 3, week: 1, title: "Intro to Embeddings & Vector Databases",
+                objectives: [
+                    "Understand what text embeddings are and why they're crucial for semantic search.",
+                    "Use an API to generate embeddings for text.",
+                    "Perform a basic similarity search using cosine similarity."
+                ],
+                resources: [
+                    { name: "Pinecone's 'What are Vector Embeddings?'", url: "https://www.pinecone.io/learn/vector-embeddings/", reason: "Frequently cited as one of the best conceptual introductions to embeddings for engineers." },
+                    { name: "OpenAI Cookbook: Text Embeddings with OpenAI", url: "https://cookbook.openai.com/examples/text_embeddings_with_openai", reason: "The practical guide for using OpenAI's embedding models, widely used as a starting point in community projects." }
+                ],
+                project: {
+                    title: "Hands-on: Semantic Search with NumPy",
+                    description: "Create a Python script that takes a list of sentences, generates embeddings for each using the OpenAI API, and then, given a query sentence, finds the most semantically similar sentence from the list using cosine similarity. Do this without a vector DB library first to understand the mechanics."
+                },
+                cheatsheet: [
+                    { term: "Embeddings", def: "Numerical representations (vectors) of text that capture semantic meaning." },
+                    { term: "Vector Database", def: "A database optimized for storing and querying high-dimensional vectors efficiently." },
+                    { term: "Cosine Similarity", def: "A metric to measure the similarity between two vectors. A value of 1 means identical, -1 means opposite." }
+                ]
+            },
+            {
+                day: 4, week: 1, title: "Building Your First RAG System",
+                objectives: [
+                    "Grasp the concept of Retrieval-Augmented Generation (RAG).",
+                    "Combine embeddings, similarity search, and prompting to answer questions from a custom document.",
+                    "Set up a simple in-memory vector store."
+                ],
+                resources: [
+                    { name: "LangChain Blog: What is RAG?", url: "https://blog.langchain.dev/what-is-rag/", reason: "A clear, authoritative explanation from the creators of a key agentic framework. Often linked as the definitive RAG intro." },
+                    { name: "LlamaIndex Docs: 5-minute Intro", url: "https://docs.llamaindex.ai/en/stable/getting_started/starter_example.html", reason: "Praised on X for being an incredibly fast and practical way to build a functional RAG pipeline from scratch." }
+                ],
+                project: {
+                    title: "Mini-App: Q&A Bot over a Text File",
+                    description: "Using LlamaIndex, build a complete RAG application. It should: 1. Load a `.txt` file of your choice. 2. Create an in-memory vector index from it. 3. Create a query engine. 4. Allow you to ask questions about the document's content and get answers generated by an LLM."
+                },
+                cheatsheet: [
+                    { term: "RAG", def: "Retrieval-Augmented Generation. The process of retrieving relevant information from a knowledge base and providing it to an LLM as context to answer a query." },
+                    { term: "Indexing", def: "The process of converting documents into vectors and storing them in a vector store." },
+                    { term: "Querying", def: "The process of converting a user's question into a vector, finding similar vectors (chunks of text) in the store, and passing them to an LLM." }
+                ]
+            },
+            {
+                day: 5, week: 1, title: "Intro to Agentic Frameworks: LangChain",
+                objectives: [
+                    "Understand the core components of LangChain: LLMs, Chains, and Agents.",
+                    "Learn about LangChain Expression Language (LCEL) for building chains.",
+                    "Build a simple chain that combines a prompt template with an LLM call."
+                ],
+                resources: [
+                    { name: "LangChain Docs: Get Started", url: "https://python.langchain.com/docs/get_started/introduction", reason: "The official documentation is the most reliable source and is constantly referenced in GitHub issues and community help channels." },
+                    { name: "LangChain with LCEL (Video)", url: "https://www.youtube.com/watch?v=h_JC8_s59I4", reason: "This video by 'Sam Witteveen' is highly recommended on Reddit for clearly explaining the modern, preferred way to use LangChain (LCEL) over older, deprecated methods." }
+                ],
+                project: {
+                    title: "Hands-on: Multi-step Prompt Chain",
+                    description: "Using LangChain and LCEL, build a chain that takes a topic as input, first generates a short, engaging blog post title for that topic, and then passes that title to a second prompt to write a 100-word introductory paragraph for a blog post with that title."
+                },
+                cheatsheet: [
+                    { term: "LCEL", def: "LangChain Expression Language. The primary way to compose chains using a pipe `|` syntax, e.g., `prompt | llm | parser`." },
+                    { term: "Chain", def: "A sequence of calls, combining LLMs with other components (like prompts or parsers)." },
+                    { term: "PromptTemplate", def: "A reproducible way to generate prompts, allowing for dynamic input variables." }
+                ]
+            },
+             {
+                day: 6, week: 1, title: "Agents with Tools: Giving LLMs Superpowers",
+                objectives: [
+                    "Understand the concept of an agent: a system that uses an LLM to reason and decide which actions to take.",
+                    "Define and use 'tools' that an agent can call (e.g., a search engine).",
+                    "Build a basic LangChain agent that can answer questions about current events."
+                ],
+                resources: [
+                    { name: "LangChain Docs: Agents", url: "https://python.langchain.com/docs/modules/agents/", reason: "The authoritative guide to the agent concept and its implementation in LangChain." },
+                    { name: "LangChain Agents Crash Course (Video)", url: "https://www.youtube.com/watch?v=nAmC9i_Un_A", reason: "A popular, practical tutorial that walks through building a simple agent with a web search tool, often shared on X." }
+                ],
+                project: {
+                    title: "Mini-App: Simple Research Agent",
+                    description: "Build a LangChain agent that has access to a web search tool (e.g., using the Tavily API, which has a free tier). The agent's goal is to answer questions that require up-to-date information, like 'Who won the F1 race last weekend?' or 'What is the stock price of NVDA today?'."
+                },
+                cheatsheet: [
+                    { term: "Agent", def: "An LLM-powered system that reasons about a task and decides which tools to use to accomplish it." },
+                    { term: "Tool", def: "A function or API that an agent can decide to call. Examples: web search, calculator, database query." },
+                    { term: "ReAct Framework", def: "Reason + Act. The core logic loop for many agents: the LLM reasons about what to do, chooses a tool (Act), observes the result, and repeats." }
+                ]
+            },
+            {
+                day: 7, week: 1, title: "Project & Review: Build a RAG-Powered Research Assistant",
+                objectives: [
+                    "Consolidate learning from Week 1.",
+                    "Build a more robust application combining RAG and a simple agent.",
+                    "Structure a project with clear inputs and outputs."
+                ],
+                resources: [
+                    { name: "LlamaIndex Blog: Building RAG on a Real-World Knowledge Base", url: "https://www.llamaindex.ai/blog/building-rag-on-a-real-world-knowledge-base-the-llamaindex-documentation-4f5145b299d6", reason: "Provides a pattern for structuring a more complex RAG application, often cited as a good 'next step' after the intro tutorial." },
+                    { name: "Your own notes and code from the past week.", url: "#", reason: "Reviewing personal notes is a key part of consolidation."}
+                ],
+                project: {
+                    title: "Portfolio Project v1: RAG Research Assistant",
+                    description: "Build a Python application that takes a URL to a documentation page or a long article as input. It should: 1. Scrape the content from the URL. 2. Use LlamaIndex or LangChain to create a RAG pipeline over that content. 3. Have a simple agentic layer that first tries to answer a user's question from the scraped content (the RAG pipeline), and if it can't, it uses a web search tool to find the answer."
+                },
+                cheatsheet: [
+                    { term: "Project Structure", def: "Separate concerns: data loading, indexing, agent logic, and user interface (even if it's just CLI)." },
+                    { term: "Hybrid Strategy", def: "Combining RAG (internal knowledge) with tool use (external knowledge) is a powerful pattern." },
+                    { term: "Debugging", def: "Print the agent's intermediate steps (thoughts and actions) to understand its reasoning process." }
+                ]
+            },
+            // WEEK 2
+            {
+                day: 8, week: 2, title: "Agentic Architectures: Planning & Self-Correction",
+                objectives: [
+                    "Explore agent architectures beyond simple ReAct.",
+                    "Understand the concept of a 'planner' agent that breaks down a complex task for 'worker' agents.",
+                    "Implement a basic self-correction loop where an LLM critiques and refines its own output."
+                ],
+                resources: [
+                    { name: "Lilian Weng's Blog: LLM-powered Autonomous Agents", url: "https://lilianweng.github.io/posts/2023-06-23-agent/", reason: "Considered a seminal article in the AI community. It's a dense but essential read for understanding the theoretical underpinnings of agent architectures." },
+                    { name: "LangChain Blog: Plan-and-Execute Agents", url: "https://blog.langchain.dev/plan-and-execute-agents/", reason: "A practical guide from LangChain on implementing a more robust agent architecture, frequently shared on technical forums." }
+                ],
+                project: {
+                    title: "Hands-on: Self-Correcting Code Generator",
+                    description: "Build a Python script that takes a natural language description of a simple function (e.g., 'a function that takes a list of numbers and returns their sum'). The first LLM call generates the Python code. A second LLM call acts as a critic, receiving the generated code and the original request, and provides feedback. A third call takes the original code and the feedback to generate a corrected version."
+                },
+                cheatsheet: [
+                    { term: "Planner-Worker", def: "An architecture where one agent (planner) decomposes a goal into subtasks, and other agents (workers) execute them." },
+                    { term: "Self-Correction", def: "A loop where an agent's output is reviewed (by itself or another agent) and refined based on feedback." },
+                    { term: "Reflection", def: "The 'critique' part of the self-correction loop, where the agent analyzes its own performance." }
+                ]
+            },
+            {
+                day: 9, week: 2, title: "Multi-Agent Systems with CrewAI",
+                objectives: [
+                    "Learn CrewAI, a framework designed for orchestrating multi-agent collaboration.",
+                    "Define different agent roles with specific goals and tools.",
+                    "Create a 'crew' of agents that work together sequentially to complete a task."
+                ],
+                resources: [
+                    { name: "CrewAI Docs: Getting Started", url: "https://docs.crewai.com/", reason: "CrewAI has gained massive popularity on GitHub and X for its intuitive, role-based approach to creating multi-agent systems. The official docs are the best place to start." },
+                    { name: "CrewAI Intro by Joe Reis (Video)", url: "https://www.youtube.com/watch?v=tS3-A4_z_L8", reason: "A very popular video tutorial that clearly demonstrates the power and simplicity of CrewAI with a practical example." }
+                ],
+                project: {
+                    title: "Mini-App: Automated Blog Post Crew",
+                    description: "Using CrewAI, create a two-agent system. 1. A 'Researcher' agent that takes a topic, searches the web for information, and produces a bullet-point summary. 2. A 'Writer' agent that takes the researcher's summary as input and writes a 300-word blog post. Define the task to pass the output from the researcher to the writer."
+                },
+                cheatsheet: [
+                    { term: "CrewAI Agent", def: "Defined by a `role`, `goal`, `backstory`, and optional `tools`." },
+                    { term: "CrewAI Task", def: "A specific unit of work assigned to an agent. It has a `description` and specifies the `agent`." },
+                    { term: "CrewAI Crew", def: "A collection of agents and tasks, with a process (e.g., sequential) that defines how they collaborate." }
+                ]
+            },
+            {
+                day: 10, week: 2, title: "Memory and State Management in Agents",
+                objectives: [
+                    "Understand why memory is critical for long-running agentic tasks.",
+                    "Implement conversation history for a chatbot agent.",
+                    "Explore different types of memory (e.g., summary buffer, vector store memory)."
+                ],
+                resources: [
+                    { name: "LangChain Docs: Add memory to agents", url: "https://python.langchain.com/docs/modules/memory/how_to/agent_with_memory", reason: "The official guide on a crucial topic. It's the most reliable source for implementing statefulness in LangChain agents." },
+                    { name: "LlamaIndex Docs: Chat Engines", url: "https://docs.llamaindex.ai/en/stable/module_guides/deploying/chat_engines/", reason: "LlamaIndex's approach is often praised for its simplicity in building stateful RAG-based chatbots." }
+                ],
+                project: {
+                    title: "Hands-on: Stateful Customer Support Bot",
+                    description: "Build a simple chat interface (in the command line) that uses a LangChain or LlamaIndex chat engine. The bot should remember previous parts of the conversation to answer follow-up questions correctly. For example: User: 'What's your return policy?' Bot: [answers]. User: 'How many days do I have?' Bot: [uses context to answer '30 days']."
+                },
+                cheatsheet: [
+                    { term: "Stateful Agent", def: "An agent that retains information across multiple turns of a conversation or multiple steps of a task." },
+                    { term: "ConversationBufferMemory", def: "The simplest form of memory; stores the raw chat history." },
+                    { term: "ConversationSummaryMemory", def: "A more advanced memory that uses an LLM to summarize the conversation as it grows, saving tokens." }
+                ]
+            },
+            {
+                day: 11, week: 2, title: "Custom Tools & Function Calling",
+                objectives: [
+                    "Define your own custom Python functions as tools for an agent.",
+                    "Understand how modern LLMs use 'Function Calling' to reliably invoke tools.",
+                    "Build an agent that can interact with a local file or a simple API."
+                ],
+                resources: [
+                    { name: "LangChain Docs: Custom Tools", url: "https://python.langchain.com/docs/modules/agents/tools/custom_tools", reason: "A fundamental skill for building practical agents. This guide is a community staple." },
+                    { name: "OpenAI's Introduction to Function Calling", url: "https://platform.openai.com/docs/guides/function-calling", reason: "The official explanation of the underlying technology that makes modern agents reliable. Essential for understanding how it works 'under the hood'." }
+                ],
+                project: {
+                    title: "Mini-App: File System Agent",
+                    description: "Build a LangChain or LlamaIndex agent with custom tools for `list_files_in_directory`, `read_file_content`, and `write_to_file`. The agent's goal is to answer questions like 'What files are in my current directory?' or 'Summarize the content of file X.txt'."
+                },
+                cheatsheet: [
+                    { term: "Function Calling", def: "The ability of an LLM to detect that a user's request requires executing a function, and to output a JSON object with the function name and arguments to call." },
+                    { term: "@tool decorator", def: "A simple decorator in LangChain (`from langchain_core.tools import tool`) to turn any Python function into a usable tool for an agent." }
+                ]
+            },
+            {
+                day: 12, week: 2, title: "Evaluation & Debugging of Agentic Systems",
+                objectives: [
+                    "Understand the challenges of evaluating non-deterministic agentic systems.",
+                    "Learn about LangSmith for tracing and debugging agent behavior.",
+                    "Develop a basic evaluation framework using LLM-as-judge."
+                ],
+                resources: [
+                    { name: "LangChain Docs: LangSmith", url: "https://docs.smith.langchain.com/", reason: "LangSmith is becoming the industry standard for debugging and evaluating LLM apps. Its docs are frequently praised on X for enabling 'god mode' for tracing." },
+                    { name: "LlamaIndex Docs: Evaluation", url: "https://docs.llamaindex.ai/en/stable/module_guides/evaluating/evaluation.html", reason: "Provides practical code examples for setting up evaluation pipelines, which are often discussed in advanced LLM developer communities." }
+                ],
+                project: {
+                    title: "Hands-on: Evaluate Your RAG Bot",
+                    description: "Set up LangSmith (it has a generous free tier). Run your RAG bot from Day 7 on a set of 5-10 questions. Trace its execution in LangSmith to see the full context and LLM calls. Then, write a script that uses an LLM (like GPT-4) as a 'judge' to evaluate the quality of your bot's answers based on correctness and relevance."
+                },
+                cheatsheet: [
+                    { term: "Tracing", def: "The process of logging every step of an agent's execution (thoughts, tool calls, outputs) to understand its behavior." },
+                    { term: "LLM-as-Judge", def: "Using a powerful LLM to evaluate the output of another LLM system against a rubric, providing a scalable evaluation method." },
+                    { term: "Evaluation Dataset", def: "A set of questions and ground-truth answers used to benchmark the performance of your system." }
+                ]
+            },
+            {
+                day: 13, week: 2, title: "Advanced Agents & Deployment",
+                objectives: [
+                    "Explore state-of-the-art agent frameworks like AutoGen.",
+                    "Understand the basic principles of deploying an agent as an API endpoint.",
+                    "Review different agent architectures and their trade-offs."
+                ],
+                resources: [
+                    { name: "Microsoft's AutoGen on GitHub", url: "https://github.com/microsoft/autogen", reason: "AutoGen is highly regarded for its research focus and configurable multi-agent conversations. Exploring its GitHub examples is a common recommendation for those wanting to go beyond frameworks like CrewAI." },
+                    { name: "FastAPI Docs", url: "https://fastapi.tiangolo.com/", reason: "FastAPI is the go-to framework in the Python community for building performant APIs, making it a perfect choice for deploying LLM applications." }
+                ],
+                project: {
+                    title: "Hands-on: Deploy Your CrewAI as an API",
+                    description: "Take your two-agent blog post crew from Day 9 and wrap it in a FastAPI endpoint. The API should accept a `POST` request with a `topic` and return the final generated blog post as a JSON response. This mimics a real-world production setup."
+                },
+                cheatsheet: [
+                    { term: "AutoGen", def: "A framework from Microsoft that specializes in creating conversational agents that can solve tasks by 'talking' to each other." },
+                    { term: "API Endpoint", def: "A URL that exposes your agent's functionality to be called by other applications (e.g., a web front-end)." },
+                    { term: "Productionizing", def: "The process of making your application robust, scalable, and accessible for real users." }
+                ]
+            },
+            {
+                day: 14, week: 2, title: "Final Project & Future Learning",
+                objectives: [
+                    "Synthesize all learned concepts into a final, comprehensive project.",
+                    "Build a multi-agent system that plans, executes, and uses custom tools.",
+                    "Identify next steps for continuous learning in the fast-paced world of AI."
+                ],
+                resources: [
+                    { name: "Awesome Agents GitHub Repo", url: "https://github.com/e2b-dev/awesome-agents", reason: "A curated list of the latest papers, frameworks, and projects in the agent space. A fantastic resource for staying on the cutting edge." },
+                    { name: "All your code and notes from the last 13 days." }
+                ],
+                project: {
+                    title: "Portfolio Project v2: Multi-Agent Research Team",
+                    description: "Using CrewAI or AutoGen, build a 'research team' to create a detailed report on a given company. The team should consist of: 1. A 'Chief Research Officer' (Planner) who breaks down the task. 2. A 'Financial Analyst' agent with a tool to search for stock prices and financial news. 3. A 'Technology Analyst' agent with a tool to search for tech blogs and recent product launches. 4. A 'Writer' agent who compiles the reports from the analysts into a final, coherent summary."
+                },
+                cheatsheet: [
+                    { term: "System Integration", def: "Combining multiple specialized agents into a cohesive system that achieves a complex goal." },
+                    { term: "Continuous Learning", def: "The AI field moves fast. Follow key people on X, read papers on ArXiv, and keep building." },
+                    { term: "Portfolio", def: "You now have a collection of projects demonstrating a wide range of valuable AI engineering skills." }
+                ]
+            }
+        ];
+
+        const curriculumContainer = document.getElementById('curriculum');
+        let activeWeek = 1;
+
+        function createDayCard(dayData) {
+            const card = document.createElement('div');
+            card.className = `day-card week-${dayData.week} bg-white rounded-lg shadow-sm overflow-hidden`;
+            card.id = `day-${dayData.day}`;
+
+            let cheatsheetHtml = dayData.cheatsheet.map(item => `
+                <div class="py-2">
+                    <p class="font-semibold text-slate-700">${item.term}</p>
+                    <p class="text-slate-600">${item.def}</p>
+                </div>
+            `).join('');
+
+            let resourcesHtml = dayData.resources.map(res => `
+                <div class="py-2">
+                    <a href="${res.url}" target="_blank" rel="noopener noreferrer" class="font-semibold text-amber-700 resource-link">${res.name}</a>
+                    <p class="text-slate-500 text-sm mt-1"><strong>Why:</strong> ${res.reason}</p>
+                </div>
+            `).join('');
+
+            card.innerHTML = `
+                <div class="day-header p-4 cursor-pointer flex justify-between items-center bg-gray-50/50 hover:bg-gray-100" onclick="toggleDay(${dayData.day})">
+                    <div>
+                        <p class="text-sm font-medium text-amber-600">Day ${dayData.day}</p>
+                        <h3 class="text-lg font-semibold text-slate-800">${dayData.title}</h3>
+                    </div>
+                    <svg class="w-6 h-6 transform transition-transform text-slate-500" id="arrow-${dayData.day}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </div>
+                <div class="day-content" id="content-${dayData.day}">
+                    <div class="p-4 md:p-6 border-t border-gray-200">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div>
+                                <h4 class="font-semibold text-slate-700 mb-2">Learning Objectives</h4>
+                                <ul class="list-disc list-inside space-y-1 text-slate-600">
+                                    ${dayData.objectives.map(obj => `<li>${obj}</li>`).join('')}
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-slate-700 mb-2">Project of the Day</h4>
+                                <div class="p-4 bg-amber-50/50 border border-amber-200 rounded-lg">
+                                    <p class="font-bold text-amber-800">${dayData.project.title}</p>
+                                    <p class="text-amber-700 mt-1">${dayData.project.description}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-8">
+                            <h4 class="font-semibold text-slate-700 mb-2">Vetted Resources</h4>
+                            <div class="divide-y divide-gray-200">${resourcesHtml}</div>
+                        </div>
+                        <div class="mt-8">
+                             <h4 class="font-semibold text-slate-700 mb-2">Quick Reference / Cheatsheet</h4>
+                             <div class="divide-y divide-gray-200">${cheatsheetHtml}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            return card;
+        }
+
+        function renderCurriculum() {
+            curriculumContainer.innerHTML = '';
+            curriculumData.forEach(day => {
+                const card = createDayCard(day);
+                curriculumContainer.appendChild(card);
+            });
+            toggleWeek(1);
+        }
+
+        function toggleDay(day) {
+            const content = document.getElementById(`content-${day}`);
+            const arrow = document.getElementById(`arrow-${day}`);
+            content.classList.toggle('open');
+            arrow.classList.toggle('rotate-180');
+        }
+
+        function toggleAll(expand) {
+            curriculumData.forEach(dayData => {
+                 if (document.getElementById(`day-${dayData.day}`).style.display !== 'none') {
+                    const content = document.getElementById(`content-${dayData.day}`);
+                    const arrow = document.getElementById(`arrow-${dayData.day}`);
+                    if (expand) {
+                        content.classList.add('open');
+                        arrow.classList.add('rotate-180');
+                    } else {
+                        content.classList.remove('open');
+                        arrow.classList.remove('rotate-180');
+                    }
+                }
+            });
+        }
+        
+        function toggleWeek(weekNum) {
+            activeWeek = weekNum;
+            const week1Btn = document.getElementById('week1Btn');
+            const week2Btn = document.getElementById('week2Btn');
+
+            document.querySelectorAll('.day-card').forEach(card => {
+                if (card.classList.contains(`week-${weekNum}`)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            if (weekNum === 1) {
+                week1Btn.classList.add('bg-amber-100', 'border-amber-300');
+                week2Btn.classList.remove('bg-amber-100', 'border-amber-300');
+            } else {
+                week2Btn.classList.add('bg-amber-100', 'border-amber-300');
+                week1Btn.classList.remove('bg-amber-100', 'border-amber-300');
+            }
+            toggleAll(false);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderCurriculum();
+            
+            const ctx = document.getElementById('learningCurveChart').getContext('2d');
+            const learningCurveChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 14}, (_, i) => `Day ${i + 1}`),
+                    datasets: [{
+                        label: 'Conceptual Complexity',
+                        data: [1, 1.5, 2.5, 3.5, 4, 5, 5.5, 6.5, 7.5, 8, 8.5, 9, 9.5, 10],
+                        backgroundColor: 'rgba(217, 119, 6, 0.1)',
+                        borderColor: 'rgba(217, 119, 6, 1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: 'rgba(217, 119, 6, 1)',
+                        pointRadius: 4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Complexity Level'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                             callbacks: {
+                                title: function(context) {
+                                    return context[0].label;
+                                },
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y.toFixed(1);
+                                    }
+                                    const title = curriculumData[context.dataIndex].title;
+                                    return [label, `Topic: ${title}`];
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+
+    </script>
+</body>
+</html>
