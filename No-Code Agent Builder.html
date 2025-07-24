@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>14-Day No-Code AI Agent Builder Path (Neu-Brutalist)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: "High-Vis Functional" (Black, White, Yellow Accent #FFFF00, Grey Background #E7E5E4) -->
+    <!-- Application Structure Plan: A single-page application structured around a tabbed interface. This non-linear navigation allows users to jump to any day's lesson instantly, reducing friction. The content for each day is presented in stark, bordered "block" containers to create a clear visual hierarchy and separate distinct information types (Objectives, Resources, Project). This blocky, card-like structure is a core tenet of brutalist design and enhances scannability and comprehension. The overall goal is to make a dense curriculum feel manageable and highly functional. -->
+    <!-- Visualization & Content Choices: The primary content is the 14-day curriculum, which is text-heavy. The goal is to make this text highly readable and engaging within the neu-brutalist aesthetic. Presentation Method: Content is broken into distinct, bordered `div` blocks. Headings are uppercase and `font-black` for maximum impact. Key data points like "Time Commitment" use a monospaced font to differentiate them as functional data. Interaction: The core interaction is the tab navigation. Tabs are designed as chunky, physical buttons with aggressive hover and active states (color inversion, shadow shifts) to provide clear affordance and satisfying feedback. This adheres to brutalism's emphasis on raw functionality. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #E7E5E4;
+            color: #000000;
+        }
+        .font-mono {
+            font-family: 'IBM Plex Mono', monospace;
+        }
+        .brutalist-tab {
+            border: 4px solid black;
+            padding: 10px 20px;
+            font-weight: 900;
+            text-transform: uppercase;
+            transition: all 0.2s ease;
+            background-color: white;
+            color: black;
+        }
+        .brutalist-tab.tab-active {
+            background-color: black;
+            color: white;
+            box-shadow: 8px 8px 0px #78716C;
+            transform: translate(-4px, -4px);
+        }
+        .brutalist-tab:not(.tab-active):hover {
+            background-color: #FFFF00;
+            box-shadow: 4px 4px 0px black;
+            transform: translate(-2px, -2px);
+        }
+        .brutalist-link {
+            display: inline-block;
+            background-color: #FFFF00;
+            color: black;
+            border: 4px solid black;
+            padding: 8px 16px;
+            text-decoration: none;
+            font-weight: 700;
+            box-shadow: 4px 4px 0px black;
+            transition: all 0.2s ease;
+        }
+        .brutalist-link:hover {
+            background-color: black;
+            color: #FFFF00;
+            box-shadow: none;
+            transform: translate(4px, 4px);
+        }
+        .brutalist-tab:focus-visible, .brutalist-link:focus-visible {
+            outline: 4px dashed black;
+            outline-offset: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container mx-auto p-4 sm:p-6 md:p-8">
+        <header class="text-center mb-10 border-4 border-black bg-white p-6">
+            <h1 class="text-4xl md:text-5xl font-black uppercase tracking-wider text-black mb-2">No-Code Agent Builder</h1>
+            <p class="text-lg text-black max-w-3xl mx-auto font-mono">14-Day Curriculum // n8n Edition</p>
+        </header>
+
+        <main>
+            <div class="flex flex-wrap justify-center gap-4 mb-10">
+                <!-- Tabs will be rendered here by JavaScript -->
+            </div>
+
+            <div id="day-content-container" class="min-h-[500px]">
+                <!-- Content for the selected day will be rendered here -->
+            </div>
+        </main>
+
+        <footer class="text-center mt-12 text-black font-mono">
+            <p>// End of Transmission //</p>
+        </footer>
+    </div>
+
+    <script>
+        const curriculum = [
+            { day: 1, title: "Mastering Foundational Prompt Engineering", time: "2-3 hours", objectives: ["Understand the core components of an effective prompt: role, instruction, context, and format.", "Master techniques for controlling an LLM's output, including tone, length, and structure.", "Practice iterative prompt refinement in a hands-on environment."], resources: [{ name: "Guide for Beginners", url: "https://www.human-i-t.org/beginner-guide-prompt-engineering/" }, { name: "Anthropic's Tutorial", url: "https://github.com/anthropics/prompt-eng-interactive-tutorial" }, { name: "Agenta Playground", url: "https://agenta.ai/" }], project: "Using the Agenta Playground, take a vague prompt like 'Tell me about climate change.' Iteratively refine it. The final prompt should instruct the model to act as a science journalist, summarize the key causes of climate change in three bullet points for a non-technical audience, and conclude with a 50-word paragraph on potential mitigation strategies. Compare outputs from GPT-4o-mini and Claude 3 Haiku.", builds_toward: "An agent's behavior is dictated by its instructions. Mastering prompt engineering is the foundational skill for defining an agent's goals, personality, and capabilities. Clear, unambiguous prompts are the bedrock of reliable agentic systems." },
+            { day: 2, title: "The Genesis of Agentic Thought: Chain-of-Thought (CoT) Prompting", time: "2 hours", objectives: ["Define Chain-of-Thought (CoT) prompting and understand why it improves reasoning in LLMs.", "Differentiate between Zero-Shot CoT and Few-Shot CoT.", "Apply CoT to break down a complex problem into a sequence of logical steps."], resources: [{ name: "PromptHub Guide", url: "https://www.prompthub.us/blog/chain-of-thought-prompting-guide" }, { name: "Learn Prompting Article", url: "https://learnprompting.org/docs/intermediate/chain_of_thought" }, { name: "Master CoT Video", url: "https://www.youtube.com/watch?v=EMyBAk2FTo8" }], project: "In the Agenta Playground, solve: 'A team starts with a budget of $5,000. They spend 15% on marketing and $800 on software. They then earn $1,200 from initial sales. What is their final budget?' First, ask directly. Second, add 'Let's think step-by-step.' Finally, create a Few-Shot prompt with a similar example. Compare results.", builds_toward: "Agentic systems must be able to plan. CoT prompting is the technique used to compel an LLM to generate a step-by-step plan before providing a final answer. This makes the model's reasoning process transparent and improves its accuracy on multi-step tasks." },
+            { day: 3, title: "Your First Automation Hub: Introduction to n8n", time: "2-3 hours", objectives: ["Understand the core concepts of a visual workflow builder: nodes, connections, and data expressions.", "Create a free n8n Cloud account and navigate the dashboard and workflow canvas.", "Build a simple, two-node automation (workflow) connecting two different applications."], resources: [{ name: "n8n.io Platform", url: "https://n8n.io/" }, { name: "Beginner's Guide", url: "https://n8n.io/blog/n8n-tutorial-for-beginners/" }, { name: "Crash Course Video", url: "https://www.youtube.com/watch?v=I_7a4iG-3pM" }, { name: "n8n University", url: "https://n8n.io/university/" }], project: "Build a simple workflow that connects Google Forms to Google Sheets. Create a form with 'Name,' 'Email,' and 'Feedback' fields. In n8n, use the 'Google Form Trigger' and 'Google Sheets' action nodes to map the form responses to a new row in a spreadsheet.", builds_toward: "Agentic systems are advanced automations. Before building an agent that can act, one must understand the fundamental logic of how data moves between applications and how actions are triggered. n8n is an ideal environment for mastering these core principles." },
+            { day: 4, title: "Project 1 - The Automated Social Media Content Strategist", time: "3-4 hours", objectives: ["Integrate an AI node (OpenAI/Mistral) into an n8n workflow.", "Build a multi-step workflow that takes an input, processes it with AI, and posts to a social media platform.", "Understand how to use prompts from Day 1 and 2 within an automated workflow."], resources: [{ name: "Video Tutorial", url: "https://www.youtube.com/watch?v=sY5Y-3J2Y7s" }, { name: "Workflow Template", url: "https://n8n.io/workflows/1131-ai-social-media-post-generator/" }, { name: "n8n Docs", url: "https://docs.n8n.io/" }], project: "Create an n8n workflow that functions as an automated content strategist. Trigger on a new row in a Google Sheet containing an 'Article URL'. Use the 'HTTP Request' node to fetch the article text, then the 'OpenAI' node to generate a social media post from it. Post the result to LinkedIn and update a 'Status' column in the sheet.", builds_toward: "This project implements the first complete 'Sense -> Think -> Act' loop. The system 'senses' new data, 'thinks' by using an LLM to transform it, and 'acts' by publishing it. This pattern is the miniature version of a full agentic workflow." },
+            { day: 5, title: "Integrating Your Digital World: Tools, Data, and APIs in n8n", time: "3 hours", objectives: ["Understand the concept of a Webhook as a universal trigger.", "Learn how to use the HTTP Request node to make basic API requests.", "Explore the IF node to add conditional logic to workflows."], resources: [{ name: "IF Node Video", url: "https://www.youtube.com/watch?v=ALmKNd-q25s" }, { name: "Webhook Tutorial", url: "https://docs.n8n.io/core-nodes/webhook/" }, { name: "HTTP Request Docs", url: "https://docs.n8n.io/integrations/core/http-request/" }], project: "Enhance the Day 4 project. Add a 'Platform' column to the Google Sheet ('LinkedIn' or 'X'). After the AI step, use an IF node to check this value and route the workflow to post to the correct social media platform.", builds_toward: "A powerful agent must interact with any tool. Webhooks and the HTTP Request node provide the universal keys to unlock the entire digital world for an agent. The IF node is the first step in teaching an agent how to make decisions." },
+            { day: 6, title: "The 'Thinking' Agent: Understanding the ReAct Framework", time: "1-2 hours", objectives: ["Define the ReAct (Reason + Act) framework and how it extends CoT.", "Understand the interleaved 'Thought, Action, Observation' loop.", "Recognize how ReAct enables an agent to use external tools."], resources: [{ name: "Beginner's Guide", url: "https://www.promptingguide.ai/techniques/react" }, { name: "In-depth Article", url: "https://www.width.ai/post/react-prompting" }, { name: "Fundamentals Video", url: "https://www.youtube.com/watch?v=0-q032Y2p6I" }], project: "Conceptual exercise: For the query 'What is the current age of the actor who played the main character in 'Inception', and what is that age raised to the power of 0.23?', write out the complete Thought-Action-Observation sequence an AI agent would need to follow to find the answer.", builds_toward: "ReAct is the core theoretical framework that powers modern AI agents. While CoT allows an agent to plan, ReAct gives it the ability to execute that plan by interacting with the world. This is essential for designing agents that can dynamically gather information." },
+            { day: 7, title: "Week 1 Synthesis: Building a Simple Research & Summary Agent", time: "3-4 hours", objectives: ["Combine conditional logic, API calls, and AI processing in a single n8n workflow.", "Simulate a basic ReAct loop using n8n's visual builder.", "Create a functional agent that can research a topic, summarize findings, and deliver a report."], resources: [{ name: "n8n Merge Node", url: "https://docs.n8n.io/integrations/core/merge/" }, { name: "RSS Summary Workflow", url: "https://n8n.io/workflows/195-create-a-summary-of-an-rss-feed-using-ai/" }], project: "Build a 'Daily News Briefing' agent in n8n. Use the 'Schedule' trigger to run daily. Use the 'RSS Feed Read' node to pull 3 articles, the 'HTTP Request' node to get their content, and an 'OpenAI' node to summarize each. Aggregate the summaries and email the final report.", builds_toward: "This project consolidates all Week 1 skills into a functional automation that mimics an agentic workflow. It demonstrates how a linear sequence of nodes can simulate the 'Action -> Observation -> Thought' process, bridging automation principles and agentic design." },
+            { day: 8, title: "The Agent Builder's Workshop: Introduction to MindStudio", time: "3-4 hours", objectives: ["Understand the difference between a workflow tool (n8n) and an AI application builder (MindStudio).", "Navigate the MindStudio interface: AI Editor, Automations, and Data Sources.", "Build and deploy a simple, single-prompt AI web application."], resources: [{ name: "MindStudio Platform", url: "https://www.mindstudio.ai/" }, { name: "Core Principles Course", url: "https://university.mindstudio.ai/courses/1-core-building-principles" }, { name: "Workshop Video", url: "https://www.youtube.com/watch?v=AnD0x4-2SjA" }], project: "Build a 'Cover Letter Generator' AI web app in MindStudio. Create two 'Long Text' inputs for a resume and a job description. Use a 'Generate Text' block with a prompt that takes these inputs to write a tailored cover letter. Publish and test the app.", builds_toward: "This marks the transition from connecting existing applications to creating new, standalone AI agents. MindStudio is designed for this purpose, allowing the construction of user-facing web apps, autonomous back-end agents, and browser extensions." },
+            { day: 9, title: "Project 2 - The Autonomous Deep Research Assistant in MindStudio", time: "3-4 hours", objectives: ["Implement a multi-step agentic workflow in MindStudio using chained blocks.", "Use the 'Scrape URL' and 'Query Data Source' blocks to gather external information.", "Generate a structured output (like a PDF or formatted text) from the agent."], resources: [{ name: "Deep Research Masterclass", url: "https://university.mindstudio.ai/courses/deep-research-masterclass" }, { name: "Chrome Extension Tutorial", url: "https://www.youtube.com/watch?v=fA42n3h2-y0" }, { name: "PDF Report Generation", url: "https://www.youtube.com/watch?v=LqO8oZzD3hA" }], project: "Build a 'YouTube Video Summarizer & Key Insights' agent. Input a YouTube URL. Use 'Scrape URL' to get the transcript. Feed the transcript into a 'Generate Text' block to create a summary. Feed it into a second 'Generate Text' block to extract 5 key insights. Display both outputs.", builds_toward: "This project moves beyond single-prompt applications to build a true, multi-step agent. By chaining blocks—scraping, processing, summarizing—the learner directly implements the ReAct framework in a practical, no-code environment. This is the core skill of agent building." },
+            { day: 10, title: "Advanced Agentic Workflows: Routing, Logic, and Multi-Step Processing", time: "2-3 hours", objectives: ["Implement conditional logic in MindStudio using 'Routing' and 'Checkpoint' blocks.", "Build workflows that can iterate over a list of items.", "Understand how to create agents that can run on a schedule or be triggered by a webhook."], resources: [{ name: "Workflow Mastery Course", url: "https://university.mindstudio.ai/courses/2-workflow-mastery" }, { name: "Autonomous Agent Docs", url: "https://docs.mindstudio.ai/platform-features/automations/autonomous-agents" }], project: "Enhance the Day 9 project. After scraping the transcript, add a 'Generate Text' block that determines if the video is longer than 10 minutes, outputting only 'Yes' or 'No'. Use a 'Routing' block to proceed with the summary only if the answer is 'Yes'.", builds_toward: "Intelligence is not just executing tasks; it's making decisions. This day introduces the building blocks of agent intelligence: logic, iteration, and human oversight. A 'Checkpoint' block introduces the crucial concept of a human-in-the-loop system." },
+            { day: 11, title: "Exploring Alternative Architectures: An Introduction to FlowiseAI", time: "2-3 hours", objectives: ["Understand the concept of a LangChain-based visual builder.", "Set up a simple chat-with-your-data application in FlowiseAI.", "Recognize the trade-offs between a polished platform (MindStudio) and a flexible tool (FlowiseAI)."], resources: [{ name: "FlowiseAI Platform", url: "https://flowiseai.com/" }, { name: "Sequential Agents Tutorial", url: "https://www.youtube.com/watch?v=R-wue4-4s-c" }, { name: "Using Tools Tutorial", url: "https://www.youtube.com/watch?v=pZ2482t_m2A" }], project: "Build a simple RAG chatbot in FlowiseAI. Create a new Chatflow. Add a 'Document Loader' node to upload a PDF. Connect it to a 'Vector Store' node, then a 'Conversational Retrieval QA Chain' node, and finally an LLM model. Chat with your PDF.", builds_toward: "This day broadens the learner's perspective. FlowiseAI exposes the underlying architecture of agentic systems (Chains, Agents, Tools) more directly, helping to understand *how* agents are constructed conceptually, which transcends any single platform." },
+            { day: 12, title: "Project 3 - Simulating a Multi-Agent Team (Researcher + Writer)", time: "3-4 hours", objectives: ["Design a workflow that involves two distinct AI 'specialists.'", "Pass structured data from one agentic step to another.", "Implement the concept of breaking a complex task into smaller, specialized sub-tasks."], resources: [{ name: "Multi-Agent Concept", url: "https://www.reddit.com/r/nocode/comments/1b3y9z9/my_nocode_multiagentic_workflow_for_seo/" }, { name: "Multi-Stage RAG Tutorial", url: "https://www.youtube.com/watch?v=vJ-25t_rpSA" }], project: "Build a 'Blog Post Factory'. Input a topic. Agent 1 (Researcher) searches the web and outputs 5-7 key bullet points and source URLs. Agent 2 (Writer) takes this structured data as input and writes a 500-word blog post. This can be built in n8n or MindStudio.", builds_toward: "This project introduces multi-agent collaboration. By breaking a complex task into specialized roles (researcher, writer), the system becomes more robust and effective. This mimics how expert human teams work and is a key pattern for building highly capable autonomous systems." },
+            { day: 13, title: "Quality Control: How to Test and Evaluate Your No-Code Agents", time: "2-3 hours", objectives: ["Understand key evaluation metrics: accuracy, latency, and cost.", "Learn a non-technical framework for testing agent outputs.", "Create a 'golden test set' of inputs and expected outputs to benchmark performance."], resources: [{ name: "Testing Guide", url: "https://latenode.com/blog/how-to-make-ai-agents-with-no-code-testing-deployment" }, { name: "Evaluation Metrics Guide", url: "https://wandb.ai/vincent-tu/blog/llm-evaluation-the-definitive-guide--50931" }, { name: "Evaluation Scoring Article", url: "https://www.uipath.com/blog/ai/ai-agent-evaluation-scoring" }], project: "Create a golden test set for the Day 12 project. Choose 5 blog topics. For each, manually write down an 'ideal' set of bullet points. Run your agent for each topic. Score the agent's output on a 1-3 scale against your ideal version to create a baseline performance score.", builds_toward: "An agent that is not reliable is not useful. Evaluation is a critical part of the development lifecycle. Learning to systematically test an agent's performance ensures the final product is robust, accurate, and meets its objectives." },
+            { day: 14, title: "Capstone Project and The Path Forward", time: "4-5 hours", objectives: ["Conceptualize and build a unique agentic system from scratch.", "Join and engage with key no-code AI communities for ongoing support.", "Develop a personal roadmap for continued learning."], resources: [{ name: "r/AI_Agents", url: "https://www.reddit.com/r/AI_Agents/" }, { name: "n8n Community", url: "https://n8n.io/community/" }, { name: "MindStudio Discord", url: "https://discord.gg/youai-mindstudio" }, { name: "100 Days of No-Code", url: "https://www.100daysofnocode.com/" }], project: "Build a unique agent to solve a personal or business problem (e.g., Customer Support Agent, Meeting Summarizer, Personalized Trip Planner). Join one of the recommended communities and share your project. Outline your next learning steps.", builds_toward: "This final day is about synthesis and continuation. The capstone project requires applying the full range of skills to create a novel solution. It provides a roadmap for lifelong learning by connecting the learner with the communities and resources needed to stay current." }
+        ];
+
+        const dayContentContainer = document.getElementById('day-content-container');
+        const tabContainer = document.querySelector('main .flex-wrap');
+        let activeTab = 1;
+
+        function renderContent(day) {
+            const dayData = curriculum.find(d => d.day === day);
+            if (!dayData) return;
+
+            const objectivesHtml = dayData.objectives.map(obj => `<li class="flex items-start"><span class="font-black mr-3 mt-1">&gt;</span>${obj}</li>`).join('');
+            const resourcesHtml = dayData.resources.map(res => `<a href="${res.url}" target="_blank" rel="noopener noreferrer" class="brutalist-link">${res.name}</a>`).join('');
+
+            dayContentContainer.innerHTML = `
+                <div class="space-y-6 animate-fade-in">
+                    <div class="border-4 border-black p-4 bg-white">
+                        <h2 class="text-3xl md:text-4xl font-black uppercase tracking-wider">${dayData.title}</h2>
+                        <p class="font-mono text-lg mt-1">Est. Time: ${dayData.time}</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="border-4 border-black p-4 bg-white">
+                            <h3 class="text-xl font-black uppercase mb-3">Objectives</h3>
+                            <ul class="space-y-2 list-none pl-0">${objectivesHtml}</ul>
+                        </div>
+                        <div class="border-4 border-black p-4 bg-white">
+                            <h3 class="text-xl font-black uppercase mb-3">Resources</h3>
+                            <div class="flex flex-wrap gap-3">${resourcesHtml}</div>
+                        </div>
+                    </div>
+
+                    <div class="border-4 border-black p-4 bg-white">
+                        <h3 class="text-xl font-black uppercase mb-3">Practical Exercise</h3>
+                        <p class="leading-relaxed">${dayData.project}</p>
+                    </div>
+                    
+                    <div class="border-4 border-black p-4 bg-[#FFFF00]">
+                        <h3 class="text-xl font-black uppercase mb-3">Building Toward Agentic Systems</h3>
+                        <p class="leading-relaxed">${dayData.builds_toward}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderTabs() {
+            let tabsHtml = '';
+            for (let i = 1; i <= 14; i++) {
+                tabsHtml += `<button data-day="${i}" class="brutalist-tab ${i === activeTab ? 'tab-active' : ''}">Day ${i}</button>`;
+            }
+            tabContainer.innerHTML = tabsHtml;
+
+            document.querySelectorAll('.brutalist-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    activeTab = parseInt(tab.dataset.day);
+                    renderTabs();
+                    renderContent(activeTab);
+                });
+            });
+        }
+        
+        window.addEventListener('load', () => {
+            renderTabs();
+            renderContent(1);
+        });
+    </script>
+</body>
+</html>
