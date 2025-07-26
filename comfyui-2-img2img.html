@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ComfyUI Img2Img Tutorial: A Neubrutalist Approach</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Anton&display=swap" rel="stylesheet">
+    <style>
+        /* * DESIGN RATIONALE: NEUBRUTALISM (COLORFUL LIGHT MODE)
+         * * This design evolves the previous version with a more vibrant, multi-color palette
+         * inspired by modern digital Neubrutalism.
+         *
+         * 1.  VIBRANT COLOR PALETTE: A light background (#f4f4f4) is now accented with a variety of
+         * bold, high-contrast colors: pink, green, yellow, and blue. This creates a dynamic,
+         * energetic feel while maintaining sharp clarity.
+         *
+         * 2.  COLORFUL SOLID SHADOWS & BORDERS: The signature hard-edged box-shadow is now pink (#ff00a8),
+         * and it changes to a bright green (#39ff14) on hover for a playful interaction. The bottom
+         * border on H2 elements uses the accent blue.
+         *
+         * 3.  FUNCTIONAL TYPOGRAPHY: The font choices remain the same ('Anton' and 'IBM Plex Mono')
+         * as their utilitarian and geometric nature is a core tenet of this style.
+         *
+         * 4.  DISTRIBUTED COLOR ACCENTS: Colors are intentionally distributed to different elements
+         * (shadows, borders, highlights, links, table headers) to create a cohesive yet varied
+         * visual experience without overwhelming the user.
+        */
+
+        :root {
+            --background-color: #f4f4f4;
+            --slab-background: #ffffff;
+            --border-color: #000000;
+            --text-color: #000000;
+            --accent-blue: #0055ff;
+            --accent-yellow: #fffb00;
+            --accent-pink: #ff00a8;
+            --accent-green: #39ff14;
+            --header-font: 'Anton', sans-serif;
+            --body-font: 'IBM Plex Mono', monospace;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: var(--body-font);
+            line-height: 1.7;
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .main-container {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .content-slab {
+            background-color: var(--slab-background);
+            border: 3px solid var(--border-color);
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 8px 8px 0px var(--accent-pink);
+            transition: all 0.2s ease-in-out;
+        }
+
+        .content-slab:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 10px 10px 0px var(--accent-green);
+        }
+        
+        h1, h2, h3 {
+            font-family: var(--header-font);
+            color: var(--text-color);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 0;
+        }
+
+        h1 {
+            font-size: 3rem;
+            line-height: 1.1;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h2 {
+            font-size: 2rem;
+            border-bottom: 3px solid var(--accent-blue);
+            padding-bottom: 0.5rem;
+            margin-top: 2.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        h3 {
+            font-size: 1.5rem;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        p, li {
+            font-size: 1rem;
+        }
+
+        ul, ol {
+            padding-left: 20px;
+            list-style-position: inside;
+        }
+
+        strong, b {
+            font-weight: 700;
+            background-color: transparent;
+            color: inherit;
+            text-decoration: none;
+            padding-bottom: 3px;
+            border-bottom: 4px solid var(--accent-yellow);
+        }
+
+        a {
+            color: var(--accent-blue);
+            text-decoration: underline;
+            font-weight: bold;
+        }
+
+        a:hover {
+            color: var(--slab-background);
+            background-color: var(--accent-blue);
+            text-decoration: none;
+        }
+        
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 1rem auto;
+            border: 3px solid var(--border-color);
+        }
+
+        code {
+            background-color: #e0e0e0;
+            border: 2px solid #ccc;
+            padding: 0.2em 0.4em;
+            font-size: 0.9em;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+        }
+
+        th, td {
+            border: 3px solid var(--border-color);
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--accent-pink);
+            color: var(--slab-background);
+            font-family: var(--header-font);
+            text-transform: uppercase;
+        }
+        
+        .image-gallery {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+        .image-gallery > div {
+            flex: 1;
+            min-width: 250px;
+        }
+        .image-gallery h4 {
+            text-align: center;
+            font-family: var(--body-font);
+            font-weight: bold;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+
+    </style>
+</head>
+<body>
+
+    <main class="main-container">
+        
+        <div class="content-slab">
+            <h1>Diving Deep into Img2Img in ComfyUI</h1>
+            <p>Awesome — let's dive deep into Img2Img in ComfyUI, step-by-step. This workflow will teach you:</p>
+            <ul>
+                <li>🔁 How to edit images with prompts (not regenerate from scratch)</li>
+                <li>🎛️ How denoise strength controls how much the image changes</li>
+                <li>⚙️ How to use VAE encode/decode, the key to modifying latent space</li>
+            </ul>
+        </div>
+
+        <div class="content-slab">
+            <h2>Project: Img2Img “Prompt Style Transfer”</h2>
+            <p>✍️ Take an input image and restyle it using only prompt-based instructions — like making a real photo look anime, vintage, cinematic, etc.</p>
+
+            <div class="image-gallery">
+                <div>
+                    <h4>Input Image</h4>
+                    <img src="./comfyui/img2img/input.png" alt="Input image for Img2Img process" onerror="this.onerror=null;this.src='https://placehold.co/400x400/ffffff/000000?text=Input+Image';">
+                </div>
+                <div>
+                    <h4>Output Image</h4>
+                    <img src="./comfyui/img2img/output.png" alt="Output image after style transfer" onerror="this.onerror=null;this.src='https://placehold.co/400x400/ffffff/000000?text=Output+Image';">
+                </div>
+            </div>
+            
+            <h3>🧱 Nodes You Need</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Purpose</th>
+                        <th>Node</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Load your base image</td>
+                        <td><code>Load Image</code></td>
+                    </tr>
+                    <tr>
+                        <td>Convert image to latent</td>
+                        <td><code>VAE Encode</code></td>
+                    </tr>
+                    <tr>
+                        <td>Load model, CLIP, & VAE</td>
+                        <td><code>Load Checkpoint</code></td>
+                    </tr>
+                    <tr>
+                        <td>Encode prompt</td>
+                        <td><code>CLIPTextEncode</code> (positive & negative)</td>
+                    </tr>
+                    <tr>
+                        <td>Run diffusion</td>
+                        <td><code>KSampler</code></td>
+                    </tr>
+                    <tr>
+                        <td>Decode back to image</td>
+                        <td><code>VAE Decode</code></td>
+                    </tr>
+                     <tr>
+                        <td>Save result</td>
+                        <td><code>Save Image</code></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="content-slab">
+            <h2>🛠️ Full Workflow Breakdown</h2>
+            <p>Here’s how to wire everything in ComfyUI. The complete node graph should look like this:</p>
+            <img src="./comfyui/img2img/workflow.jpg" alt="ComfyUI Img2Img workflow diagram" onerror="this.onerror=null;this.src='https://placehold.co/800x400/ffffff/000000?text=Workflow+Diagram';">
+            
+            <h3>1️⃣ Load and Encode the Input Image</h3>
+            <p><code>[Load Image] → [VAE Encode] → latent image output</code></p>
+            <p>This step converts your input image into latent space. Make sure to also wire the <code>VAE</code> from your <code>Load Checkpoint</code> node into the <code>VAE Encode</code> node.</p>
+
+            <h3>2️⃣ Load the Model & Prompts</h3>
+            <p><code>[Load Checkpoint] → model, CLIP, VAE</code><br>
+               <code>[CLIPTextEncode] (positive prompt)</code><br>
+               <code>[CLIPTextEncode] (negative prompt)</code>
+            </p>
+            <p><strong>✍️ Prompt Examples:</strong></p>
+            <ul>
+                <li><strong>Positive:</strong> pixar style, dramatic lighting, ultra detailed</li>
+                <li><strong>Negative:</strong> ugly, blurry, distorted</li>
+            </ul>
+
+            <h3>3️⃣ Run KSampler for Image Generation</h3>
+            <p><code>[Latent] + [Model] + [Positive] + [Negative] + [Seed] → [KSampler]</code></p>
+            <p><strong>🧠 Settings to Start With:</strong></p>
+            <ul>
+                <li><strong>Steps:</strong> 25</li>
+                <li><strong>CFG:</strong> 7.0</li>
+                <li><strong>Denoise strength:</strong> 0.55 ← 🔑</li>
+                <li><strong>Sampler:</strong> euler</li>
+            </ul>
+            <p><strong>Denoise strength:</strong></p>
+            <ul>
+                <li><strong>0.2–0.3:</strong> Subtle filter effect</li>
+                <li><strong>0.55:</strong> Balanced style change (as seen in our example)</li>
+                <li><strong>0.7+:</strong> Overhaul / semi-redraw</li>
+            </ul>
+
+            <h3>4️⃣ Decode and Save the Result</h3>
+            <p><code>[KSampler output] → [VAE Decode] → [Save Image]</code></p>
+        </div>
+
+        <div class="content-slab">
+            <h2>🎓 Hands-On Challenge</h2>
+            <p>Try these:</p>
+            <ol>
+                <li>Use a realistic photo as input.</li>
+                <li>Try this prompt: <strong>oil painting, baroque style, dramatic lighting, canvas texture</strong></li>
+                <li>Test with denoise: <strong>0.3, 0.55, 0.7</strong></li>
+            </ol>
+            <p>Watch how the structure stays the same but the style transforms.</p>
+        </div>
+
+    </main>
+
+</body>
+</html>
