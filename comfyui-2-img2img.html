@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ComfyUI Img2Img Tutorial: A Neubrutalist Approach</title>
+    <title>Master Compositional Control in ComfyUI: A Step-by-Step Img2Img Tutorial</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Anton&display=swap" rel="stylesheet">
@@ -190,20 +190,30 @@
     <main class="main-container">
         
         <div class="content-slab">
-            <h1>Diving Deep into Img2Img in ComfyUI</h1>
-            <p>Awesome — let's dive deep into Img2Img in ComfyUI, step-by-step. This workflow will teach you:</p>
+            <h1>Master Compositional Control in ComfyUI: A Step-by-Step Img2Img Tutorial</h1>
+            <p>In the world of generative AI, moving from a passive prompter to an active director is a sign of true skill. While text prompts are powerful, they often lack compositional control. What if you want to generate an image of a specific character in the exact pose and environment of a reference photo? This tutorial will teach you a foundational ComfyUI workflow that does exactly that.</p>
+            <p>We'll be using an Img2Img technique that leverages the VAE (Variational Autoencoder) to use a source image as a structural blueprint, giving you precise control over your final output's composition. By the end, you'll understand not just how to build this workflow, but the core principles behind it—specifically, the critical role of the denoise parameter.</p>
+        </div>
+
+        <div class="content-slab">
+            <h2>Prerequisites</h2>
             <ul>
-                <li>🔁 How to edit images with prompts (not regenerate from scratch)</li>
-                <li>🎛️ How denoise strength controls how much the image changes</li>
-                <li>⚙️ How to use VAE encode/decode, the key to modifying latent space</li>
+                <li>A working installation of ComfyUI.</li>
+                <li>A basic understanding of adding nodes and connecting their inputs/outputs.</li>
+                <li>A Stable Diffusion checkpoint file. This workflow uses <code>sd15_JuggernautXL_v9RundiffusionPhoto2.safetensors</code>.</li>
+                <li>A source image you wish to transform.</li>
             </ul>
         </div>
 
         <div class="content-slab">
-            <h2>Project: Img2Img “Prompt Style Transfer”</h2>
-            <p>✍️ Take an input image and restyle it using only prompt-based instructions — like making a real photo look anime, vintage, cinematic, etc.</p>
+            <h2>The Core Concept: Guiding Generation with Latent Composition</h2>
+            <p>Normally, a text-to-image workflow starts with a blank canvas of random noise (an <code>Empty Latent Image</code>). The KSampler then "denoises" this canvas over several steps, shaping it to match your text prompt.</p>
+            <p>In this workflow, we replace that random noise with something much more useful: a structured blueprint derived from an existing image. We use a <code>VAE Encode</code> node to convert our source image from pixel space into the latent space. This latent representation is a compressed map of the original image's shapes, layout, and overall structure. By feeding this structural map into the KSampler as the starting point, we tell the diffusion process, <strong>"Don't start from scratch; start from this layout."</strong></p>
+        </div>
 
-            <div class="image-gallery">
+        <div class="content-slab">
+            <h2>Example Transformation</h2>
+             <div class="image-gallery">
                 <div>
                     <h4>Input Image</h4>
                     <img src="./comfyui/img2img/input.png" alt="Input image for Img2Img process" onerror="this.onerror=null;this.src='https://placehold.co/400x400/ffffff/000000?text=Input+Image';">
@@ -213,97 +223,79 @@
                     <img src="./comfyui/img2img/output.png" alt="Output image after style transfer" onerror="this.onerror=null;this.src='https://placehold.co/400x400/ffffff/000000?text=Output+Image';">
                 </div>
             </div>
-            
-            <h3>🧱 Nodes You Need</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Purpose</th>
-                        <th>Node</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Load your base image</td>
-                        <td><code>Load Image</code></td>
-                    </tr>
-                    <tr>
-                        <td>Convert image to latent</td>
-                        <td><code>VAE Encode</code></td>
-                    </tr>
-                    <tr>
-                        <td>Load model, CLIP, & VAE</td>
-                        <td><code>Load Checkpoint</code></td>
-                    </tr>
-                    <tr>
-                        <td>Encode prompt</td>
-                        <td><code>CLIPTextEncode</code> (positive & negative)</td>
-                    </tr>
-                    <tr>
-                        <td>Run diffusion</td>
-                        <td><code>KSampler</code></td>
-                    </tr>
-                    <tr>
-                        <td>Decode back to image</td>
-                        <td><code>VAE Decode</code></td>
-                    </tr>
-                     <tr>
-                        <td>Save result</td>
-                        <td><code>Save Image</code></td>
-                    </tr>
-                </tbody>
-            </table>
         </div>
-
+        
         <div class="content-slab">
-            <h2>🛠️ Full Workflow Breakdown</h2>
-            <p>Here’s how to wire everything in ComfyUI. The complete node graph should look like this:</p>
+            <h2>Step-by-Step Workflow Instructions</h2>
+            <p>Let's build the workflow node by node to understand the function of each component.</p>
             <img src="./comfyui/img2img/workflow.png" alt="ComfyUI Img2Img workflow diagram" onerror="this.onerror=null;this.src='https://placehold.co/800x400/ffffff/000000?text=Workflow+Diagram';">
-            
-            <h3>1️⃣ Load and Encode the Input Image</h3>
-            <p><code>[Load Image] → [VAE Encode] → latent image output</code></p>
-            <p>This step converts your input image into latent space. Make sure to also wire the <code>VAE</code> from your <code>Load Checkpoint</code> node into the <code>VAE Encode</code> node.</p>
 
-            <h3>2️⃣ Load the Model & Prompts</h3>
-            <p><code>[Load Checkpoint] → model, CLIP, VAE</code><br>
-               <code>[CLIPTextEncode] (positive prompt)</code><br>
-               <code>[CLIPTextEncode] (negative prompt)</code>
-            </p>
-            <p><strong>✍️ Prompt Examples:</strong></p>
-            <ul>
-                <li><strong>Positive:</strong> pixar style, dramatic lighting, ultra detailed</li>
-                <li><strong>Negative:</strong> ugly, blurry, distorted</li>
-            </ul>
+            <h3>Step 1: Load Your Model (Load Checkpoint)</h3>
+            <p>First, add a <strong>Load Checkpoint</strong> node. Use it to select the Stable Diffusion model you want to use (e.g., <code>sd15_JuggernautXL_v9RundiffusionPhoto2.safetensors</code>). This node is the foundation of our entire workflow, providing the main <strong>MODEL</strong>, the text interpreter (<strong>CLIP</strong>), and the encoder/decoder (<strong>VAE</strong>).</p>
 
-            <h3>3️⃣ Run KSampler for Image Generation</h3>
-            <p><code>[Latent] + [Model] + [Positive] + [Negative] + [Seed] → [KSampler]</code></p>
-            <p><strong>🧠 Settings to Start With:</strong></p>
-            <ul>
-                <li><strong>Steps:</strong> 25</li>
-                <li><strong>CFG:</strong> 7.0</li>
-                <li><strong>Denoise strength:</strong> 0.55 ← 🔑</li>
-                <li><strong>Sampler:</strong> euler</li>
-            </ul>
-            <p><strong>Denoise strength:</strong></p>
-            <ul>
-                <li><strong>0.2–0.3:</strong> Subtle filter effect</li>
-                <li><strong>0.55:</strong> Balanced style change (as seen in our example)</li>
-                <li><strong>0.7+:</strong> Overhaul / semi-redraw</li>
-            </ul>
+            <h3>Step 2: Load Your Source Image (Load Image)</h3>
+            <p>Add a <strong>Load Image</strong> node. Upload the image you want to use as the compositional base. This is the image whose pose and layout you want to keep.</p>
 
-            <h3>4️⃣ Decode and Save the Result</h3>
-            <p><code>[KSampler output] → [VAE Decode] → [Save Image]</code></p>
+            <h3>Step 3: Encode the Composition (VAE Encode)</h3>
+            <p>This is our first critical step for compositional control. Add a <strong>VAE Encode</strong> node.</p>
+            <ul>
+                <li>Connect the <strong>IMAGE</strong> output from your <code>Load Image</code> node to the <code>pixels</code> input of the <code>VAE Encode</code> node.</li>
+                <li>Connect the <strong>VAE</strong> output from your <code>Load Checkpoint</code> node to the <code>vae</code> input of the <code>VAE Encode</code> node.</li>
+            </ul>
+            <p>This node will now output a <strong>LATENT</strong> representation of your source image.</p>
+
+            <h3>Step 4: Write Your Prompts (CLIP Text Encode)</h3>
+            <p>We need to tell the model what new content to generate. Add two <strong>CLIP Text Encode (Prompt)</strong> nodes.</p>
+            <ul>
+                <li><strong>Positive Prompt:</strong> In the first node, write a prompt describing your desired output. In the example, this would be: <code>pixar style, dramatic lighting, ultra detailed</code>.</li>
+                <li><strong>Negative Prompt:</strong> In the second node, write what you want to avoid. A good starting point is: <code>ugly, blurry, distorted, deformed, bad anatomy, worst quality</code>.</li>
+            </ul>
+            <p>Connect the <strong>CLIP</strong> output from the <code>Load Checkpoint</code> to the <code>clip</code> input on both of these nodes.</p>
+
+            <h3>Step 5: Synthesize the New Image (KSampler)</h3>
+            <p>This is where all the pieces come together. Add a <strong>KSampler</strong> node.</p>
+            <ul>
+                <li><strong>model</strong> -> Connect the <code>MODEL</code> output from <code>Load Checkpoint</code>.</li>
+                <li><strong>positive</strong> -> Connect the <code>CONDITIONING</code> output from your positive prompt node.</li>
+                <li><strong>negative</strong> -> Connect the <code>CONDITIONING</code> output from your negative prompt node.</li>
+                <li><strong>latent_image</strong> -> Crucially, connect the <code>LATENT</code> output from your <code>VAE Encode</code> node here.</li>
+            </ul>
+            <p>Now, let's configure the KSampler settings. The most important one here is <strong>denoise</strong>.</p>
+            <ul>
+                <li><strong>denoise:</strong> Set this value to <strong>0.55</strong>. This parameter controls how much the KSampler will alter the initial latent image. A value of 1.0 would completely ignore the latent blueprint and generate a new image based only on the prompt. A value of 0.0 would perform no changes. A value between 0.5 and 0.8 is often a sweet spot, retaining the structure while thoroughly redrawing the content.</li>
+            </ul>
+            <p>The other settings (<code>steps: 25</code>, <code>cfg: 7.0</code>, <code>sampler_name: euler</code>) are standard starting points and can be adjusted later.</p>
+
+            <h3>Step 6: Decode and Save the Final Image</h3>
+            <p>The KSampler outputs a modified <strong>LATENT</strong> image. To see it, we need to convert it back to pixels.</p>
+            <ul>
+                <li>Add a <strong>VAE Decode</strong> node. Connect the <code>LATENT</code> output from the KSampler to its <code>latent</code> input, and the <code>VAE</code> from the <code>Load Checkpoint</code> to its <code>vae</code> input.</li>
+                <li>Add a <strong>Save Image</strong> node. Connect the <code>IMAGE</code> output from the <code>VAE Decode</code> node to its <code>images</code> input.</li>
+            </ul>
+            <p>Now, queue your prompt and run the workflow!</p>
         </div>
 
         <div class="content-slab">
-            <h2>🎓 Hands-On Challenge</h2>
-            <p>Try these:</p>
-            <ol>
-                <li>Use a realistic photo as input.</li>
-                <li>Try this prompt: <strong>oil painting, baroque style, dramatic lighting, canvas texture</strong></li>
-                <li>Test with denoise: <strong>0.3, 0.55, 0.7</strong></li>
-            </ol>
-            <p>Watch how the structure stays the same but the style transforms.</p>
+            <h2>Experimentation and Further Learning</h2>
+            <p>You've now built a powerful and repeatable workflow. To truly master it, experiment!</p>
+            <ul>
+                <li><strong>Adjust Denoise Strength:</strong> This is the most impactful change you can make. See what happens when you set denoise to 0.4 (subtle changes) versus 0.85 (major changes, less structural coherence).</li>
+                <li><strong>Change the Prompts:</strong> How does changing the style in the prompt (e.g., "oil painting of...") affect the output while keeping the same composition?</li>
+                <li><strong>Swap the Model:</strong> Try a different checkpoint. Does a model trained on anime art interpret the latent blueprint differently than a photorealistic one?</li>
+            </ul>
+        </div>
+        
+        <div class="content-slab">
+            <h2>Troubleshooting Common Issues</h2>
+            <ul>
+                <li><strong>Output looks too much like the original image:</strong> Your denoise value is too low. Increase it in increments of 0.05 until you find a good balance.</li>
+                <li><strong>Output completely ignores the source image's composition:</strong> Your denoise is likely set to 1.0, or you have accidentally connected the KSampler's <code>latent_image</code> input to an <code>Empty Latent Image</code> node instead of your <code>VAE Encode</code> node. Double-check your connections.</li>
+            </ul>
+        </div>
+
+        <div class="content-slab">
+            <h2>Conclusion</h2>
+            <p>Congratulations! You have learned how to use an image's latent representation to enforce compositional control in ComfyUI. This technique of using a VAE Encode and carefully tuning the denoise parameter is a fundamental building block for countless advanced applications. It transforms you from someone who simply asks an AI for an image into an artist who directs the AI's creation with precision and intent.</p>
         </div>
 
     </main>
