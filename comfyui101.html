@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ComfyUI Tutorial: A Neubrutalist Approach</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Anton&display=swap" rel="stylesheet">
+    <style>
+        /* * DESIGN RATIONALE: NEUBRUTALISM (LIGHT MODE)
+         * * This design adapts the original structure to the principles of Neubrutalism.
+         * The philosophy maintains brutalist honesty but adds vibrant color, high contrast, and illustrative flair.
+         *
+         * 1.  HIGH-CONTRAST COLORS: A light mode theme is established with an off-white background (#f4f4f4) 
+         * and pure black text (#000000). A vibrant blue (#0055ff) is used for links and a highlight yellow (#fffb00)
+         * is used for important text, creating a striking, modern look.
+         *
+         * 2.  BOLD OUTLINES & SOLID SHADOWS: Content containers (`.content-slab`) have thick, solid black borders.
+         * The key feature is the hard-edged, non-blurred `box-shadow`, which gives a tactile, sticker-like
+         * or 2D-illustrative effect, a hallmark of Neubrutalism.
+         *
+         * 3.  FUNCTIONAL TYPOGRAPHY: The font choices remain the same, as their bold, geometric nature
+         * fits perfectly with the Neubrutalist aesthetic. 'Anton' provides blocky, impactful headings,
+         * while 'IBM Plex Mono' ensures the technical content is clear and functional.
+         *
+         * 4.  MINIMAL BUT BOLD ORNAMENTATION: While still minimal, the style uses color and shadow as
+         * intentional decorative elements. The hover effect on content slabs adds a subtle, satisfying
+         * interaction, lifting the element slightly.
+        */
+
+        :root {
+            --background-color: #f4f4f4;
+            --slab-background: #ffffff;
+            --border-color: #000000;
+            --text-color: #000000;
+            --accent-color: #0055ff;
+            --highlight-color: #fffb00;
+            --header-font: 'Anton', sans-serif;
+            --body-font: 'IBM Plex Mono', monospace;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: var(--body-font);
+            line-height: 1.7;
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .main-container {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .content-slab {
+            background-color: var(--slab-background);
+            border: 3px solid var(--border-color);
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 8px 8px 0px var(--border-color);
+            transition: all 0.2s ease-in-out;
+        }
+
+        .content-slab:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 10px 10px 0px var(--accent-color);
+        }
+        
+        h1, h2, h3 {
+            font-family: var(--header-font);
+            color: var(--text-color);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 0;
+        }
+
+        h1 {
+            font-size: 3rem;
+            line-height: 1.1;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h2 {
+            font-size: 2rem;
+            border-bottom: 3px solid var(--border-color);
+            padding-bottom: 0.5rem;
+            margin-top: 2.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        h3 {
+            font-size: 1.5rem;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        p, li {
+            font-size: 1rem;
+        }
+
+        ul, ol {
+            padding-left: 20px;
+        }
+
+        strong, b {
+            font-weight: 700;
+            background-color: var(--highlight-color);
+            color: var(--border-color);
+            padding: 0.1em 0.4em;
+        }
+
+        a {
+            color: var(--accent-color);
+            text-decoration: underline;
+            font-weight: bold;
+        }
+
+        a:hover {
+            color: var(--slab-background);
+            background-color: var(--accent-color);
+            text-decoration: none;
+        }
+        
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 2rem auto;
+            border: 3px solid var(--border-color);
+        }
+
+        code {
+            background-color: #e0e0e0;
+            border: 2px solid #ccc;
+            padding: 0.2em 0.4em;
+            font-size: 0.9em;
+            color: #333;
+        }
+
+    </style>
+</head>
+<body>
+
+    <main class="main-container">
+        
+        <div class="content-slab">
+            <h1>Mastering the Basics: A Step-by-Step Guide to Your First ComfyUI Text-to-Image Workflow</h1>
+        </div>
+
+        <div class="content-slab">
+            <p>Welcome to the world of ComfyUI! If you're ready to move beyond basic interfaces and get hands-on with the mechanics of AI image generation, you've come to the right place. This tutorial will guide you through creating the most fundamental text-to-image workflow. By building this yourself, you'll gain an essential understanding of the data flow that powers nearly every generative AI art technique.</p>
+            
+            <h3>Objective:</h3>
+            <p>To build a workflow that takes a text prompt and generates an image, demystifying the core components of the diffusion process.</p>
+
+            <h3>Prerequisites:</h3>
+            <ul>
+                <li>ComfyUI installed and running on your local machine or a cloud instance.</li>
+                <li>A Stable Diffusion checkpoint file (e.g., SDXL Base, JuggernautXL, etc.) downloaded and placed in your <code>ComfyUI/models/checkpoints</code> folder.</li>
+            </ul>
+        </div>
+
+        <div class="content-slab">
+            <h2>Understanding the Core Concept: From Prompt to Pixels</h2>
+            <p>At its heart, generating an image from text is a structured process. We need to load a model, tell it what to create, give it a canvas to work on, let it run its creative process, and finally, translate its work into a viewable format. In ComfyUI, each of these steps is a "node." Let's build the workflow that created this image from the prompt: <em>"A flying dog wearing superman suit and flying through clouds."</em></p>
+            <img src="images/comfyui/101/workflow-output.png" alt="Generated image of a dog in a superman costume flying through the clouds." onerror="this.onerror=null;this.src='https://placehold.co/800x800/ffffff/000000?text=Generated+Image';">
+            <p>And here is the workflow that created it:</p>
+            <img src="images/comfyui/101/workflow.png" alt="Screenshot of the basic ComfyUI workflow." onerror="this.onerror=null;this.src='https://placehold.co/800x400/ffffff/000000?text=Workflow+Screenshot';">
+        </div>
+
+        <div class="content-slab">
+            <h2>Step 1: Loading the AI Model (The Brain)</h2>
+            <p>Every creation needs a creator. In our case, this is a Stable Diffusion model, or "checkpoint."</p>
+            <ol>
+                <li><strong>Add the Node:</strong> Double-click on the empty graph space in ComfyUI. A search menu will appear. Type <code>Load Checkpoint</code> and select it.</li>
+                <li><strong>Select Your Model:</strong> In the newly created <code>Load Checkpoint</code> node, click the dropdown menu and select the checkpoint file you downloaded.</li>
+            </ol>
+            <h3>Educational Insight:</h3>
+            <p>This single node provides three crucial outputs:</p>
+            <ul>
+                <li><code>MODEL</code>: The main neural network that performs the denoising (image generation).</li>
+                <li><code>CLIP</code>: The text encoder model that interprets your written prompts.</li>
+                <li><code>VAE</code>: The Variational Autoencoder, which translates between the compressed "latent space" the AI works in and the final "pixel space" we see.</li>
+            </ul>
+        </div>
+
+        <div class="content-slab">
+            <h2>Step 2: Writing the Instructions (The Prompts)</h2>
+            <p>Now we need to tell the model what we want it to create and what to avoid.</p>
+            <ol>
+                <li><strong>Add Prompt Nodes:</strong> Double-click the canvas and create two <code>CLIP Text Encode (Prompt)</code> nodes. It's good practice to label them. Click on the node's title to rename one to "Positive Prompt" and the other to "Negative Prompt."</li>
+                <li><strong>Connect the CLIP:</strong> Drag a "noodle" (the connecting wire) from the <code>CLIP</code> output of your <code>Load Checkpoint</code> node to the <code>clip</code> input on <em>both</em> of your <code>CLIP Text Encode</code> nodes.</li>
+                <li><strong>Enter Your Text:</strong> In the "Positive Prompt" node, type what you want to see (e.g., <code>A flying dog wearing superman suit and flying through clouds, high quality, detailed</code>). In the "Negative Prompt" node, type what you want to avoid (e.g., <code>text, watermark, blurry, deformed</code>).</li>
+            </ol>
+            <h3>Educational Insight:</h3>
+            <p>You're converting human language into <code>CONDITIONING</code>, a mathematical representation (embedding) that the main model can use as a guide during the generation process. Separating positive and negative conditioning gives you powerful control over the output.</p>
+        </div>
+
+        <div class="content-slab">
+            <h2>Step 3: Preparing the Canvas (The Latent Space)</h2>
+            <p>The AI doesn't draw on a blank white image. It starts with a field of structured noise in a compressed data format called the latent space.</p>
+            <ol>
+                <li><strong>Add the Node:</strong> Create an <code>Empty Latent Image</code> node.</li>
+                <li><strong>Set Dimensions:</strong> For this example, set the <code>width</code> and <code>height</code> to <code>512</code>. You can also adjust the <code>batch_size</code> if you want to generate multiple images at once.</li>
+            </ol>
+            <h3>Educational Insight:</h3>
+            <p>This step is crucial. The initial state of this latent noise, determined by the <code>seed</code>, is what ensures every generation is unique (unless the seed is kept the same). The dimensions here directly control the final output resolution.</p>
+        </div>
+
+        <div class="content-slab">
+            <h2>Step 4: The Generation Process (The KSampler)</h2>
+            <p>This is where the magic happens. The <code>KSampler</code> node takes the model, the instructions, and the canvas, and orchestrates the entire diffusion process.</p>
+            <ol>
+                <li><strong>Add the Node:</strong> Create a <code>KSampler</code> node. This node has several inputs we need to connect.</li>
+                <li><strong>Connect the Inputs:</strong>
+                    <ul>
+                        <li>Drag the <code>MODEL</code> output from <code>Load Checkpoint</code> to the <code>model</code> input on the <code>KSampler</code>.</li>
+                        <li>Drag the <code>CONDITIONING</code> output from your "Positive Prompt" node to the <code>positive</code> input on the <code>KSampler</code>.</li>
+                        <li>Drag the <code>CONDITIONING</code> output from your "Negative Prompt" node to the <code>negative</code> input on the <code>KSampler</code>.</li>
+                        <li>Drag the <code>LATENT</code> output from <code>Empty Latent Image</code> to the <code>latent_image</code> input on the <code>KSampler</code>.</li>
+                    </ul>
+                </li>
+                <li><strong>Adjust Settings:</strong>
+                    <ul>
+                        <li><code>seed</code>: Can be randomized to produce different images.</li>
+                        <li><code>steps</code>: Number of denoising steps. <code>20</code> is a good start. More steps can add detail but take longer.</li>
+                        <li><code>cfg</code>: How strictly the AI should follow your prompt. <code>8.0</code> is a balanced value.</li>
+                        <li><code>sampler_name</code>: The algorithm used for denoising. <code>euler</code> is a fast and common choice.</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+        
+        <div class="content-slab">
+            <h2>Step 5: Decoding and Saving the Final Image</h2>
+            <p>The <code>KSampler</code> outputs a finished image, but it's still in the latent space. We need the VAE to translate it back to a normal image.</p>
+            <ol>
+                <li><strong>Add Decode Node:</strong> Create a <code>VAE Decode</code> node.</li>
+                <li><strong>Connect the VAE:</strong> Drag the <code>VAE</code> output from your original <code>Load Checkpoint</code> node to the <code>vae</code> input on the <code>VAE Decode</code> node.</li>
+                <li><strong>Connect the Latent Image:</strong> Drag the <code>LATENT</code> output from the <code>KSampler</code> to the <code>samples</code> input on the <code>VAE Decode</code> node.</li>
+                <li><strong>Add Save Node:</strong> Create a <code>Save Image</code> node.</li>
+                <li><strong>Connect the Final Image:</strong> Drag the <code>IMAGE</code> output from <code>VAE Decode</code> to the <code>images</code> input on the <code>Save Image</code> node.</li>
+            </ol>
+        </div>
+
+        <div class="content-slab">
+            <h2>Conclusion: Your First Workflow is Complete!</h2>
+            <p>Your graph should now look like the reference image. Press the <strong>"Queue Prompt"</strong> button and watch it run! You've successfully built the foundational text-to-image pipeline.</p>
+            <h3>Further Educational Experiments:</h3>
+            <ul>
+                <li><strong>Vary the <code>steps</code> and <code>cfg</code>:</strong> See how lower or higher values affect the output's adherence to the prompt.</li>
+                <li><strong>Change the <code>sampler_name</code>:</strong> Experiment with other samplers like <code>dpmpp_2m_sde</code> and observe the differences.</li>
+                <li><strong>Refine your prompts:</strong> Add more descriptive words or stronger negative prompts to guide the AI.</li>
+            </ul>
+            <p>You now understand the logical flow of data in a diffusion model. This knowledge is the bedrock upon which you'll build more complex and powerful workflows. Happy generating!</p>
+        </div>
+
+    </main>
+
+</body>
+</html>
