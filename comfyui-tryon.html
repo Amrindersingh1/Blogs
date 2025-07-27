@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Virtual Try-On: How to Swap Clothes in Any Photo with ComfyUI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Anton&display=swap" rel="stylesheet">
+    <style>
+        /* * DESIGN RATIONALE: FOCUSED NEUBRUTALISM
+         * * This redesign pulls back from the multi-color palette to create a more focused, classic
+         * Neubrutalist look with tasteful color accents.
+         *
+         * 1.  NEUTRAL CONTENT SLABS: All content slabs now have a consistent white background.
+         * This removes the rotating color scheme to reduce visual noise and improve focus on the content.
+         *
+         * 2.  GROUNDED & INTERACTIVE SHADOWS: The hard box-shadow is black by default, grounding the
+         * elements. On hover, the shadow changes to a vibrant blue, providing a single, impactful
+         * interactive color pop without overwhelming the user.
+         *
+         * 3.  REFINED HIGHLIGHTS: The text highlight for `strong` tags now uses a solid pink
+         * background with white text for a bold, high-contrast effect.
+         *
+         * 4.  UNIFIED ACCENTS: A dark navy is used for headings and table headers, creating a cohesive
+         * and professional visual hierarchy. Links use the same blue as the hover shadow, tying the
+         * interactive elements together.
+        */
+
+        :root {
+            --background-color: #f0f0f0;
+            --slab-background: #ffffff;
+            --border-color: #000000;
+            --text-color: #000000;
+            --header-color: #000033; /* Dark Navy */
+            --accent-blue: #0055ff;
+            --accent-pink: #ff00a8;
+            --accent-yellow: #fffb00;
+
+            --header-font: 'Anton', sans-serif;
+            --body-font: 'IBM Plex Mono', monospace;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: var(--body-font);
+            line-height: 1.7;
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .main-container {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .content-slab {
+            background-color: var(--slab-background);
+            border: 3px solid var(--border-color);
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 8px 8px 0px var(--border-color);
+            transition: all 0.2s ease-in-out;
+        }
+
+        .content-slab:hover {
+            transform: translate(-4px, -4px);
+            box-shadow: 12px 12px 0px var(--accent-blue);
+        }
+        
+        h1, h2, h3 {
+            font-family: var(--header-font);
+            color: var(--header-color);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 0;
+        }
+
+        h1 {
+            font-size: 3rem;
+            line-height: 1.1;
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--border-color);
+        }
+
+        h2 {
+            font-size: 2rem;
+            border-bottom: 3px solid var(--header-color);
+            padding-bottom: 0.5rem;
+            margin-top: 2.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        h3 {
+            font-size: 1.5rem;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        p, li {
+            font-size: 1rem;
+        }
+
+        ul, ol {
+            padding-left: 20px;
+            list-style-position: inside;
+        }
+
+        strong, b {
+            font-weight: 700;
+            background-color: var(--accent-pink);
+            color: #ffffff;
+            padding: 0.2em 0.5em;
+            text-decoration: none;
+            border-bottom: none;
+        }
+
+        a {
+            color: var(--accent-blue);
+            text-decoration: underline;
+            font-weight: bold;
+        }
+
+        a:hover {
+            color: #ffffff;
+            background-color: var(--accent-blue);
+            text-decoration: none;
+        }
+        
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 1rem auto;
+            border: 3px solid var(--border-color);
+        }
+
+        code {
+            background-color: rgba(0,0,0,0.05);
+            border: 2px solid rgba(0,0,0,0.1);
+            padding: 0.2em 0.4em;
+            font-size: 0.9em;
+            color: var(--text-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        th, td {
+            border: 3px solid var(--border-color);
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--header-color);
+            color: #ffffff;
+            font-family: var(--header-font);
+            text-transform: uppercase;
+        }
+        
+        .image-gallery {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .image-gallery > div {
+            flex: 1 1 30%;
+            min-width: 220px;
+            max-width: 250px;
+        }
+        .image-gallery h4 {
+            text-align: center;
+            font-family: var(--body-font);
+            font-weight: bold;
+            text-transform: none;
+            letter-spacing: 0;
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+        }
+
+    </style>
+</head>
+<body>
+
+    <main class="main-container">
+        
+        <div class="content-slab">
+            <h1>AI Virtual Try-On: How to Swap Clothes in Any Photo with ComfyUI</h1>
+            <p>Ever scrolled past a jacket online and wondered how it would actually look on you, not just on a product model? What if you could virtually "try on" any piece of clothing using just a couple of images? Today, we're demystifying a powerful ComfyUI workflow that does exactly that. Get ready to transform your photos and explore your style like never before. We'll break down a sophisticated process involving ControlNet, Inpainting, and the incredible IPAdapter to give you god-level control over image editing.</p>
+        </div>
+
+        <div class="content-slab">
+            <h2>The Core Concept: Precision Wardrobe Swapping</h2>
+            <p>At its heart, this workflow is a virtual try-on engine. Its goal is to take a photo of a person, a separate image of a clothing item, and seamlessly replace the person's current outfit with the new one.</p>
+            <p>To achieve this, it brilliantly combines three core AI techniques:</p>
+            <ul>
+                <li><strong>ControlNet (with OpenPose):</strong> This is our pose-keeper. It analyzes the original image of the person, extracts their exact pose as a "skeleton," and forces the AI to stick to that skeleton. This ensures the final image has the same natural posture as the original.</li>
+                <li><strong>Inpainting:</strong> This technique allows us to edit a specific part of an image. We provide a "mask" (a black-and-white map) to tell the AI, "Only change the pixels here." In our case, we mask out the original shirt.</li>
+                <li><strong>IPAdapter (Image Prompt Adapter):</strong> This is the magic wand. Instead of just describing the new clothing with text, we provide an image of the jacket. The IPAdapter analyzes this image and guides the AI to generate the new clothing with the correct texture, color, and style.</li>
+            </ul>
+            <p>By combining these, we can tell the AI: <strong>"Take this person, keep their exact pose, replace the area of their shirt, and fill that area with a new jacket that looks exactly like this reference image."</strong></p>
+        </div>
+
+        <div class="content-slab">
+            <h2>Why, What, and When to Use This Workflow</h2>
+            <ul>
+                <li><strong>Why use this complex setup?</strong> Control. A simple text prompt like "man in a brown jacket" would change the entire image—the background, the person's face, and the pose might all be altered. This workflow gives you surgical precision, preserving every detail you want to keep.</li>
+                <li><strong>What is it, simply?</strong> It's a method for AI-powered clothing swaps. Think of it as an automated, intelligent Photoshop expert.</li>
+                <li><strong>When would you use it?</strong> E-commerce, personal styling, concept art, or just creating fun content for social media.</li>
+            </ul>
+        </div>
+
+        <div class="content-slab">
+            <h2>Example Transformation: From Tee to Jacket</h2>
+            <p>Here’s a practical look at what this workflow can achieve. We start with a model in a t-shirt, a separate product shot of a jacket, and a few key intermediate steps.</p>
+             <div class="image-gallery">
+                <div>
+                    <h4>1. Source Model</h4>
+                    <img src="./comfyui/tryon/model.png" alt="Input image of a person">
+                </div>
+                <div>
+                    <h4>2. Clothing Style</h4>
+                    <img src="./comfyui/tryon/jacket.png" alt="Input image of the clothing item">
+                </div>
+                 <div>
+                    <h4>3. Inpaint Mask</h4>
+                    <img src="./comfyui/tryon/mask.png" alt="Black and white mask for inpainting">
+                </div>
+                 <div>
+                    <h4>4. Pose Skeleton</h4>
+                    <img src="./comfyui/tryon/pose.png" alt="OpenPose skeleton generated from the source model">
+                </div>
+                <div>
+                    <h4>5. Final Output</h4>
+                    <img src="./comfyui/tryon/output.png" alt="Output image with swapped clothing">
+                </div>
+            </div>
+        </div>
+        
+        <div class="content-slab">
+            <h2>The Nodes Used in This Workflow</h2>
+            <p>This workflow uses a combination of standard and custom nodes. Here’s a breakdown of the key players and their settings in this specific build.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Node</th>
+                        <th>Purpose & Configuration</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>Load Checkpoint</code></td>
+                        <td>Loads the foundational Stable Diffusion model. <strong>Config:</strong> sdXL_v09VaeFix_sdxlUnstableDiffusers_v11.safetensors</td>
+                    </tr>
+                    <tr>
+                        <td><code>Load Image (x3)</code></td>
+                        <td>Used to import our source images: the person, the mask, and the clothing item.</td>
+                    </tr>
+                     <tr>
+                        <td><code>OpenPose Pose</code></td>
+                        <td>A preprocessor node that analyzes an image and extracts a pose skeleton.</td>
+                    </tr>
+                    <tr>
+                        <td><code>Apply ControlNet</code></td>
+                        <td>Applies the pose skeleton as a condition to the generation process. <strong>Config:</strong> strength: 1.00</td>
+                    </tr>
+                    <tr>
+                        <td><code>IPAdapter Unified Loader</code></td>
+                        <td>Loads the necessary IPAdapter models. <strong>Config:</strong> ipadapter_file: ip-adapter_sdxl_vit-h.bin</td>
+                    </tr>
+                    <tr>
+                        <td><code>IPAdapter_plus</code></td>
+                        <td>Integrates the clothing reference image into the main model pipeline. <strong>Config:</strong> weight: 0.70, weight_type: style transfer</td>
+                    </tr>
+                    <tr>
+                        <td><code>VAE Encode (for Inpainting)</code></td>
+                        <td>Takes the original image and the mask, and converts the masked area into latent space.</td>
+                    </tr>
+                    <tr>
+                        <td><code>CLIP Text Encode (Prompt)</code></td>
+                        <td>Converts your text descriptions into a format the AI understands.</td>
+                    </tr>
+                    <tr>
+                        <td><code>KSampler</code></td>
+                        <td>The main image generator. <strong>Config:</strong> steps: 25, cfg: 8.0, denoise: 1.0</td>
+                    </tr>
+                    <tr>
+                        <td><code>VAE Decode</code></td>
+                        <td>Converts the final latent image back into a visible pixel image.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="content-slab">
+            <h2>Prerequisites: What You'll Need</h2>
+            <p>Before you start, make sure your ComfyUI is set up with the following:</p>
+            <ul>
+                <li><strong>ComfyUI Manager:</strong> If you don't have it, install it. It's the easiest way to install the required custom nodes.</li>
+                <li><strong>Custom Nodes:</strong>
+                    <ul>
+                        <li>ComfyUI-Impact-Pack</li>
+                        <li>ComfyUI_IPAdapter_plus</li>
+                        <li>ComfyUI-ControlNetAux (for the OpenPose preprocessor)</li>
+                    </ul>
+                </li>
+                <li><strong>Models:</strong>
+                    <ul>
+                        <li><strong>Stable Diffusion Checkpoint:</strong> An SDXL base model (e.g., the sdXL_v09... model used in the workflow).</li>
+                        <li><strong>ControlNet Model:</strong> An OpenPose model compatible with SDXL. A good option is <code>thibaud_xl_openpose</code>. Place it in your <code>ComfyUI/models/controlnet</code> folder.</li>
+                        <li><strong>IPAdapter Models:</strong>
+                            <ul>
+                                <li><code>ip-adapter_sdxl_vit-h.bin</code>: Place in <code>ComfyUI/models/ipadapter</code>.</li>
+                                <li><code>CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors</code>: This is the CLIP Vision model. Place it in <code>ComfyUI/models/clip_vision</code>.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <div class="content-slab">
+            <h2>The Workflow: Step-by-Step Construction</h2>
+            <p>Here is the complete workflow graph. Below it, we'll walk through how to build it from scratch.</p>
+            <img src="./comfyui/tryon/workflow.png" alt="ComfyUI Virtual Try-On workflow diagram">
+            
+            <h3>Step 1: Load Core Models</h3>
+            <p>Add a <strong>Load Checkpoint</strong> node and select your SDXL base model. Add an <strong>IPAdapter Unified Loader</strong> node. Select the <code>ip-adapter_sdxl_vit-h.bin</code> model file.</p>
+
+            <h3>Step 2: Set Up the IPAdapter Style Reference</h3>
+             <ol>
+                <li>Add a <strong>Load Image</strong> node and load your clothing image (e.g., jacket.png).</li>
+                <li>Connect the <code>IMAGE</code> output of this node to the <code>image</code> input of the <code>IPAdapter Unified Loader</code>.</li>
+                <li>Add an <strong>IPAdapter_plus</strong> node. Connect the <code>MODEL</code> output from <code>Load Checkpoint</code> to the <code>model</code> input of <code>IPAdapter_plus</code>.</li>
+                <li>Connect the <code>IPADAPTER</code> output from the <code>IPAdapter Unified Loader</code> to the <code>ipadapter</code> input of <code>IPAdapter_plus</code>. The <code>MODEL</code> output from this node is now your main model, enhanced with style information from the jacket.</li>
+            </ol>
+
+            <h3>Step 3: Configure the Pose Control (ControlNet)</h3>
+             <ol>
+                <li>Add another <strong>Load Image</strong> node and load your main subject image (e.g., model.jpg).</li>
+                <li>Add an <strong>OpenPose Pose</strong> preprocessor node and connect the subject's <code>IMAGE</code> output to its <code>image</code> input.</li>
+                <li>Add a <strong>Load ControlNet Model</strong> node and select your SDXL OpenPose model.</li>
+                <li>Add an <strong>Apply ControlNet</strong> node. Connect the <code>CONTROL_NET</code> output from the loader to its <code>control_net</code> input. Connect the <code>IMAGE</code> output from the <code>OpenPose Pose</code> preprocessor to its <code>image</code> input.</li>
+            </ol>
+
+            <h3>Step 4: Prepare the Inpainting Latent</h3>
+            <ol>
+                <li>Add a <strong>Load Image</strong> node and load your mask image (mask.jpg). Pro-tip: You can create this in any image editor by painting white over the area you want to replace.</li>
+                <li>Add a <strong>VAE Encode (for Inpainting)</strong> node.</li>
+                <li>Connect the <code>VAE</code> from the <code>Load Checkpoint</code> node to the <code>vae</code> input.</li>
+                <li>Connect the <code>IMAGE</code> from your main subject <code>Load Image</code> node to the <code>pixels</code> input.</li>
+                <li>Connect the <code>IMAGE</code> from your mask <code>Load Image</code> node to the <code>mask</code> input.</li>
+            </ol>
+
+            <h3>Step 5: Write Your Prompts</h3>
+            <p>Add two <strong>CLIP Text Encode</strong> nodes. In the first, type your positive prompt (e.g., "man wearing jacket"). In the second, type your negative prompt (e.g., "hairy, noisy, bad, watermark..."). Connect the <code>CLIP</code> output from the <code>Load Checkpoint</code> node to the <code>clip</code> input of both prompt nodes.</p>
+
+            <h3>Step 6: Assemble the KSampler</h3>
+            <p>Add a <strong>KSampler</strong> node. This is where everything comes together.</p>
+            <ul>
+                <li><strong>model:</strong> Connect the <code>MODEL</code> output from the <code>IPAdapter_plus</code> node.</li>
+                <li><strong>positive:</strong> Connect the <code>CONDITIONING</code> from your positive prompt. Also, connect the <code>CONDITIONING</code> from the <code>Apply ControlNet</code> node here. A Conditioning (Combine) node can make this cleaner, but connecting them sequentially works too.</li>
+                <li><strong>negative:</strong> Connect the <code>CONDITIONING</code> from your negative prompt.</li>
+                <li><strong>latent_image:</strong> Connect the <code>LATENT</code> output from the <code>VAE Encode (for Inpainting)</code> node.</li>
+            </ul>
+
+            <h3>Step 7: Generate the Final Image</h3>
+            <ol>
+                <li>Add a <strong>VAE Decode</strong> node. Connect the <code>vae</code> from your <code>Load Checkpoint</code> node to its <code>vae</code> input.</li>
+                <li>Connect the <strong>LATENT</strong> output from the <code>KSampler</code> to the <code>latent_image</code> input of the <code>VAE Decode</code>.</li>
+                <li>Finally, connect the <strong>IMAGE</strong> output of the <code>VAE Decode</code> to a <strong>Save Image</strong> or <strong>Preview Image</strong> node.</li>
+            </ol>
+            <p>You're ready! Click Queue Prompt and watch the magic happen.</p>
+        </div>
+
+        <div class="content-slab">
+            <h2>Fine-Tuning and Troubleshooting</h2>
+            <ul>
+                <li><strong>Denoise is Key:</strong> The KSampler's <code>denoise</code> is set to 1.0. This tells the AI to completely replace everything in the masked area. If you want to blend the new clothing with the original shirt's texture or lighting, try a lower value like 0.85.</li>
+                <li><strong>Adjusting the Style Match:</strong> The <code>weight</code> on the <code>IPAdapter_plus</code> node controls how strongly the jacket image influences the result. The 0.7 used here is a good balance. If the output isn't matching your jacket's style, increase this value. If the AI is copying it too literally and it looks flat, decrease it.</li>
+                <li><strong>Bad Mask = Bad Results:</strong> The quality of your mask is critical. If the edges are jagged, you'll see a harsh line on your final image. Use a soft brush or feather the edges of your mask in an external editor for a smoother blend.</li>
+                <li><strong>Wrong Pose?</strong> If the final character isn't holding the pose, ensure you've loaded a compatible SDXL ControlNet model and that its strength in the <code>Apply ControlNet</code> node is set to 1.0.</li>
+            </ul>
+        </div>
+
+        <div class="content-slab">
+            <h2>Your Turn to Create!</h2>
+            <p>Now you have the knowledge and the map. This workflow is a template for endless creativity. Grab a photo of yourself, find an image of a piece of clothing you like, and build your own virtual dressing room. Experiment with different garments, from vintage sweaters to futuristic armor. The only limit is your imagination.</p>
+        </div>
+
+        <div class="content-slab">
+            <h2>Use Cases and Real-World Examples</h2>
+            <ul>
+                <li><strong>Fashion E-commerce:</strong> A small online clothing store could use this to display their entire collection on a single model, saving thousands on photography costs.</li>
+                <li><strong>Movie Pre-production:</strong> A costume designer could generate concept art showing an actor in dozens of different outfits in a matter of hours, not weeks.</li>
+                <li><strong>Social Media Marketing:</strong> A brand could run a campaign where users submit their photos to "try on" the new collection, creating engaging, user-generated content.</li>
+            </ul>
+        </div>
+        
+        <div class="content-slab">
+            <h2>Next Steps</h2>
+            <p>Feeling confident? Here are some ideas to push this concept even further:</p>
+            <ul>
+                <li><strong>Add More ControlNets:</strong> Combine OpenPose with a Depth or Canny ControlNet to control not just the pose but also the 3D shape and outline of the clothing.</li>
+                <li><strong>Incorporate LoRAs:</strong> Add a LoRA (Low-Rank Adaptation) to the workflow to influence the artistic style of the entire image, creating a painterly or anime-style virtual try-on.</li>
+                <li><strong>Batch Processing:</strong> Use ComfyUI's batching features to apply the same jacket to a whole folder of different model images automatically.</li>
+            </ul>
+        </div>
+
+    </main>
+
+</body>
+</html>
