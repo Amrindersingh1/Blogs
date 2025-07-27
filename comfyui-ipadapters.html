@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Style Transfer: Combine IPAdapter and ControlNet in ComfyUI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Anton&display=swap" rel="stylesheet">
+    <style>
+        /* * DESIGN RATIONALE: FOCUSED NEUBRUTALISM
+         * * This redesign pulls back from the multi-color palette to create a more focused, classic
+         * Neubrutalist look with tasteful color accents.
+         *
+         * 1.  NEUTRAL CONTENT SLABS: All content slabs now have a consistent white background.
+         * This removes the rotating color scheme to reduce visual noise and improve focus on the content.
+         *
+         * 2.  GROUNDED & INTERACTIVE SHADOWS: The hard box-shadow is black by default, grounding the
+         * elements. On hover, the shadow changes to a vibrant blue, providing a single, impactful
+         * interactive color pop without overwhelming the user.
+         *
+         * 3.  REFINED HIGHLIGHTS: The text highlight for `strong` tags now uses a solid pink
+         * background with white text for a bold, high-contrast effect.
+         *
+         * 4.  UNIFIED ACCENTS: A dark navy is used for headings and table headers, creating a cohesive
+         * and professional visual hierarchy. Links use the same blue as the hover shadow, tying the
+         * interactive elements together.
+        */
+
+        :root {
+            --background-color: #f0f0f0;
+            --slab-background: #ffffff;
+            --border-color: #000000;
+            --text-color: #000000;
+            --header-color: #000033; /* Dark Navy */
+            --accent-blue: #0055ff;
+            --accent-pink: #ff00a8;
+            --accent-yellow: #fffb00;
+
+            --header-font: 'Anton', sans-serif;
+            --body-font: 'IBM Plex Mono', monospace;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: var(--body-font);
+            line-height: 1.7;
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .main-container {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .content-slab {
+            background-color: var(--slab-background);
+            border: 3px solid var(--border-color);
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 8px 8px 0px var(--border-color);
+            transition: all 0.2s ease-in-out;
+        }
+
+        .content-slab:hover {
+            transform: translate(-4px, -4px);
+            box-shadow: 12px 12px 0px var(--accent-blue);
+        }
+        
+        h1, h2, h3 {
+            font-family: var(--header-font);
+            color: var(--header-color);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 0;
+        }
+
+        h1 {
+            font-size: 3rem;
+            line-height: 1.1;
+            text-align: center;
+            margin-bottom: 2rem;
+            color: var(--border-color);
+        }
+
+        h2 {
+            font-size: 2rem;
+            border-bottom: 3px solid var(--header-color);
+            padding-bottom: 0.5rem;
+            margin-top: 2.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        h3 {
+            font-size: 1.5rem;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        p, li {
+            font-size: 1rem;
+        }
+
+        ul, ol {
+            padding-left: 20px;
+            list-style-position: inside;
+        }
+
+        strong, b {
+            font-weight: 700;
+            background-color: var(--accent-pink);
+            color: #ffffff;
+            padding: 0.2em 0.5em;
+            text-decoration: none;
+            border-bottom: none;
+        }
+
+        a {
+            color: var(--accent-blue);
+            text-decoration: underline;
+            font-weight: bold;
+        }
+
+        a:hover {
+            color: #ffffff;
+            background-color: var(--accent-blue);
+            text-decoration: none;
+        }
+        
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 1rem auto;
+            border: 3px solid var(--border-color);
+        }
+
+        code {
+            background-color: rgba(0,0,0,0.05);
+            border: 2px solid rgba(0,0,0,0.1);
+            padding: 0.2em 0.4em;
+            font-size: 0.9em;
+            color: var(--text-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        th, td {
+            border: 3px solid var(--border-color);
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--header-color);
+            color: #ffffff;
+            font-family: var(--header-font);
+            text-transform: uppercase;
+        }
+        
+        .image-gallery {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+        .image-gallery > div {
+            flex: 1;
+            min-width: 250px;
+        }
+        .image-gallery h4 {
+            text-align: center;
+            font-family: var(--body-font);
+            font-weight: bold;
+            text-transform: none;
+            letter-spacing: 0;
+            color: var(--text-color);
+        }
+
+    </style>
+</head>
+<body>
+
+    <main class="main-container">
+        
+        <div class="content-slab">
+            <h1>Master Style Transfer: Combine IPAdapter and ControlNet in ComfyUI</h1>
+            <p>Ever scrolled through AI art and wondered how someone could perfectly merge the detailed composition of one image with the striking artistic style of another? It’s not magic, but a powerful technique that gives you incredible creative control. Imagine taking a 3D-rendered character and instantly reimagining them in the bold, painterly style of a comic book hero, all while preserving every detail of their original pose.</p>
+            <p>Today, we're diving deep into a ComfyUI workflow that does exactly that. By combining the strengths of <strong>IPAdapter Plus</strong> for style acquisition and <strong>ControlNet</strong> for structural integrity, you can unlock a new level of precision in your AI image creations. Get ready to transform your images from simple prompts to sophisticated artistic statements.</p>
+        </div>
+
+        <div class="content-slab">
+            <h2>The Core Concept</h2>
+            <p>This workflow is built on a powerful synergy between two of the most popular tools in the AI art toolkit:</p>
+            <ul>
+                <li><strong>IPAdapter (Image Prompt Adapter):</strong> Think of this as a style sponge. IPAdapter analyzes a reference image and extracts its aesthetic qualities—color palette, texture, brushstrokes, and overall mood. It then applies this "style DNA" to your generation. We're using the advanced <strong>IPAdapter_plus</strong> version for even better style transfer.</li>
+                <li><strong>ControlNet (Canny Edge):</strong> This is your structural enforcer. ControlNet ensures that your output image respects the composition of an input image. We use the Canny model, which first detects the edges and outlines of your content image, creating a sort of "coloring book" line art. The AI then "colors inside the lines," preserving the original subject's pose, shape, and details with remarkable accuracy.</li>
+            </ul>
+            <p>By chaining these two together, we tell the AI: <strong>"Take the style from this image (IPAdapter) and apply it to the exact structure of that image (ControlNet)."</strong></p>
+        </div>
+
+        <div class="content-slab">
+            <h2>Why, What, When: The Rationale and Use Cases</h2>
+            <ul>
+                <li><strong>Why use this workflow?</strong> For ultimate control. Simple image-to-image or text-to-image prompts often struggle to get both the style and the composition right simultaneously. This method separates the concerns: one tool for style, one for structure.</li>
+                <li><strong>What is it, exactly?</strong> It's an advanced image-to-image technique that uses a reference image for style and another for composition, guided by a text prompt, to generate a new, hybrid image.</li>
+                <li><strong>When should you use it?</strong> This workflow is perfect when you want to apply a consistent artistic style across a series of different images, "re-skin" a character while keeping its pose identical, or create concept art variations quickly.</li>
+            </ul>
+        </div>
+
+        <div class="content-slab">
+            <h2>Example Transformation: Gnome Meets Superhero</h2>
+            <p>Here's a practical look at what this workflow can achieve. We started with a detailed 3D render of a gnome and a painterly image of a superhero. The goal was to paint the gnome with the superhero's style.</p>
+             <div class="image-gallery">
+                <div>
+                    <h4>Input (Content)</h4>
+                    <img src="./comfui/ip/input.png" alt="Content input image of a gnome">
+                </div>
+                <div>
+                    <h4>Input (Style)</h4>
+                    <img src="./comfui/ip/input-style.png" alt="Style input image of a superhero">
+                </div>
+            </div>
+            <h3>And here is the stunning result:</h3>
+            <img src="./comfui/ip/output.png" alt="Final output image combining content and style">
+            <p>As you can see, the gnome's pose, his staff, and the background foliage are perfectly preserved from the content image, but the entire scene is rendered in the rich, textured, and colorful style of the style image.</p>
+        </div>
+        
+        <div class="content-slab">
+            <h2>Prerequisites</h2>
+            <p>Before you begin, make sure you have the following:</p>
+            <ul>
+                <li><strong>ComfyUI Installed:</strong> A working installation of ComfyUI.</li>
+                <li><strong>ComfyUI Manager:</strong> This is essential for easily installing the required custom nodes.</li>
+                <li><strong>Custom Nodes:</strong>
+                    <ul>
+                        <li><code>ComfyUI_IPAdapter_plus</code>: For the IPAdapter nodes.</li>
+                        <li><code>ComfyUI's ControlNet Aux</code>: For the Canny Edge preprocessor node.</li>
+                    </ul>
+                </li>
+                <li><strong>Models:</strong>
+                    <ul>
+                        <li><strong>SDXL Checkpoint Model:</strong> Any base SDXL 1.0 model or a fine-tuned variant like <code>sdxl_dpo_turbo</code>.</li>
+                        <li><strong>IPAdapter Model:</strong> The <code>ip-adapter-plus_sdxl_vit-h.safetensors</code> model.</li>
+                        <li><strong>ControlNet Canny Model:</strong> An SDXL-compatible Canny model, such as <code>control-lora-canny-rank256.safetensors</code>.</li>
+                    </ul>
+                </li>
+            </ul>
+             <p>You can find these models on websites like Hugging Face or Civitai.</p>
+        </div>
+
+        <div class="content-slab">
+            <h2>The Workflow: Step-by-Step Construction</h2>
+            <p>Here is the final workflow. Follow the steps below to build it from scratch.</p>
+            <img src="./comfui/ip/workflow.png" alt="ComfyUI IPAdapter and ControlNet workflow diagram">
+            
+            <h3>Step 1: Load Core Models</h3>
+            <p>Start by adding a <strong>Load Checkpoint</strong> node and selecting your SDXL model. Add a <strong>Load ControlNet Model</strong> node and choose your SDXL Canny model. Finally, add an <strong>IPAdapter Unified Loader</strong> and select the <code>ip-adapter-plus_sdxl_vit-h</code> file.</p>
+
+            <h3>Step 2: Set Up Prompts</h3>
+            <p>Add two <strong>CLIP Text Encode</strong> nodes. In the top one, write a simple positive prompt that describes the scene (e.g., "wizard in a jungle"). In the bottom one, enter a negative prompt for things to avoid (e.g., "blurry, grainy, bad art").</p>
+
+            <h3>Step 3: Prepare the Content Image & ControlNet</h3>
+            <ol>
+                <li>Add a <strong>Load Image</strong> node and upload your content image (the gnome).</li>
+                <li>Connect its <code>IMAGE</code> output to a <strong>Canny Edge</strong> node. This will generate the line art.</li>
+                <li>Add an <strong>Apply ControlNet</strong> node. Connect the <code>CONTROL_NET</code> output from your <code>Load ControlNet Model</code> node and the <code>IMAGE</code> output from the <code>Canny Edge</code> node.</li>
+            </ol>
+            
+            <h3>Step 4: Prepare the Style Image & IPAdapter</h3>
+             <ol>
+                <li>Add a second <strong>Load Image</strong> node and upload your style reference (the superhero).</li>
+                <li>Add an <strong>IPAdapter_plus</strong> node. Connect the <code>IMAGE</code> output from your style image to its <code>image</code> input. Connect the <code>IPADAPTER</code> output from the <code>IPAdapter Unified Loader</code> to its <code>ipadapter</code> input. Set the <code>weight_type</code> to <strong>style transfer (sdxl)</strong>.</li>
+            </ol>
+
+            <h3>Step 5: Chain the Conditioning</h3>
+            <p>This is the most crucial step! The order matters.</p>
+            <ol>
+                <li>Connect the <strong>MODEL</strong> from <code>Load Checkpoint</code> to the <code>model</code> input of the <code>IPAdapter_plus</code> node.</li>
+                <li>Connect the <strong>MODEL</strong> output of <code>IPAdapter_plus</code> to the <code>model</code> input of the <code>Apply ControlNet</code> node.</li>
+                <li>Connect the <strong>CONDITIONING</strong> from your positive prompt to the <code>positive</code> input of <code>Apply ControlNet</code>.</li>
+                <li>Connect the <strong>CONDITIONING</strong> from your negative prompt directly to the <code>negative</code> input of the <code>KSampler</code> later on.</li>
+            </ol>
+
+            <h3>Step 6: Set Up the Sampler</h3>
+            <ol>
+                <li>Add a <strong>KSampler</strong> node.</li>
+                <li>Connect the <strong>MODEL</strong> output from <code>Apply ControlNet</code> to the <code>model</code> input of the <code>KSampler</code>.</li>
+                <li>Connect the <strong>positive</strong> output from <code>Apply ControlNet</code> to the <code>positive</code> input of the <code>KSampler</code>.</li>
+                <li>Connect the <strong>negative</strong> output from your negative <code>CLIP Text Encode</code> node to the <code>negative</code> input of the <code>KSampler</code>.</li>
+                <li>Add an <strong>Empty Latent Image</strong> node and connect it to the <code>latent_image</code> input of the <code>KSampler</code>. Ensure its dimensions match your desired output (e.g., 1024x1024 for SDXL).</li>
+            </ol>
+
+            <h3>Step 7: Finalize and View</h3>
+            <ol>
+                <li>Connect the <strong>LATENT</strong> output from the <code>KSampler</code> to a <strong>VAE Decode</strong> node.</li>
+                <li>Connect the <strong>IMAGE</strong> output of the <code>VAE Decode</code> to a <strong>Save Image</strong> and a <strong>Preview Image</strong> node.</li>
+            </ol>
+            <p>You're all set! Click "Queue Prompt" and watch the magic happen.</p>
+        </div>
+
+        <div class="content-slab">
+            <h2>Fine-Tuning and Troubleshooting</h2>
+            <ul>
+                <li><strong>Style is too strong/weak?</strong> Adjust the <code>weight</code> parameter in the <code>IPAdapter_plus</code> node. A value of 0.7 will apply less style, while 1.2 will apply more.</li>
+                <li><strong>Composition is distorted?</strong> Ensure the <code>strength</code> in the <code>Apply ControlNet</code> node is set to 1.0. If it is, check the preview of your <code>Canny Edge</code> node. If the lines are too thick or thin, adjust the <code>low_threshold</code> and <code>high_threshold</code> values to capture the right amount of detail.</li>
+                <li><strong>Getting errors?</strong> The most common error is a model mismatch. Double-check that your Checkpoint, ControlNet model, and IPAdapter model are all for SDXL. Do not mix SD1.5 and SDXL components.</li>
+                <li><strong>Output looks muddy or generic?</strong> Your text prompt still has an effect. Try making your positive prompt more descriptive to help guide the AI's interpretation of the combined style and structure.</li>
+            </ul>
+        </div>
+        
+        <div class="content-slab">
+            <h2>Real-World Use Cases</h2>
+            <p>This technique isn't just for fun; it has practical applications:</p>
+            <ul>
+                <li><strong>Concept Artists:</strong> Quickly generate high-fidelity variations of a character design in different art styles for a client presentation.</li>
+                <li><strong>Marketing Teams:</strong> Apply a consistent brand aesthetic (e.g., a specific photographic filter or illustrative style) across diverse product images.</li>
+                <li><strong>Game Developers:</strong> Prototype visual styles for game assets and environments without needing to manually recreate them each time.</li>
+                <li><strong>Social Media Influencers:</strong> Create a unique, stylized look for their profile pictures and content that stands out.</li>
+            </ul>
+        </div>
+
+        <div class="content-slab">
+            <h2>Next Steps</h2>
+            <p>Once you've mastered this workflow, consider exploring these advanced concepts:</p>
+            <ul>
+                <li><strong>Stacking ControlNets:</strong> Combine Canny with another ControlNet, like Depth or OpenPose, for even more granular control over the final image.</li>
+                <li><strong>Multiple Style Images:</strong> Use multiple IPAdapter nodes and reference images to blend different styles together.</li>
+                <li><strong>Animation:</strong> Feed the output of this workflow into an animation module like AnimateDiff to create stunning, stylized video clips.</li>
+            </ul>
+            <p>Happy creating!</p>
+        </div>
+
+    </main>
+
+</body>
+</html>
