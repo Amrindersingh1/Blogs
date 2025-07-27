@@ -236,6 +236,65 @@
         </div>
         
         <div class="content-slab">
+            <h2>The Nodes Used in This Workflow</h2>
+            <p>Here’s a breakdown of the key nodes and their settings in this setup.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Node Name</th>
+                        <th>Purpose & Key Configuration</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>Load Checkpoint</code></td>
+                        <td>Loads the main Stable Diffusion model. <strong>Model:</strong> sdxl_dpo_turbo_v0.5_RunDiffusionPhoto2.safetensors (any SDXL model will work).</td>
+                    </tr>
+                    <tr>
+                        <td><code>Load Image (x2)</code></td>
+                        <td>Loads the content image (gnome) and the style image (superhero).</td>
+                    </tr>
+                    <tr>
+                        <td><code>CLIP Text Encode</code></td>
+                        <td>Translates your text prompts into conditioning. <strong>Positive:</strong> wizard in a jungle, <strong>Negative:</strong> blurry, low quality, grainy</td>
+                    </tr>
+                    <tr>
+                        <td><code>IPAdapter Unified Loader</code></td>
+                        <td>Loads the IPAdapter model files. <strong>ipadapter_file:</strong> ip-adapter-plus_sdxl_vit-h.safetensors</td>
+                    </tr>
+                    <tr>
+                        <td><code>IPAdapter_plus</code></td>
+                        <td>Applies the style from the reference image. <strong>weight:</strong> 1.00, <strong>weight_type:</strong> style transfer</td>
+                    </tr>
+                    <tr>
+                        <td><code>Load ControlNet Model</code></td>
+                        <td>Loads the specific ControlNet model. <strong>control_net_name:</strong> control-lora-canny-rank256.safetensors</td>
+                    </tr>
+                    <tr>
+                        <td><code>Canny Edge</code></td>
+                        <td>Pre-processes the content image into an edge map. Default settings are usually fine.</td>
+                    </tr>
+                    <tr>
+                        <td><code>Apply ControlNet</code></td>
+                        <td>Applies structural guidance from the Canny edge map. <strong>strength:</strong> 1.00</td>
+                    </tr>
+                    <tr>
+                        <td><code>KSampler</code></td>
+                        <td>The core generator. <strong>steps:</strong> 30, <strong>cfg:</strong> 8.0, <strong>denoise:</strong> 1.00</td>
+                    </tr>
+                    <tr>
+                        <td><code>VAE Decode</code></td>
+                        <td>Converts the latent image into a viewable pixel image.</td>
+                    </tr>
+                    <tr>
+                        <td><code>Save Image</code></td>
+                        <td>Saves the final output to your drive.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="content-slab">
             <h2>Prerequisites</h2>
             <p>Before you begin, make sure you have the following:</p>
             <ul>
