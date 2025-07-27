@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Pose Replication with ControlNet Depth Maps in ComfyUI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Anton&display=swap" rel="stylesheet">
+    <style>
+        /* * DESIGN RATIONALE: NEUBRUTALISM (COLORFUL LIGHT MODE)
+         * * This design evolves the previous version with a more vibrant, multi-color palette
+         * inspired by modern digital Neubrutalism.
+         *
+         * 1.  VIBRANT COLOR PALETTE: A light background (#f4f4f4) is now accented with a variety of
+         * bold, high-contrast colors: pink, green, yellow, and blue. This creates a dynamic,
+         * energetic feel while maintaining sharp clarity.
+         *
+         * 2.  COLORFUL SOLID SHADOWS & BORDERS: The signature hard-edged box-shadow is now pink (#ff00a8),
+         * and it changes to a bright green (#39ff14) on hover for a playful interaction. The bottom
+         * border on H2 elements uses the accent blue.
+         *
+         * 3.  FUNCTIONAL TYPOGRAPHY: The font choices remain the same ('Anton' and 'IBM Plex Mono')
+         * as their utilitarian and geometric nature is a core tenet of this style.
+         *
+         * 4.  DISTRIBUTED COLOR ACCENTS: Colors are intentionally distributed to different elements
+         * (shadows, borders, highlights, links, table headers) to create a cohesive yet varied
+         * visual experience without overwhelming the user.
+        */
+
+        :root {
+            --background-color: #f4f4f4;
+            --slab-background: #ffffff;
+            --border-color: #000000;
+            --text-color: #000000;
+            --accent-blue: #0055ff;
+            --accent-yellow: #fffb00;
+            --accent-pink: #ff00a8;
+            --accent-green: #39ff14;
+            --header-font: 'Anton', sans-serif;
+            --body-font: 'IBM Plex Mono', monospace;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: var(--body-font);
+            line-height: 1.7;
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .main-container {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .content-slab {
+            background-color: var(--slab-background);
+            border: 3px solid var(--border-color);
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 8px 8px 0px var(--accent-pink);
+            transition: all 0.2s ease-in-out;
+        }
+
+        .content-slab:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 10px 10px 0px var(--accent-green);
+        }
+        
+        h1, h2, h3 {
+            font-family: var(--header-font);
+            color: var(--text-color);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 0;
+        }
+
+        h1 {
+            font-size: 3rem;
+            line-height: 1.1;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h2 {
+            font-size: 2rem;
+            border-bottom: 3px solid var(--accent-blue);
+            padding-bottom: 0.5rem;
+            margin-top: 2.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        h3 {
+            font-size: 1.5rem;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        p, li {
+            font-size: 1rem;
+        }
+
+        ul, ol {
+            padding-left: 20px;
+            list-style-position: inside;
+        }
+
+        strong, b {
+            font-weight: 700;
+            background-color: transparent;
+            color: inherit;
+            text-decoration: none;
+            padding-bottom: 3px;
+            border-bottom: 4px solid var(--accent-yellow);
+        }
+
+        a {
+            color: var(--accent-blue);
+            text-decoration: underline;
+            font-weight: bold;
+        }
+
+        a:hover {
+            color: var(--slab-background);
+            background-color: var(--accent-blue);
+            text-decoration: none;
+        }
+        
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 1rem auto;
+            border: 3px solid var(--border-color);
+        }
+
+        code {
+            background-color: #e0e0e0;
+            border: 2px solid #ccc;
+            padding: 0.2em 0.4em;
+            font-size: 0.9em;
+            color: #333;
+        }
+
+        .image-gallery {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+        .image-gallery > div {
+            flex: 1;
+            min-width: 250px;
+        }
+        .image-gallery h4 {
+            text-align: center;
+            font-family: var(--body-font);
+            font-weight: bold;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+
+    </style>
+</head>
+<body>
+
+    <main class="main-container">
+        
+        <div class="content-slab">
+            <h1>Beyond Img2Img: How to Master Pose Replication with ControlNet Depth Maps in ComfyUI</h1>
+            <p>You've finally rendered the perfect character, in the perfect pose. The lighting is dramatic, the details are crisp... but they're in the wrong location. If you've ever tried to solve this with img2img, you know the frustration. The old background bleeds through, the pose shifts, and you spend hours fighting with a denoise slider.</p>
+            <p><strong>There is a better way. A much, much better way.</strong></p>
+            <p>Welcome to the world of ControlNet. In this guide, you will learn how to use a ControlNet Depth Map to extract the precise 3D pose from any source image and apply it to a completely new, AI-generated scene. This is the professional solution for consistency and control. By the end, you'll be able to move any subject to any location while preserving its pose with pixel-perfect accuracy.</p>
+        </div>
+
+        <div class="content-slab">
+            <h2>Prerequisites</h2>
+            <ul>
+                <li><strong>ComfyUI:</strong> A working installation. I recommend using the ComfyUI-Manager for easy installation of custom nodes.</li>
+                <li><strong>AI Checkpoint Model:</strong> An SDXL or SD1.5 model. The example uses <code>sdxlJuggernaut_v9</code>.</li>
+                <li><strong>ControlNet Model:</strong> You need a ControlNet model trained on depth maps. Search for <code>control_v11p_sd15_depth</code> for SD1.5 or an SDXL Depth ControlNet. Download the <code>.safetensors</code> file and place it in your <code>ComfyUI/models/controlnet</code> directory.</li>
+                <li><strong>Custom Node:</strong> The <strong>Zoe Depth Map</strong> preprocessor. You can easily install this using the ComfyUI-Manager.</li>
+            </ul>
+        </div>
+
+        <div class="content-slab">
+            <h2>The Core Concept: What is ControlNet?</h2>
+            <p>Think of your main AI model (Juggernaut, etc.) as a fantastically talented but free-spirited painter. A text prompt is your suggestion, but the artist has creative freedom.</p>
+            <p><strong>ControlNet is the strict art director.</strong> It holds up a non-negotiable blueprint (in our case, a depth map) and tells the artist, "I don't care what you paint—a desert, a city, a spaceship—but it must conform to this exact 3D structure."</p>
+        </div>
+
+        <div class="content-slab">
+            <h2>Example Transformation</h2>
+             <div class="image-gallery">
+                <div>
+                    <h4>Input Image</h4>
+                    <img src="./comfyui/controlnet/pose/input.png" alt="Input image for ControlNet pose replication" onerror="this.onerror=null;this.src='https://placehold.co/400x400/ffffff/000000?text=Input+Image';">
+                </div>
+                <div>
+                    <h4>Output Image</h4>
+                    <img src="./comfyui/controlnet/pose/output.png" alt="Output image with replicated pose in a new scene" onerror="this.onerror=null;this.src='https://placehold.co/400x400/ffffff/000000?text=Output+Image';">
+                </div>
+            </div>
+        </div>
+        
+        <div class="content-slab">
+            <h2>The Workflow: Step-by-Step Construction</h2>
+             <img src="./comfyui/controlnet/pose/workflow.png" alt="ComfyUI ControlNet Depth Map workflow diagram" onerror="this.onerror=null;this.src='https://placehold.co/800x400/ffffff/000000?text=Workflow+Diagram';">
+            
+             <h3>Step 1: The Blueprint - Create the Depth Map</h3>
+            <p>First, load your source image using a <strong>Load Image</strong> node. Connect its <code>IMAGE</code> output to the <code>image</code> input of a <strong>Zoe Depth Map</strong> node. This preprocessor analyzes the image and generates a new image where brightness corresponds to distance from the camera. You can preview this map to see the 3D structure it has captured.</p>
+
+            <h3>Step 2: Load Your Control Tools</h3>
+            <p>You need two key models:</p>
+            <ul>
+                <li><strong>Load Checkpoint:</strong> This is your main "artist" model.</li>
+                <li><strong>Load ControlNet Model:</strong> Select the depth ControlNet file you downloaded earlier.</li>
+            </ul>
+
+            <h3>Step 3: Apply the ControlNet Guidance</h3>
+            <p>This is the central hub of the technique. The <strong>Apply ControlNet</strong> node takes three critical inputs:</p>
+            <ul>
+                <li><strong>conditioning:</strong> This comes from your <code>CLIP Text Encode (Prompt)</code> nodes. This is what you want to see in the new scene.</li>
+                <li><strong>control_net:</strong> This comes from your <code>Load ControlNet Model</code> node. This is the "director."</li>
+                <li><strong>image:</strong> This comes from your <code>Zoe Depth Map</code> node. This is the "blueprint."</li>
+            </ul>
+            <p>The node then outputs a new, modified conditioning signal that has the ControlNet's rules baked into it.</p>
+
+            <h3>Step 4: The Generation - KSampler with a Twist</h3>
+            <p>Set up your <strong>KSampler</strong> as usual, but with two crucial differences:</p>
+            <ul>
+                <li><strong>Latent Image:</strong> Connect an <strong>Empty Latent Image</strong> node to the <code>latent_image</code> input. We are creating a 100% new image from noise.</li>
+                <li><strong>Denoise:</strong> Set the denoise slider to <strong>1.0</strong>. This tells the sampler to completely replace the noise, trusting the ControlNet-infused conditioning to guide the entire process.</li>
+            </ul>
+
+            <h3>Step 5: Decode and View</h3>
+            <p>Connect the output from the KSampler to a <strong>VAE Decode</strong> and <strong>Save Image</strong> node to see your final, perfectly posed result.</p>
+        </div>
+
+        <div class="content-slab">
+            <h2>Fine-Tuning and Troubleshooting</h2>
+            <ul>
+                <li><strong>Pose isn't accurate enough?</strong> In the <code>Apply ControlNet</code> node, increase the <code>strength</code> parameter closer to 1.0. This makes the "director" even stricter.</li>
+                <li><strong>Weird artifacts in the output?</strong> Ensure your ControlNet model version matches your checkpoint version (e.g., an SD1.5 ControlNet for an SD1.5 checkpoint).</li>
+            </ul>
+        </div>
+        
+        <div class="content-slab">
+            <h2>Your Turn to Create</h2>
+            <p>You have now mastered a technique that separates subject from scene. Take a photo of yourself and place yourself on the moon. Take a character from your favorite game and put them in a historical painting. The creative possibilities are endless.</p>
+            <p>Share your best "re-locations" in the comments below or tag me on social media! I will feature the most creative examples.</p>
+        </div>
+
+        <div class="content-slab">
+            <h2>Next Steps</h2>
+            <p>This is just one type of ControlNet. Now that you understand the principle, you're ready to explore ControlNet for Canny (to copy edges), ControlNet for Scribble (to turn doodles into masterpieces), and ControlNet for OpenPose (to use stick-figure skeletons as guides).</p>
+        </div>
+
+    </main>
+
+</body>
+</html>
